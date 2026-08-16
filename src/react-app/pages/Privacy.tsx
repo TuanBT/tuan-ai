@@ -106,7 +106,6 @@ function PrivacyVi() {
 				<ul>
 					<li>Nhận và xử lý ý tưởng bạn gửi.</li>
 					<li>Sản xuất nội dung video và đăng trên kênh TikTok / YouTube.</li>
-					<li>Liên hệ bạn qua email (nếu có) về trạng thái bài gửi.</li>
 					<li>Chống lạm dụng và bảo vệ dịch vụ.</li>
 				</ul>
 			</section>
@@ -199,9 +198,6 @@ function PrivacyEn() {
 					<li>
 						Produce video content and publish it on our TikTok / YouTube
 						channels.
-					</li>
-					<li>
-						Contact you via email (if provided) about your submission status.
 					</li>
 					<li>Prevent abuse and protect the service.</li>
 				</ul>

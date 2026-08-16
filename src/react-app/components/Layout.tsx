@@ -28,8 +28,14 @@ export function Layout({
 		<div className="page">
 			<header className="topbar">
 				<Link className="wordmark" to="/">
-					<Wordmark title={title} />
-				</Link>
+				<img className="wordmark-logo" src="/icons/icon.svg" alt="" width="28" height="28" />
+				<span className="wordmark-text">
+					<span className="wordmark-name"><Wordmark title={title} /></span>
+					{config?.tagline?.[lang] && (
+						<small>{config.tagline[lang]}</small>
+					)}
+				</span>
+			</Link>
 				<div className="topbar-tools">
 					<ThemeToggle />
 					<LangToggle />

@@ -22,8 +22,8 @@ const FALLBACK: Settings = {
 	max_per_ip_day: 3,
 	submissions_open: true,
 	site_title: "Tuân AI",
-	tagline_vi: "Cho đồ vật vô tri sống dậy",
-	tagline_en: "Bring lifeless objects to life",
+	tagline_vi: "Gửi ảnh, nhận clip AI vui vẻ",
+	tagline_en: "Send photos, get fun AI clips",
 	// Rỗng nghĩa là chưa khai báo, giao diện giấu hẳn nút thay vì dẫn đi đâu đó.
 	tiktok_url: "",
 	youtube_url: "",

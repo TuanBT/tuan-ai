@@ -63,7 +63,7 @@ export function ogRoutes() {
 		const description = esc(
 			row.description
 				? row.description.slice(0, 200)
-				: "Cho đồ vật vô tri sống dậy.",
+				: "Gửi ảnh, nhận clip AI vui vẻ.",
 		);
 
 		const html = `<!DOCTYPE html>

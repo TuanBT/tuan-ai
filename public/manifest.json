@@ -1,7 +1,7 @@
 {
 	"name": "Tuân AI",
 	"short_name": "Tuân AI",
-	"description": "Cho đồ vật vô tri sống dậy.",
+	"description": "Gửi ảnh, nhận clip AI vui vẻ.",
 	"start_url": "/",
 	"display": "standalone",
 	"orientation": "portrait-primary",

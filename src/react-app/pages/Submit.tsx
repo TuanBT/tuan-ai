@@ -138,7 +138,6 @@ export function Submit() {
 		);
 	}
 
-	const tagline = config.tagline[lang];
 	const errorText = error
 		? (t.errors as Record<string, string>)[error] ?? t.errors.generic
 		: null;
@@ -207,10 +206,6 @@ export function Submit() {
 
 	return (
 		<Layout title={config.siteTitle}>
-			<div className="hero">
-				<span className="eyebrow">{t.submitEyebrow}</span>
-				<h1>{tagline}</h1>
-			</div>
 
 			{!config.open ? (
 				<div className="panel">

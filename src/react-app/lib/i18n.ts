@@ -119,7 +119,7 @@ export const copy: Record<Lang, Dictionary> = {
 		copied: "Đã chép!",
 		submitEyebrow: "Gửi ý tưởng",
 		appDescription:
-			"Tuân AI là nền tảng sáng tạo nơi bạn gửi ảnh kèm ý tưởng, và chúng tôi biến chúng thành video hoạt hình bằng AI để đăng trên kênh TikTok và YouTube.",
+			"Gửi ảnh kèm ý tưởng, nhận clip AI vui vẻ đăng trên kênh TikTok và YouTube.",
 		stepPhotos: "Chọn ảnh",
 		stepIdea: "Muốn clip thế nào?",
 		stepIdeaHint: "Chọn một kiểu, hoặc gõ vài chữ. Một trong hai là đủ.",
@@ -235,7 +235,7 @@ export const copy: Record<Lang, Dictionary> = {
 		copied: "Copied!",
 		submitEyebrow: "Send an idea",
 		appDescription:
-			"Tuân AI is a creative platform where you submit photos with ideas, and we turn them into AI-animated videos published on our TikTok and YouTube channels.",
+			"Send photos with ideas, get fun AI clips published on our TikTok and YouTube channels.",
 		stepPhotos: "Pick photos",
 		stepIdea: "What should it do?",
 		stepIdeaHint: "Pick a style or type a few words. Either one is enough.",

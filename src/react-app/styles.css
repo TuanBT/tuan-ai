@@ -143,19 +143,37 @@ select {
 }
 
 .wordmark {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 	font-weight: 700;
 	font-size: 17px;
 	letter-spacing: -0.02em;
 	text-decoration: none;
 	color: var(--ink);
 }
-.wordmark span {
+.wordmark-logo {
+	width: 28px;
+	height: 28px;
+	border-radius: 6px;
+	flex-shrink: 0;
+}
+.wordmark-text {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.15;
+}
+.wordmark-name span {
 	color: var(--accent);
 }
 .wordmark small {
-	font-size: 13px;
-	font-weight: 600;
+	display: block;
+	font-size: 11px;
+	font-weight: 500;
 	color: var(--muted);
+	letter-spacing: 0;
+	line-height: 1.2;
+	margin-top: 1px;
 }
 
 /* ---------- điều hướng chính ---------- */
