@@ -2,6 +2,12 @@ import { Hono, type MiddlewareHandler } from "hono";
 import { requireAdmin } from "./auth";
 import { blobs, imageKey } from "../lib/storage";
 import {
+	lookupGuard,
+	noteLookupHit,
+	noteLookupMiss,
+	overLookupLimit,
+} from "../lib/lookup";
+import {
 	bumpUsage,
 	parseUsage,
 	remainingWrites,
@@ -28,46 +34,10 @@ import {
 const MAX_IMAGE_BYTES = 1_500_000;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
-/** Số lần tra trượt tối đa mỗi người mỗi ngày, để không ai dò mã hàng loạt. */
-const MAX_LOOKUP_MISSES = 30;
-
 interface ImageMeta {
 	key: string;
 	type: string;
 	size: number;
-}
-
-/**
- * Bộ đếm chặn dò mã, dùng chung cho cả tra cứu lẫn đường lấy ảnh.
- *
- * Phải hỏi *trước* khi trả lời, chứ không phải đếm sau: đếm sau thì người đã
- * vượt ngưỡng vẫn dò tiếp được, đoán trúng là vẫn được phục vụ, và cái gọi là
- * giới hạn thành ra không giới hạn gì cả.
- */
-async function overLookupLimit(
-	db: D1Database,
-	ipHash: string,
-	day: string,
-): Promise<boolean> {
-	const seen = await db
-		.prepare("SELECT misses FROM lookup_misses WHERE ip_hash = ? AND day = ?")
-		.bind(ipHash, day)
-		.first<{ misses: number }>();
-	return (seen?.misses ?? 0) >= MAX_LOOKUP_MISSES;
-}
-
-async function noteLookupMiss(
-	db: D1Database,
-	ipHash: string,
-	day: string,
-): Promise<void> {
-	await db
-		.prepare(
-			`INSERT INTO lookup_misses (ip_hash, day, misses) VALUES (?1, ?2, 1)
-			 ON CONFLICT(ip_hash, day) DO UPDATE SET misses = misses + 1`,
-		)
-		.bind(ipHash, day)
-		.run();
 }
 
 export function publicRoutes() {
@@ -206,10 +176,9 @@ export function publicRoutes() {
 		const code = normalizeCode(c.req.param("code"));
 		if (!isCode(code)) return c.json({ error: "invalid_code" }, 400);
 
-		const ipHash = await hashIp(clientIp(c.req.raw), c.env.SESSION_SECRET);
-		const day = utcDay();
+		const guard = await lookupGuard(c.req.raw, c.env.SESSION_SECRET);
 
-		if (await overLookupLimit(c.env.DB, ipHash, day)) {
+		if (await overLookupLimit(c.env.DB, guard)) {
 			return c.json({ error: "too_many_lookups" }, 429);
 		}
 
@@ -236,9 +205,11 @@ export function publicRoutes() {
 			}>();
 
 		if (!row) {
-			await noteLookupMiss(c.env.DB, ipHash, day);
+			await noteLookupMiss(c.env.DB, guard);
 			return c.json({ error: "not_found" }, 404);
 		}
+
+		await noteLookupHit(c.env.DB, guard);
 
 		const images = JSON.parse(row.images) as ImageMeta[];
 		return c.json({
@@ -267,23 +238,27 @@ export function publicRoutes() {
 			return c.notFound();
 		}
 
-		const ipHash = await hashIp(clientIp(c.req.raw), c.env.SESSION_SECRET);
-		const day = utcDay();
+		const guard = await lookupGuard(c.req.raw, c.env.SESSION_SECRET);
 
 		/*
 		 * Đường lấy ảnh trước đây không bị đếm lượt dò, dù ảnh mới là thứ đáng giá.
 		 * Bộ đếm chỉ gắn ở /api/s. Chạy song song hai việc để không phải trả thêm
 		 * một vòng chờ D1 cho mỗi tấm ảnh hiển thị bình thường; nếu quá ngưỡng thì
 		 * kết quả KV bị vứt đi chứ không bao giờ được gửi ra.
+		 *
+		 * Lượt trúng ở đây cố ý không tính vào trần thu hoạch (xem `noteLookupHit`):
+		 * ảnh chỉ tải được sau khi đã biết mã, mà lúc biết mã thì cửa khám phá đã
+		 * tính rồi. Đếm lần nữa chỉ tổ thêm một lượt ghi D1 vào từng tấm ảnh hiện
+		 * ra trên màn hình, mà một trang thư viện là cả chục tấm.
 		 */
 		const [blocked, found] = await Promise.all([
-			overLookupLimit(c.env.DB, ipHash, day),
+			overLookupLimit(c.env.DB, guard),
 			blobs(c.env).get(imageKey(code, index)),
 		]);
 
 		if (blocked) return c.text("", 429);
 		if (!found) {
-			await noteLookupMiss(c.env.DB, ipHash, day);
+			await noteLookupMiss(c.env.DB, guard);
 			return c.notFound();
 		}
 

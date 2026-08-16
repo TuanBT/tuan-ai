@@ -1,4 +1,10 @@
 import { Hono } from "hono";
+import {
+	lookupGuard,
+	noteLookupHit,
+	noteLookupMiss,
+	overLookupLimit,
+} from "../lib/lookup";
 import { normalizeCode, isCode } from "../lib/util";
 
 /**
@@ -40,6 +46,22 @@ export function ogRoutes() {
 		const code = normalizeCode(c.req.param("code"));
 		if (!isCode(code)) return next();
 
+		/*
+		 * Cửa này cũng phải đếm, y như `/api/s` và `/i`.
+		 *
+		 * Thiếu bộ đếm ở đây thì mã 8 chữ số không còn nghĩa lý gì: ai đặt
+		 * User-Agent thành tên một con bot là dò được không giới hạn, và câu trả
+		 * lời nói thẳng mã nào có thật (HTML có OG) hay không (rơi xuống SPA).
+		 * Trần 30 lượt trượt bên hai cửa kia thành ra vô dụng, vì người dò đã lọc
+		 * sẵn ở đây rồi mới sang, và ở đó họ chỉ gõ toàn mã đúng.
+		 *
+		 * Quá ngưỡng thì rơi xuống SPA chứ không trả 429: bot thật không bao giờ
+		 * chạm tới ngưỡng này, còn với người dò thì một trang không có OG là câu
+		 * trả lời không nói lên điều gì — đúng thứ ta muốn.
+		 */
+		const guard = await lookupGuard(c.req.raw, c.env.SESSION_SECRET);
+		if (await overLookupLimit(c.env.DB, guard)) return next();
+
 		const row = await c.env.DB.prepare(
 			`SELECT code, nickname, description, images_purged
 			 FROM submissions WHERE code = ?`,
@@ -53,7 +75,12 @@ export function ogRoutes() {
 			}>();
 
 		// Bài không tồn tại: để SPA hiện lỗi "not found" bình thường.
-		if (!row) return next();
+		if (!row) {
+			await noteLookupMiss(c.env.DB, guard);
+			return next();
+		}
+
+		await noteLookupHit(c.env.DB, guard);
 
 		const origin = new URL(c.req.url).origin;
 		const pageUrl = `${origin}/r/${row.code}`;
