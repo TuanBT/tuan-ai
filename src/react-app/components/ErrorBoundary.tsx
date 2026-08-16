@@ -20,7 +20,7 @@ export class ErrorBoundary extends Component<
 
 	componentDidCatch(error: Error, info: ErrorInfo) {
 		// Cloudflare Workers có bật observability, nhưng lỗi phía trình duyệt thì
-		// chỉ tới được console — ít nhất cũng đủ để dò khi có người báo lỗi.
+		// chỉ tới được console. Ít nhất cũng đủ để dò khi có người báo lỗi.
 		console.error("Lỗi render:", error, info.componentStack);
 	}
 

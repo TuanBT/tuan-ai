@@ -9,7 +9,7 @@ import {
 /**
  * Header bảo mật phải khai hai lần: Worker lo phần API, `public/_headers` lo
  * phần tĩnh (file tĩnh phục vụ thẳng từ biên, không đi qua Worker). Hai bản
- * lệch nhau một lần rồi — CSP thiếu `connect-src` cho Turnstile ở cả hai nơi
+ * lệch nhau một lần rồi: CSP thiếu `connect-src` cho Turnstile ở cả hai nơi
  * làm ô chống bot trên production báo không kết nối được.
  */
 function parseHeadersFile(): Record<string, string> {

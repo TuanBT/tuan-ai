@@ -1,4 +1,4 @@
--- Tuân AI — lược đồ khởi tạo
+-- Tuân AI: lược đồ khởi tạo
 -- Ảnh nằm trong KV; bảng dưới đây chỉ giữ dữ liệu mô tả và thống kê.
 
 CREATE TABLE submissions (
@@ -50,6 +50,8 @@ INSERT INTO styles (id, label_vi, label_en, sort_order) VALUES
   ('colorize',  'Đổ màu ảnh cũ',     'Colorize old photo',  2),
   ('painting',  'Biến thành tranh vẽ','Turn into a painting',3),
   ('cinematic', 'Phong cách điện ảnh','Cinematic look',      4);
+-- 0004 đổi bộ kiểu này sang hướng đồ vật. Giữ nguyên câu trên để những bản D1
+-- đã chạy migration cũ và bản dựng mới đi qua đúng cùng một chuỗi thay đổi.
 
 INSERT INTO settings (key, value) VALUES
   ('retention_days',      '7'),

@@ -96,8 +96,8 @@ export function DataPanel() {
 						<div className="row-label">
 							<strong>Dọn dữ liệu quá hạn ngay</strong>
 							<small>
-								{data.duePurge > 0 || data.dueDelete > 0
-									? `${data.duePurge} bài chờ dọn ảnh, ${data.dueDelete} dòng quá ${data.dataRetentionDays} ngày chờ xoá.`
+								{data.duePurge > 0 || data.dueClear > 0
+									? `${data.duePurge} bài chờ dọn ảnh, ${data.dueClear} bài quá ${data.dataRetentionDays} ngày chờ xoá email.`
 									: "Không có gì quá hạn. Bản quét tự chạy 01:00 mỗi đêm."}
 							</small>
 						</div>
@@ -107,7 +107,7 @@ export function DataPanel() {
 							onClick={async () => {
 								const res = await api.adminPurge();
 								setMessage(
-									`Đã dọn ảnh của ${res.images} bài, xoá ${res.rowsDeleted} dòng quá hạn và ${res.emailsCleared} email.`,
+									`Đã dọn ảnh của ${res.images} bài và xoá email của ${res.identitiesCleared} bài quá hạn.`,
 								);
 								load();
 							}}
@@ -131,8 +131,8 @@ export function DataPanel() {
 			<section>
 				<h2 style={{ fontSize: 15 }}>Xem dữ liệu bằng câu truy vấn</h2>
 				<p className="hint">
-					Chỉ chạy được câu <code>SELECT</code>. Câu lệnh sửa hay xoá bị chặn —
-					gõ nhầm một lần là mất dữ liệu không lấy lại được, nên phần sửa đổi
+					Chỉ chạy được câu <code>SELECT</code>. Câu lệnh sửa hay xoá bị chặn,
+					vì gõ nhầm một lần là mất dữ liệu không lấy lại được, nên phần sửa đổi
 					nằm ở các nút bảo trì phía trên.
 				</p>
 

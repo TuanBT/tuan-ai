@@ -10,10 +10,10 @@ export const TURNSTILE_ORIGIN = "https://challenges.cloudflare.com";
  * `script-src` để nạp api.js, `frame-src` cho iframe nó dựng lên, và
  * `connect-src` cho những lượt gọi mạng nó tự thực hiện từ trang cha. Thiếu
  * `connect-src` thì script tải về được, iframe hiện ra được, nhưng ô kiểm tra
- * báo không kết nối được — hỏng theo kiểu nhìn qua tưởng lỗi mạng.
+ * báo không kết nối được, hỏng theo kiểu nhìn qua tưởng lỗi mạng.
  *
  * Còn `'unsafe-inline'` cho style là do React đặt thuộc tính `style` thẳng vào
- * thẻ — bỏ nó đi thì trang vỡ giao diện chứ không an toàn hơn, vì kịch bản tấn
+ * thẻ, bỏ nó đi thì trang vỡ giao diện chứ không an toàn hơn, vì kịch bản tấn
  * công đáng lo ở đây là script chứ không phải màu chữ.
  */
 const CSP = [

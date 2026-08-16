@@ -1,30 +1,84 @@
 import { Hono } from "hono";
 import { requireAdmin } from "./auth";
+import {
+	indexText,
+	STATUS_SLUG,
+	submissionEntries,
+	type SubmissionRow,
+} from "../lib/bundle";
 import { blobs } from "../lib/storage";
 import { remainingWrites, usageToday } from "../lib/quota";
 import { readSettings, writeSettings } from "../lib/settings";
 import { purgeExpired } from "../lib/purge";
-import { clampText, isCode, utcDay } from "../lib/util";
+import { zipStream, type ZipFile } from "../lib/zip";
+import { clampText, isCode, normalizeCode, utcDay } from "../lib/util";
 
 const STATUSES = new Set(["new", "selected", "done", "rejected"]);
 const KV_FREE_DAILY_WRITES = 1000;
 const KV_FREE_BYTES = 1024 ** 3;
 
-interface SubmissionRow {
-	code: string;
-	nickname: string;
-	email: string | null;
-	description: string;
-	styles: string;
-	images: string;
-	status: string;
-	published_url: string | null;
-	admin_note: string | null;
-	lang: string;
-	bytes: number;
-	created_at: number;
-	expires_at: number;
-	images_purged: number;
+/**
+ * Trần số bài cho một gói tải cả đợt.
+ *
+ * Mỗi bài tối đa 3 ảnh × 1,5 MB, nên 25 bài đã là gói hơn trăm MB và vài phút
+ * chờ. Cắt ở đây để một cú bấm nhầm không thành một lượt tải bất tận, còn muốn
+ * lấy tiếp thì lọc theo trạng thái rồi tải đợt sau.
+ */
+const MAX_BUNDLE = 25;
+
+/**
+ * Điều kiện lọc hộp thư, dùng chung cho danh sách và cho gói tải cả đợt: hai chỗ
+ * lệch nhau thì thứ tải về không còn là thứ đang nhìn thấy trên màn hình.
+ *
+ * Dựng theo mảng chứ không nối chuỗi tham số đánh số (?1, ?2…): số thứ tự rất dễ
+ * lệch khi có nhánh bật tắt, mà lệch một chỗ là truy vấn trả về nhầm bài.
+ */
+function inboxFilter(status: string, search: string) {
+	const where: string[] = [];
+	const params: unknown[] = [];
+
+	if (STATUSES.has(status)) {
+		where.push("status = ?");
+		params.push(status);
+	}
+
+	if (search) {
+		// LIKE coi `%` và `_` là ký tự đại diện. Ai gõ "100%" để tìm mà không
+		// thoát thì câu lệnh khớp toàn bộ bảng.
+		const needle = `%${search.replace(/[\\%_]/g, (ch) => `\\${ch}`)}%`;
+		where.push(
+			`(code LIKE ? ESCAPE '\\'
+			  OR nickname LIKE ? ESCAPE '\\'
+			  OR description LIKE ? ESCAPE '\\'
+			  OR IFNULL(email, '') LIKE ? ESCAPE '\\')`,
+		);
+		params.push(needle, needle, needle, needle);
+	}
+
+	return { where, params };
+}
+
+/** Bảng tra mã kiểu → nhãn tiếng Việt, đọc một lần cho cả gói. */
+async function styleLabels(db: D1Database): Promise<Map<string, string>> {
+	const rows = await db
+		.prepare("SELECT id, label_vi FROM styles")
+		.all<{ id: string; label_vi: string }>();
+	return new Map(rows.results.map((row) => [row.id, row.label_vi]));
+}
+
+function zipResponse(
+	files: AsyncIterable<ZipFile>,
+	filename: string,
+): Response {
+	return new Response(zipStream(files), {
+		headers: {
+			"Content-Type": "application/zip",
+			"Content-Disposition": `attachment; filename="${filename}"`,
+			// Gói dựng dần theo luồng nên không biết trước tổng dung lượng; nói rõ
+			// để proxy nào đó không cố gom lại rồi tự đặt Content-Length sai.
+			"Cache-Control": "no-store",
+		},
+	});
 }
 
 export function adminRoutes() {
@@ -37,16 +91,20 @@ export function adminRoutes() {
 
 	app.get("/api/admin/submissions", async (c) => {
 		const status = c.req.query("status") ?? "";
+		const search = clampText(c.req.query("q"), 80);
 		const limit = Math.min(Number(c.req.query("limit")) || 40, 100);
 		const before = Number(c.req.query("before")) || Date.now() + 1;
 
-		const filtered = STATUSES.has(status);
+		const filter = inboxFilter(status, search);
+		const where = ["created_at < ?", ...filter.where];
+		const params: unknown[] = [before, ...filter.params];
+
 		const rows = await c.env.DB.prepare(
 			`SELECT * FROM submissions
-			 WHERE created_at < ?1 ${filtered ? "AND status = ?3" : ""}
-			 ORDER BY created_at DESC LIMIT ?2`,
+			 WHERE ${where.join(" AND ")}
+			 ORDER BY created_at DESC LIMIT ?`,
 		)
-			.bind(...(filtered ? [before, limit, status] : [before, limit]))
+			.bind(...params, limit)
 			.all<SubmissionRow>();
 
 		const counts = await c.env.DB.prepare(
@@ -134,6 +192,51 @@ export function adminRoutes() {
 			.run();
 
 		return c.json({ ok: true });
+	});
+
+	// ---------- Gói làm việc: ảnh + nội dung của bài, tải một lần ----------
+
+	app.get("/api/admin/bundle.zip", async (c) => {
+		const status = c.req.query("status") ?? "";
+		const filter = inboxFilter(status, clampText(c.req.query("q"), 80));
+		const clause = filter.where.length
+			? `WHERE ${filter.where.join(" AND ")}`
+			: "";
+
+		const rows = await c.env.DB.prepare(
+			`SELECT * FROM submissions ${clause} ORDER BY created_at DESC LIMIT ?`,
+		)
+			.bind(...filter.params, MAX_BUNDLE)
+			.all<SubmissionRow>();
+
+		// Kiểm tra trước khi mở luồng: gói đã bắt đầu chảy thì không đổi được mã
+		// trạng thái nữa, người bấm chỉ nhận về một tệp zip rỗng mà không hiểu vì sao.
+		if (!rows.results.length) return c.json({ error: "khong_co_bai" }, 404);
+
+		const labels = await styleLabels(c.env.DB);
+		const slug = STATUS_SLUG[status] ?? "tat-ca";
+		return zipResponse(
+			bundleEntries(c.env, rows.results, labels),
+			`tuan-ai-${slug}-${utcDay()}.zip`,
+		);
+	});
+
+	app.get("/api/admin/bundle/:code", async (c) => {
+		const code = normalizeCode(c.req.param("code").replace(/\.zip$/i, ""));
+		if (!isCode(code)) return c.json({ error: "invalid_code" }, 400);
+
+		const row = await c.env.DB.prepare(
+			"SELECT * FROM submissions WHERE code = ?",
+		)
+			.bind(code)
+			.first<SubmissionRow>();
+		if (!row) return c.json({ error: "not_found" }, 404);
+
+		const labels = await styleLabels(c.env.DB);
+		return zipResponse(
+			submissionEntries(c.env, row, labels),
+			`${code.toLowerCase()}.zip`,
+		);
 	});
 
 	app.get("/api/admin/stats", async (c) => {
@@ -276,8 +379,7 @@ export function adminRoutes() {
 
 		const stale = await c.env.DB.prepare(
 			`SELECT COUNT(*) AS n FROM submissions
-			 WHERE created_at < ?1
-			   AND NOT (published_url IS NOT NULL AND published_url <> '')`,
+			 WHERE created_at < ?1 AND (email IS NOT NULL OR ip_hash IS NOT NULL)`,
 		)
 			.bind(now - settings.data_retention_days * 86_400_000)
 			.first<{ n: number }>();
@@ -288,7 +390,7 @@ export function adminRoutes() {
 				rows: counts[index].results[0]?.n ?? 0,
 			})),
 			duePurge: pending?.n ?? 0,
-			dueDelete: stale?.n ?? 0,
+			dueClear: stale?.n ?? 0,
 			dataRetentionDays: settings.data_retention_days,
 		});
 	});
@@ -396,6 +498,21 @@ export function adminRoutes() {
 	return app;
 }
 
+/** Gói cả đợt: mục lục ở gốc, rồi mỗi bài một thư mục mang tên mã bài. */
+async function* bundleEntries(
+	env: Env,
+	rows: SubmissionRow[],
+	labels: Map<string, string>,
+): AsyncGenerator<ZipFile> {
+	yield {
+		name: "danh-sach.txt",
+		data: new TextEncoder().encode(indexText(rows, labels)),
+	};
+	for (const row of rows) {
+		yield* submissionEntries(env, row, labels, `${row.code}/`);
+	}
+}
+
 const TABLES = [
 	"submissions",
 	"styles",
@@ -412,7 +529,7 @@ const WRITE_KEYWORDS =
  *
  * Một câu lệnh ghi gõ nhầm ở đây có thể xoá sạch dữ liệu mà không hoàn tác được,
  * và nếu tài khoản quản trị bị chiếm thì nó thành cửa mở toang. Muốn sửa dữ
- * liệu thì dùng các nút bảo trì có sẵn — chúng biết phải dọn cả ảnh trong kho.
+ * liệu thì dùng các nút bảo trì có sẵn, vì chúng biết phải dọn cả ảnh trong kho.
  */
 export function readOnlySql(raw: string): string | null {
 	const sql = raw.trim().replace(/;+\s*$/, "");
@@ -427,7 +544,7 @@ export function readOnlySql(raw: string): string | null {
  * Ký tự mà Excel và Google Sheets hiểu là "ô này là công thức".
  *
  * Tên và mô tả trong file CSV do người lạ gõ vào. Một ô bắt đầu bằng `=` là một
- * công thức chạy ngay khi bạn mở file — kể cả `=HYPERLINK(...)` dẫn đi đâu đó.
+ * công thức chạy ngay khi bạn mở file, kể cả `=HYPERLINK(...)` dẫn đi đâu đó.
  * Thêm dấu nháy đơn ở đầu thì bảng tính coi nó là chữ, và dấu nháy đó không
  * hiện ra trong ô.
  */

@@ -3,7 +3,7 @@
  *
  * Hiện chạy trên KV vì KV không cần thẻ tín dụng. Khi lượng bài vượt hạn mức
  * (xem trang Thống kê trong /admin), đổi sang R2 bằng cách thay `kvBlobs` bằng
- * `r2Blobs` ở cuối file — phần còn lại của ứng dụng không phải sửa gì.
+ * `r2Blobs` ở cuối file, phần còn lại của ứng dụng không phải sửa gì.
  */
 
 export interface StoredBlob {

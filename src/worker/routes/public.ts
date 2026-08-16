@@ -13,6 +13,7 @@ import { turnstileReady, verifyTurnstile } from "../lib/turnstile";
 import {
 	clampText,
 	clientIp,
+	hasEnoughToSubmit,
 	hashIp,
 	isCode,
 	isLocalRequest,
@@ -38,7 +39,7 @@ interface ImageMeta {
  * Bộ đếm chặn dò mã, dùng chung cho cả tra cứu lẫn đường lấy ảnh.
  *
  * Phải hỏi *trước* khi trả lời, chứ không phải đếm sau: đếm sau thì người đã
- * vượt ngưỡng vẫn dò tiếp được — đoán trúng là vẫn được phục vụ, và cái gọi là
+ * vượt ngưỡng vẫn dò tiếp được, đoán trúng là vẫn được phục vụ, và cái gọi là
  * giới hạn thành ra không giới hạn gì cả.
  */
 async function overLookupLimit(
@@ -95,6 +96,10 @@ export function publicRoutes() {
 		return c.json({
 			siteTitle: settings.site_title,
 			tagline: { vi: settings.tagline_vi, en: settings.tagline_en },
+			channels: {
+				tiktok: settings.tiktok_url || null,
+				youtube: settings.youtube_url || null,
+			},
 			styles: styleRows.results,
 			maxImages: settings.max_images,
 			retentionDays: settings.retention_days,
@@ -130,7 +135,7 @@ export function publicRoutes() {
 		return c.json({
 			// Không trả `code` ra ngoài: mã là chìa khoá xem bài, không phải dữ liệu
 			// hiển thị. (Mã của bài đã lên sóng vẫn đoán được từ đường dẫn ảnh bên
-			// dưới — chấp nhận được, vì nội dung đó đã công khai trên kênh rồi.)
+			// dưới, chấp nhận được, vì nội dung đó đã công khai trên kênh rồi.)
 			items: rows.results.map((row) => ({
 				nickname: row.nickname,
 				publishedUrl: row.published_url,
@@ -201,8 +206,8 @@ export function publicRoutes() {
 		const day = utcDay();
 
 		/*
-		 * Đường lấy ảnh trước đây không bị đếm lượt dò, dù ảnh mới là thứ đáng giá
-		 * — bộ đếm chỉ gắn ở /api/s. Chạy song song hai việc để không phải trả thêm
+		 * Đường lấy ảnh trước đây không bị đếm lượt dò, dù ảnh mới là thứ đáng giá.
+		 * Bộ đếm chỉ gắn ở /api/s. Chạy song song hai việc để không phải trả thêm
 		 * một vòng chờ D1 cho mỗi tấm ảnh hiển thị bình thường; nếu quá ngưỡng thì
 		 * kết quả KV bị vứt đi chứ không bao giờ được gửi ra.
 		 */
@@ -236,7 +241,7 @@ export function publicRoutes() {
 		/*
 		 * Thiếu captcha thì đóng form lại, đừng nhận bài.
 		 *
-		 * Trước đây hàm kiểm tra tự trả về "đạt" khi không có secret — tiện lúc
+		 * Trước đây hàm kiểm tra tự trả về "đạt" khi không có secret. Tiện lúc
 		 * chạy local, nhưng nghĩa là chỉ cần quên một lệnh `wrangler secret put`
 		 * là form mở toang cho bot mà không có gì báo ngoài một dòng chữ trong
 		 * trang Thống kê. Mất bài còn hơn mất trắng vì bot.
@@ -297,19 +302,19 @@ export function publicRoutes() {
 		const email = clampText(form.get("email"), 120);
 		const lang = form.get("lang") === "en" ? "en" : "vi";
 
-		if (!nickname || !description) {
-			return c.json({ error: "missing_fields" }, 400);
-		}
-		if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-			return c.json({ error: "bad_email" }, 400);
-		}
-
 		let styles: string[] = [];
 		try {
 			const parsed = JSON.parse(clampText(form.get("styles"), 300) || "[]");
 			if (Array.isArray(parsed)) styles = parsed.slice(0, 5).map(String);
 		} catch {
 			styles = [];
+		}
+
+		if (!hasEnoughToSubmit(nickname, description, styles)) {
+			return c.json({ error: "missing_fields" }, 400);
+		}
+		if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+			return c.json({ error: "bad_email" }, 400);
 		}
 
 		const ipHash = await hashIp(ip, c.env.SESSION_SECRET);

@@ -65,7 +65,7 @@ describe("cookie phiên", () => {
 		expect(cookie).toContain("Secure");
 	});
 
-	it("bỏ Secure khi chạy http trên máy — nếu không trình duyệt vứt cookie đi", () => {
+	it("bỏ Secure khi chạy http trên máy, nếu không trình duyệt vứt cookie đi", () => {
 		expect(sessionCookie("abc.def", false)).not.toContain("Secure");
 	});
 });

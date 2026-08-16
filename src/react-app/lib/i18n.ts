@@ -5,7 +5,7 @@ export type Lang = "vi" | "en";
 const STORAGE_KEY = "tuanai_lang";
 
 /**
- * Mặc định luôn là tiếng Việt — người xem đến từ kênh TikTok/YouTube tiếng
+ * Mặc định luôn là tiếng Việt, vì người xem đến từ kênh TikTok/YouTube tiếng
  * Việt, nên tiếng Anh là lựa chọn thêm chứ không phải suy ra từ cài đặt máy.
  */
 export function initialLang(): Lang {
@@ -19,14 +19,27 @@ export function saveLang(lang: Lang) {
 }
 
 interface Dictionary {
+	navSubmit: string;
+	navMine: string;
+	navAdmin: string;
+	footerBlurb: string;
+	backHome: string;
+	copyCode: string;
+	copied: string;
 	submitEyebrow: string;
+	howTitle: string;
+	steps: Array<{ title: string; body: string }>;
 	pickImages: string;
 	pickHint: (max: number) => string;
 	compressing: string;
 	advisory: string;
 	styleLabel: string;
+	styleHint: string;
 	descLabel: string;
+	descOptional: string;
 	descPlaceholder: string;
+	ideasLabel: string;
+	ideas: string[];
 	nickname: string;
 	email: string;
 	emailHint: string;
@@ -35,6 +48,7 @@ interface Dictionary {
 	submit: string;
 	sending: string;
 	galleryTitle: string;
+	galleryHint: string;
 	successTitle: string;
 	successBody: string;
 	yourCode: string;
@@ -48,15 +62,20 @@ interface Dictionary {
 	closedSetupBody: string;
 	backIn: string;
 	lookupTitle: string;
+	lookupLead: string;
 	lookupPlaceholder: string;
 	lookupBtn: string;
 	notFound: string;
 	tooManyLookups: string;
 	mineTitle: string;
 	mineHint: string;
+	mineEmpty: string;
 	mineForgetAll: string;
 	mineForgetOne: string;
 	mineConfirm: string;
+	stepReceived: string;
+	stepPicked: string;
+	stepLive: string;
 	crashTitle: string;
 	crashBody: string;
 	crashRetry: string;
@@ -75,24 +94,60 @@ interface Dictionary {
 
 export const copy: Record<Lang, Dictionary> = {
 	vi: {
+		navSubmit: "Gửi ý tưởng",
+		navMine: "Bài của tôi",
+		navAdmin: "Quản trị",
+		footerBlurb:
+			"Hộp thu ý tưởng của kênh Tuân AI. Bạn gửi ảnh, mình dựng clip, tác phẩm lên sóng.",
+		backHome: "Trang chủ",
+		copyCode: "Chép mã",
+		copied: "Đã chép!",
 		submitEyebrow: "Gửi ý tưởng",
+		howTitle: "Ba bước là xong",
+		steps: [
+			{
+				title: "Chọn ảnh, kể ý tưởng",
+				body: "Một bức tranh, một món đồ, một chú gấu bông, càng vô tri càng vui.",
+			},
+			{
+				title: "Mình dựng clip",
+				body: "Mình xem từng bài một và chọn những ý nghe là thấy buồn cười.",
+			},
+			{
+				title: "Giữ mã theo dõi",
+				body: "Có mã là tra được bài của bạn đã lên sóng hay chưa, bất cứ lúc nào.",
+			},
+		],
 		pickImages: "Chạm để chọn ảnh",
 		pickHint: (max: number) => `1–${max} tấm · JPG, PNG`,
 		compressing: "Đang xử lý ảnh…",
 		advisory:
-			"Nên gửi ảnh bạn tự chụp hoặc ảnh gia đình mình. Cân nhắc kỹ với ảnh có mặt người khác. Không gửi ảnh nhạy cảm liên quan tới trẻ em.",
+			"Hợp nhất là ảnh tranh vẽ, đồ vật, món ăn, đồ chơi, càng vô tri càng dễ thành clip vui. Nếu ảnh có mặt người, hãy chắc chắn đó là ảnh bạn được phép dùng. Không gửi ảnh nhạy cảm liên quan tới trẻ em.",
 		styleLabel: "Bạn muốn kiểu nào?",
+		styleHint:
+			"Chưa hình dung ra gì thì chạm “Để Tuân tự quyết” là xong, bạn chỉ cần gửi ảnh.",
 		descLabel: "Kể mình nghe bạn muốn gì nhé",
-		descPlaceholder: "Ví dụ: cho khói bếp bay nhẹ, thêm nắng chiều vàng…",
+		descOptional: "Đã chọn kiểu ở trên rồi thì để trống ô này cũng được.",
+		descPlaceholder: "Ví dụ: cho ấm trà tự rót nước rồi cúi chào khán giả…",
+		ideasLabel: "Chưa nghĩ ra gì? Chạm thử một ý:",
+		ideas: [
+			"Ly cà phê trên bàn tự nhảy cha-cha, khói bốc lên theo nhịp nhạc.",
+			"Bức tranh phong cảnh: gió thổi qua đồng lúa, con thuyền trôi dần ra khỏi khung.",
+			"Đôi dép dưới sàn tự đi lại quanh nhà như đang đi tìm chủ.",
+			"Chú gấu bông trên kệ chớp mắt, ngáp một cái rồi vẫy tay chào.",
+			"Nồi nước đang sôi, mấy cọng hành nhảy múa như ca sĩ trên sân khấu.",
+			"Chiếc xe máy dựng ở sân rùng mình tỉnh giấc rồi rồ ga phóng đi.",
+		],
 		nickname: "Tên hiển thị khi lên sóng",
-		email: "Email — không bắt buộc",
+		email: "Email (không bắt buộc)",
 		emailHint: "Chỉ dùng để báo khi bài của bạn được chọn.",
 		consent: "Mình đồng ý cho ảnh và tác phẩm xuất hiện trên kênh.",
 		retentionNote: (days: number) =>
-			`Ảnh gốc của bạn tự xoá sau ${days} ngày. Phần mô tả cũng không giữ mãi.`,
+			`Ảnh gốc của bạn tự xoá sau ${days} ngày, email cũng vậy. Giữ mã lại thì sau này vẫn tra được bài và link clip.`,
 		submit: "Gửi ngay",
 		sending: "Đang gửi…",
 		galleryTitle: "Đã lên sóng",
+		galleryHint: "Chạm vào một ô để xem clip trên kênh.",
 		successTitle: "Đã nhận bài của bạn!",
 		successBody:
 			"Giữ mã này để xem bài của bạn có được chọn không. Mình đã nhớ sẵn mã trên máy này để bạn tra lại cho nhanh, nhưng chụp màn hình lại thì chắc chắn hơn.",
@@ -101,14 +156,16 @@ export const copy: Record<Lang, Dictionary> = {
 		another: "Gửi bài khác",
 		closedQuota: "Hôm nay đã nhận đủ bài",
 		closedQuotaBody:
-			"Mỗi ngày mình chỉ nhận một lượng vừa đủ để kịp duyệt tay. Bạn quay lại sau nhé — ảnh chưa gửi vẫn còn trong máy bạn.",
+			"Mỗi ngày mình chỉ nhận một lượng vừa đủ để kịp duyệt tay. Bạn quay lại sau nhé, ảnh chưa gửi vẫn còn trong máy bạn.",
 		closedPaused: "Tạm ngưng nhận bài",
 		closedPausedBody: "Mình đang dồn sức làm nốt các bài đã nhận. Quay lại sau nhé!",
 		closedSetup: "Trang đang được thiết lập",
 		closedSetupBody:
 			"Phần chống bot chưa cấu hình xong nên mình tạm chưa nhận bài, để hộp thư không bị máy tự động gửi rác. Bạn quay lại sau một chút nhé.",
 		backIn: "Mở lại sau",
-		lookupTitle: "Tra cứu bài của bạn",
+		lookupTitle: "Bài của bạn tới đâu rồi?",
+		lookupLead:
+			"Nhập mã tám chữ số mình đưa lúc bạn gửi bài. Máy này cũng nhớ sẵn những bài đã gửi cho bạn.",
 		lookupPlaceholder: "04829173",
 		lookupBtn: "Tra cứu",
 		notFound: "Không tìm thấy mã này. Bạn kiểm tra lại nhé.",
@@ -116,14 +173,19 @@ export const copy: Record<Lang, Dictionary> = {
 			"Bạn đã tra sai quá nhiều lần hôm nay. Mai thử lại giúp mình nhé.",
 		mineTitle: "Bài của bạn",
 		mineHint:
-			"Danh sách này chỉ nằm trong trình duyệt trên máy này, không gửi đi đâu cả. Đổi máy, dùng chế độ ẩn danh hay xoá dữ liệu duyệt web là mất — nên bạn vẫn cứ giữ mã ở chỗ khác cho chắc.",
+			"Danh sách này chỉ nằm trong trình duyệt trên máy này, không gửi đi đâu cả. Đổi máy, dùng chế độ ẩn danh hay xoá dữ liệu duyệt web là mất, nên bạn vẫn cứ giữ mã ở chỗ khác cho chắc.",
+		mineEmpty:
+			"Máy này chưa lưu bài nào. Gửi bài đầu tiên đi, mình sẽ nhớ mã hộ bạn ngay tại đây.",
 		mineForgetAll: "Xoá khỏi máy này",
 		mineForgetOne: "Bỏ khỏi danh sách",
 		mineConfirm:
 			"Xoá danh sách đã lưu trên máy này? Bài gửi của bạn vẫn còn nguyên, chỉ mất đường tắt để mở lại thôi.",
+		stepReceived: "Đã nhận",
+		stepPicked: "Đã chọn",
+		stepLive: "Lên sóng",
 		crashTitle: "Trang gặp trục trặc",
 		crashBody:
-			"Có lỗi ngoài dự tính. Bạn thử tải lại trang giúp mình nhé — bài đã gửi thì vẫn còn nguyên.",
+			"Có lỗi ngoài dự tính. Bạn thử tải lại trang giúp mình nhé, bài đã gửi thì vẫn còn nguyên.",
 		crashRetry: "Tải lại trang",
 		statusNew: "Đang chờ duyệt",
 		statusSelected: "Đã được chọn!",
@@ -153,24 +215,61 @@ export const copy: Record<Lang, Dictionary> = {
 		},
 	},
 	en: {
+		navSubmit: "Send an idea",
+		navMine: "My submissions",
+		navAdmin: "Admin",
+		footerBlurb:
+			"The idea inbox for the Tuân AI channel. You send a photo, I make the clip, it goes on air.",
+		backHome: "Home",
+		copyCode: "Copy code",
+		copied: "Copied!",
 		submitEyebrow: "Send an idea",
+		howTitle: "Three steps, that's it",
+		steps: [
+			{
+				title: "Pick a photo, tell the idea",
+				body: "A painting, an object, a teddy bear: the more lifeless, the better.",
+			},
+			{
+				title: "I build the clip",
+				body: "I go through every idea by hand and pick the ones that make me laugh.",
+			},
+			{
+				title: "Keep your code",
+				body: "With the code you can check whether yours has gone on air, any time.",
+			},
+		],
 		pickImages: "Tap to choose photos",
 		pickHint: (max: number) => `1–${max} images · JPG, PNG`,
 		compressing: "Processing images…",
 		advisory:
-			"Please send photos you took yourself or photos of your own family. Think twice about photos showing other people. Never send sensitive images involving children.",
+			"Paintings, objects, food and toys work best. The more lifeless, the funnier the clip. If a photo shows a person, make sure it's yours to share. Never send sensitive images involving children.",
 		styleLabel: "What would you like?",
+		styleHint:
+			"No idea yet? Tap “Let Tuân decide” and you're done, just send the photo.",
 		descLabel: "Tell me what you have in mind",
-		descPlaceholder: "For example: let the smoke drift, add warm evening light…",
+		descOptional: "If you picked a style above, you can leave this empty.",
+		descPlaceholder:
+			"For example: the teapot pours itself a cup, then takes a bow…",
+		ideasLabel: "Stuck? Tap an idea to start:",
+		ideas: [
+			"The coffee cup does a little cha-cha while the steam keeps the beat.",
+			"A landscape painting: wind moves through the field and the boat drifts out of the frame.",
+			"A pair of slippers wanders around the house looking for their owner.",
+			"The teddy bear on the shelf blinks, yawns and waves hello.",
+			"A pot comes to a boil and the spring onions dance like pop stars.",
+			"The motorbike in the yard shivers awake and roars off down the street.",
+		],
 		nickname: "Name to show on air",
-		email: "Email — optional",
+		email: "Email (optional)",
 		emailHint: "Only used to tell you when your idea gets picked.",
 		consent: "I agree to my photo and the result appearing on the channel.",
 		retentionNote: (days: number) =>
-			`Your original photos are deleted automatically after ${days} days. The description isn't kept forever either.`,
+			`Your original photos are deleted automatically after ${days} days, and so is your email. Keep your code and you can still look the entry up later, clip link included.`,
 		submit: "Send it",
 		sending: "Sending…",
 		galleryTitle: "Recently on air",
+		galleryHint: "Tap any tile to watch it on the channel.",
 		successTitle: "Got your idea!",
 		successBody:
 			"Keep this code to check whether your idea gets picked. It's remembered on this device so you can find it again, but a screenshot is safer.",
@@ -179,14 +278,16 @@ export const copy: Record<Lang, Dictionary> = {
 		another: "Send another",
 		closedQuota: "Today's inbox is full",
 		closedQuotaBody:
-			"I only take as many as I can review by hand each day. Come back later — your photos are still on your phone.",
+			"I only take as many as I can review by hand each day. Come back later, your photos are still on your phone.",
 		closedPaused: "Submissions paused",
 		closedPausedBody: "I'm catching up on what's already in. Check back soon!",
 		closedSetup: "Setting things up",
 		closedSetupBody:
 			"Bot protection isn't configured yet, so submissions are on hold to keep the inbox free of automated junk. Please check back shortly.",
 		backIn: "Opens again in",
-		lookupTitle: "Check your submission",
+		lookupTitle: "How's your idea doing?",
+		lookupLead:
+			"Enter the eight-digit code you got when you sent your idea. This device also remembers what you've sent.",
 		lookupPlaceholder: "04829173",
 		lookupBtn: "Look up",
 		notFound: "No submission with that code. Please check it again.",
@@ -194,21 +295,26 @@ export const copy: Record<Lang, Dictionary> = {
 			"Too many failed lookups today. Please try again tomorrow.",
 		mineTitle: "Your submissions",
 		mineHint:
-			"This list lives only in this browser, on this device — it is never sent anywhere. Switch devices, browse privately or clear your browsing data and it's gone, so keep your code somewhere else too.",
+			"This list lives only in this browser, on this device. It is never sent anywhere. Switch devices, browse privately or clear your browsing data and it's gone, so keep your code somewhere else too.",
+		mineEmpty:
+			"Nothing saved on this device yet. Send your first idea and the code will show up right here.",
 		mineForgetAll: "Forget on this device",
 		mineForgetOne: "Remove from list",
 		mineConfirm:
-			"Clear the list saved on this device? Your submissions stay exactly as they are — you'd only lose the shortcut back to them.",
+			"Clear the list saved on this device? Your submissions stay exactly as they are, you'd only lose the shortcut back to them.",
+		stepReceived: "Received",
+		stepPicked: "Picked",
+		stepLive: "On air",
 		crashTitle: "Something broke",
 		crashBody:
-			"An unexpected error came up. Please reload the page — anything you already sent is safe.",
+			"An unexpected error came up. Please reload the page. Anything you already sent is safe.",
 		crashRetry: "Reload the page",
 		statusNew: "Waiting for review",
 		statusSelected: "Picked!",
 		statusDone: "On air",
 		statusRejected: "Not this time",
 		statusNewBody: "I'll go through submissions over the next few days.",
-		statusSelectedBody: "Yours got picked — I'm making the clip now.",
+		statusSelectedBody: "Yours got picked, I'm making the clip now.",
 		statusDoneBody: "Your piece is live on the channel!",
 		statusRejectedBody:
 			"I couldn't use this one, but please do send another idea.",

@@ -71,7 +71,9 @@ export function Turnstile({
 				widgetId = window.turnstile.render(el, {
 					sitekey: siteKey,
 					size: "flexible",
-					theme: "light",
+					// Theo cài đặt sáng/tối của máy, giống phần còn lại của trang.
+					// Khoá cứng "light" sẽ thành một ô trắng loá giữa nền tối.
+					theme: "auto",
 					callback: (token) => callback.current(token),
 					"expired-callback": () => callback.current(null),
 					"error-callback": () => callback.current(null),

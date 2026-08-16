@@ -42,7 +42,7 @@ export function StatsPanel() {
 
 			{!stats.turnstileConfigured && (
 				<div className="notice bad">
-					<strong>Chưa bật chống bot — form đang đóng.</strong>
+					<strong>Chưa bật chống bot, form đang đóng.</strong>
 					<span>
 						Chưa đặt TURNSTILE_SECRET nên trang từ chối nhận bài, thay vì nhận
 						mà không kiểm tra gì. Chạy{" "}

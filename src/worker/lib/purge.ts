@@ -2,7 +2,7 @@ import { blobs } from "./storage";
 import { readSettings } from "./settings";
 import { utcDay } from "./util";
 
-/** Số dòng mỗi lượt quét — đủ nhỏ để một câu D1 không quá nặng. */
+/** Số dòng mỗi lượt quét, đủ nhỏ để một câu D1 không quá nặng. */
 const BATCH = 200;
 
 /**
@@ -16,14 +16,13 @@ const LOOKUP_MISS_DAYS = 7;
 
 export interface PurgeReport {
 	images: number;
-	rowsDeleted: number;
-	emailsCleared: number;
+	identitiesCleared: number;
 }
 
 /**
  * KV tự xoá ảnh khi hết TTL. Việc quét ở đây lo ba chuyện TTL không lo được:
  * đánh dấu vào D1 rằng ảnh đã biến mất, dọn sớm những bài mà thời hạn lưu vừa
- * bị rút ngắn trong phần Cài đặt, và dọn dữ liệu mô tả đã quá hạn giữ.
+ * bị rút ngắn trong phần Cài đặt, và xoá phần danh tính đã quá hạn giữ.
  *
  * Chạy tự động mỗi đêm bằng cron, và bấm tay được từ trang quản trị.
  */
@@ -67,27 +66,22 @@ export async function purgeExpired(env: Env): Promise<PurgeReport> {
 	const cutoff = now - settings.data_retention_days * 86_400_000;
 
 	/*
-	 * Sau hạn giữ dữ liệu thì phần mô tả cũng phải đi, không chỉ ảnh — trước đây
-	 * email và mô tả của người lạ nằm lại trong D1 vĩnh viễn dù trang có hứa là
-	 * dữ liệu tự xoá.
+	 * Sau hạn giữ dữ liệu thì phần danh tính phải đi, nhưng dòng thì ở lại.
 	 *
-	 * Bài đã lên sóng thì giữ lại dòng (khu "Đã lên sóng" ngoài trang chủ đọc từ
-	 * đây) nhưng xoá email đi, vì email là thứ duy nhất mang tính cá nhân.
-	 * `images_purged = 1` là điều kiện bắt buộc trước khi xoá dòng: xoá sớm hơn
-	 * là ảnh nằm lại trong kho mà không còn ai biết đường dọn.
+	 * Trước đây bài không lên sóng bị xoá sạch cả dòng sau hạn này. Điều đó biến
+	 * việc tra mã thành ngõ cụt đúng với những người không được chọn: cầm mã trong
+	 * tay, gõ vào, nhận về "không tìm thấy". Dòng dữ liệu mô tả chỉ nặng vài trăm
+	 * byte nên giữ lại không tốn gì đáng kể, còn thứ thật sự nhạy cảm — email và
+	 * dấu vết địa chỉ mạng — thì xoá hẳn ở đây, cho mọi bài chứ không riêng bài
+	 * nào. Người gửi một năm sau vẫn tra được mô tả, trạng thái và link đã đăng;
+	 * ảnh gốc thì không, vì ảnh đã đi theo hạn ở trên.
+	 *
+	 * `ip_hash` chỉ dùng để đếm hạn mức trong ngày (xem routes/public.ts), nên xoá
+	 * dấu vết cũ không ảnh hưởng gì tới việc chặn spam.
 	 */
-	const published = "published_url IS NOT NULL AND published_url <> ''";
-
 	const cleared = await env.DB.prepare(
-		`UPDATE submissions SET email = NULL
-		 WHERE email IS NOT NULL AND created_at < ?1 AND ${published}`,
-	)
-		.bind(cutoff)
-		.run();
-
-	const deleted = await env.DB.prepare(
-		`DELETE FROM submissions
-		 WHERE created_at < ?1 AND images_purged = 1 AND NOT (${published})`,
+		`UPDATE submissions SET email = NULL, ip_hash = NULL
+		 WHERE created_at < ?1 AND (email IS NOT NULL OR ip_hash IS NOT NULL)`,
 	)
 		.bind(cutoff)
 		.run();
@@ -98,9 +92,5 @@ export async function purgeExpired(env: Env): Promise<PurgeReport> {
 		.bind(utcDay(new Date(now - LOOKUP_MISS_DAYS * 86_400_000)))
 		.run();
 
-	return {
-		images,
-		rowsDeleted: deleted.meta.changes ?? 0,
-		emailsCleared: cleared.meta.changes ?? 0,
-	};
+	return { images, identitiesCleared: cleared.meta.changes ?? 0 };
 }

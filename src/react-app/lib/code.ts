@@ -1,7 +1,7 @@
 export const CODE_PREFIX = "TA-";
 export const CODE_LENGTH = 8;
 
-/** Chỉ giữ chữ số, cắt đúng 8 ký tự — dùng cho ô nhập mã. */
+/** Chỉ giữ chữ số, cắt đúng 8 ký tự. Dùng cho ô nhập mã. */
 export function digitsOnly(input: string): string {
 	return input.replace(/\D/g, "").slice(0, CODE_LENGTH);
 }

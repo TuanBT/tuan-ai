@@ -66,7 +66,7 @@ describe("danh sách bài đã lưu trong máy", () => {
 		expect(mine()).toEqual([]);
 	});
 
-	it("chỉ lưu mã và tên — không bao giờ chạm tới ảnh, mô tả hay email", () => {
+	it("chỉ lưu mã và tên, không bao giờ chạm tới ảnh, mô tả hay email", () => {
 		remember("TA-12345678", "Tuân");
 		const stored = localStorage.getItem("tuanai_mine_v1") ?? "";
 		expect(Object.keys(JSON.parse(stored)[0]).sort()).toEqual([

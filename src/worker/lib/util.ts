@@ -3,7 +3,7 @@
  *
  * Mã chính là chìa khoá xem bài, nên độ dài là chuyện bảo mật: 8 chữ số cho
  * 100 triệu tổ hợp, đủ để việc dò mã hàng loạt trở nên vô nghĩa. Sáu chữ số chỉ
- * có 1 triệu tổ hợp — quét hết trong một buổi.
+ * có 1 triệu tổ hợp, quét hết trong một buổi.
  *
  * Chạy theo thứ tự thì còn tệ hơn: biết một mã là đoán được mã kế bên.
  */
@@ -41,7 +41,7 @@ export async function sha256Hex(input: string): Promise<string> {
 		.join("");
 }
 
-/** Không bao giờ lưu IP thô — chỉ lưu bản băm có muối để đếm và chặn lạm dụng. */
+/** Không bao giờ lưu IP thô, chỉ lưu bản băm có muối để đếm và chặn lạm dụng. */
 export async function hashIp(ip: string, salt: string): Promise<string> {
 	return (await sha256Hex(`${ip}:${salt}`)).slice(0, 32);
 }
@@ -57,7 +57,7 @@ const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "0.0.0.0"]);
  *
  * Dùng để nới lỏng vài thứ khi chạy local (bỏ qua captcha, mở cửa sau vào
  * /admin) mà vẫn siết chặt trên production. Suy ra từ hostname của chính yêu
- * cầu, không phải từ biến môi trường — biến có thể bị đặt nhầm, hostname thì
+ * cầu, không phải từ biến môi trường. Biến có thể bị đặt nhầm, hostname thì
  * không giả được.
  */
 export function isLocalRequest(url: string): boolean {
@@ -68,7 +68,7 @@ export function isLocalRequest(url: string): boolean {
 	}
 }
 
-/** Ngày UTC — trùng với mốc reset hạn mức KV của Cloudflare. */
+/** Ngày UTC, trùng với mốc reset hạn mức KV của Cloudflare. */
 export function utcDay(at: Date = new Date()): string {
 	return at.toISOString().slice(0, 10);
 }
@@ -104,4 +104,23 @@ export function timingSafeEqual(a: string, b: string): boolean {
 
 export function clampText(value: unknown, max: number): string {
 	return typeof value === "string" ? value.trim().slice(0, max) : "";
+}
+
+/**
+ * Bài gửi đã đủ để duyệt tay hay chưa.
+ *
+ * Người gửi phải nói được *điều gì đó* về mong muốn của mình, nhưng chạm một
+ * cái kiểu ("Để Tuân tự quyết") cũng đã là nói rồi. Phần lớn người đến đây chỉ
+ * có mỗi tấm ảnh và chưa hình dung ra clip sẽ thế nào; bắt viết mô tả bằng mọi
+ * giá là chỗ họ bỏ cuộc.
+ *
+ * Giao diện gửi bài khoá nút gửi theo đúng luật này. Ở đây là chốt chặn thật,
+ * kiểm tra phía trình duyệt chỉ là phép lịch sự, ai cũng bỏ qua được.
+ */
+export function hasEnoughToSubmit(
+	nickname: string,
+	description: string,
+	styles: string[],
+): boolean {
+	return Boolean(nickname) && (Boolean(description) || styles.length > 0);
 }

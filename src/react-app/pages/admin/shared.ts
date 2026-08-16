@@ -15,9 +15,41 @@ export function setProdPreview(on: boolean) {
 	window.location.href = "/admin";
 }
 
+/**
+ * Số bài tối đa trong một gói tải cả đợt. Phải khớp `MAX_BUNDLE` bên
+ * `src/worker/routes/admin.ts`; lệch nhau thì nhãn nút hứa nhiều hơn thứ tải về.
+ */
+export const BUNDLE_LIMIT = 25;
+
 export const STATUS_LABEL: Record<string, string> = {
 	new: "Mới",
 	selected: "Đã chọn",
 	done: "Đã lên sóng",
 	rejected: "Bỏ qua",
 };
+
+/** Lớp màu của huy hiệu trạng thái, dùng chung với giao diện người dùng. */
+export const STATUS_TONE: Record<string, string> = {
+	new: "",
+	selected: "warn",
+	done: "ok",
+	rejected: "bad",
+};
+
+/**
+ * "3 giờ trước" đọc nhanh hơn "16/08/2026, 14:32:07" khi đang lướt cả hộp thư
+ * để xem bài nào mới tới. Quá một tháng thì ngày tháng lại rõ hơn.
+ */
+export function relativeTime(at: number): string {
+	const minutes = Math.floor((Date.now() - at) / 60_000);
+	if (minutes < 1) return "vừa xong";
+	if (minutes < 60) return `${minutes} phút trước`;
+
+	const hours = Math.floor(minutes / 60);
+	if (hours < 24) return `${hours} giờ trước`;
+
+	const days = Math.floor(hours / 24);
+	if (days < 30) return `${days} ngày trước`;
+
+	return new Date(at).toLocaleDateString("vi-VN");
+}

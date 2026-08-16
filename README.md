@@ -1,12 +1,12 @@
 # Tuân AI
 
 Hộp thu ý tưởng: người xem gửi 1–3 tấm ảnh kèm mô tả, bạn duyệt tay rồi dựng
-clip AI và đăng lên kênh. Không có khâu tạo ảnh tự động — trang này chỉ nhận và
+clip AI và đăng lên kênh. Không có khâu tạo ảnh tự động, trang này chỉ nhận và
 sắp xếp ý tưởng.
 
 Chạy trọn vẹn trên gói miễn phí của Cloudflare, **không cần thẻ tín dụng**.
 
-Đang chạy tại **<https://tuan-ai.tuanbt.workers.dev>** — khu quản trị ở `/admin`.
+Đang chạy tại **<https://tuan-ai.tuanbt.workers.dev>**, khu quản trị ở `/admin`.
 
 | Thành phần | Vai trò |
 | --- | --- |
@@ -49,7 +49,7 @@ Lần đầu chạy cần tạo bảng cho bản D1 cục bộ:
 npx wrangler d1 migrations apply tuan-ai-db --local
 ```
 
-Khi chạy local, `/admin` mở sẵn nhờ `DEV_ADMIN_BYPASS` trong `.dev.vars` — không
+Khi chạy local, `/admin` mở sẵn nhờ `DEV_ADMIN_BYPASS` trong `.dev.vars`, không
 phải dựng OAuth mới xem được. Cửa sau này khoá hai lớp: biến chỉ nằm trong
 `.dev.vars` (không bao giờ được đẩy lên Cloudflare), và kể cả nếu lọt lên thì
 yêu cầu vẫn buộc phải đến từ `localhost`.
@@ -76,7 +76,7 @@ production gần như hoàn toàn.
 
 Hai cách, dùng cách nào cũng được.
 
-**Từ máy — một lệnh:**
+**Từ máy, một lệnh:**
 
 ```bash
 npm run ship
@@ -86,7 +86,7 @@ Nó chạy `check` (typecheck, test, lint, build, thử deploy khan) → migrati
 trên production → deploy. Nối bằng `&&` nên hỏng ở bước nào là dừng luôn, không
 có chuyện deploy đè lên bản đang lỗi.
 
-**Từ GitHub — `git push` là xong.** Workflow `.github/workflows/deploy.yml` chạy
+**Từ GitHub: `git push` là xong.** Workflow `.github/workflows/deploy.yml` chạy
 đúng ba bước đó mỗi khi có commit mới trên `main`. Pull request thì chỉ chạy
 phần kiểm tra, không deploy. Muốn deploy lại mà không cần commit mới thì vào tab
 **Actions → Deploy → Run workflow**.
@@ -112,10 +112,10 @@ Account   →   D1   →   Edit
 ```
 
 Phần *Account Resources* để đúng tài khoản của bạn, rồi **Continue → Create
-Token**. Token chỉ hiện **một lần** — chép ngay sang GitHub, đóng tab là mất.
+Token**. Token chỉ hiện **một lần**, chép ngay sang GitHub, đóng tab là mất.
 
 Thiếu quyền D1 thì workflow chạy tới bước migration mới báo lỗi 403, còn phần
-kiểm tra vẫn xanh — nên nếu thấy hỏng đúng chỗ đó thì gần như chắc chắn là quên
+kiểm tra vẫn xanh, nên nếu thấy hỏng đúng chỗ đó thì gần như chắc chắn là quên
 bước **+ Add more** ở trên.
 
 ### Bí mật thì không nằm trong GitHub
@@ -128,7 +128,7 @@ lần deploy nào ghi đè chúng**. Đổi khoá thì chạy `wrangler secret p
 ## Nạp bí mật cho production
 
 `.dev.vars` chỉ dùng khi chạy máy. Trên production nạp từng cái bằng lệnh dưới
-đây — giá trị gõ vào terminal, không đi qua git:
+đây, giá trị gõ vào terminal, không đi qua git:
 
 ```bash
 npx wrangler secret put SESSION_SECRET     # openssl rand -hex 32
@@ -161,13 +161,13 @@ npx wrangler secret put GITHUB_CLIENT_SECRET
    `https://tuan-ai.tuanbt.workers.dev/auth/github/callback`
 4. Bấm *Generate a new client secret* rồi nạp cả hai giá trị
 
-### Turnstile — chống bot
+### Turnstile chống bot
 
 Turnstile cho bạn **hai** khoá, và chúng đi thành cặp:
 
 | Khoá | Nó là gì | Để đâu |
 | --- | --- | --- |
-| **Site Key** (`0x4AAA…`) | Công khai. Trình duyệt cần nó để vẽ ô kiểm tra. Nó nằm lộ trong mã nguồn trang, ai xem cũng thấy — đó là chuyện bình thường. | `TURNSTILE_SITE_KEY` |
+| **Site Key** (`0x4AAA…`) | Công khai. Trình duyệt cần nó để vẽ ô kiểm tra. Nó nằm lộ trong mã nguồn trang, ai xem cũng thấy, đó là chuyện bình thường. | `TURNSTILE_SITE_KEY` |
 | **Secret Key** | Bí mật. Máy chủ dùng nó để hỏi Cloudflare "cái token này có thật không". Lộ ra là người khác giả được lượt xác minh. | `TURNSTILE_SECRET` |
 
 **Lấy khoá ở đâu:** dashboard Cloudflare → **Turnstile** → **Add site**. Phần
@@ -181,9 +181,9 @@ localhost
 Thiếu `localhost` thì ô kiểm tra không chạy khi bạn `npm run dev`. Thiếu tên
 miền thật thì nó không chạy trên production. Widget Mode để **Managed** là được.
 
-**Nạp vào đâu — tuỳ nơi chạy:**
+**Nạp vào đâu, tuỳ nơi chạy:**
 
-*Trên máy* — mở `.dev.vars`, điền vào hai dòng có sẵn:
+*Trên máy*: mở `.dev.vars`, điền vào hai dòng có sẵn:
 
 ```
 TURNSTILE_SITE_KEY="0x4AAAAAAA..."
@@ -193,7 +193,7 @@ TURNSTILE_SECRET="0x4AAAAAAA..."
 File này đã nằm trong `.gitignore`, không bao giờ lên git. (Máy bạn đang có sẵn
 cả hai khoá rồi.)
 
-*Trên production* — gõ hai lệnh này, mỗi lệnh sẽ hỏi giá trị rồi bạn dán vào.
+*Trên production*: gõ hai lệnh này, mỗi lệnh sẽ hỏi giá trị rồi bạn dán vào.
 Giá trị đi thẳng lên Cloudflare, không qua git:
 
 ```bash
@@ -201,7 +201,7 @@ npx wrangler secret put TURNSTILE_SITE_KEY
 npx wrangler secret put TURNSTILE_SECRET
 ```
 
-Site Key vốn công khai nên để nó trong `wrangler.json` cũng chẳng sao — nhưng
+Site Key vốn công khai nên để nó trong `wrangler.json` cũng chẳng sao, nhưng
 để cả hai cùng một chỗ thì bạn khỏi phải nhớ cái nào nằm đâu, và khỏi nạp thiếu
 một nửa.
 
@@ -209,8 +209,8 @@ một nửa.
 bật chống bot"* nghĩa là `TURNSTILE_SECRET` chưa tới nơi.
 
 **Thiếu khoá thì trang tự đóng form.** Trước đây thiếu secret là bước kiểm tra
-bị bỏ qua hoàn toàn — quên một lệnh `wrangler secret put` là form mở toang cho
-bot mà chẳng có gì báo. Giờ thì ngược lại: chạy thật mà không có secret thì
+bị bỏ qua hoàn toàn: quên một lệnh `wrangler secret put` là form mở toang cho
+bot mà chẳng có gì báo. Giờ thì ngược lại, chạy thật mà không có secret thì
 `/api/submit` trả 503 và trang chủ hiện lời xin lỗi tử tế. Mất vài bài còn hơn
 để bot đổ đầy hộp thư. Chạy trên `localhost` thì vẫn được bỏ qua như cũ, để bạn
 phát triển không vướng.
@@ -219,21 +219,47 @@ phát triển không vướng.
 
 ## Vận hành
 
-Trang `/admin` có năm mục. Mọi thứ chỉnh được ở đây — không cần mở dashboard
+Trang `/admin` có năm mục. Mọi thứ chỉnh được ở đây, không cần mở dashboard
 Cloudflare.
 
-- **Bài gửi** — duyệt tay: đánh dấu *Mới / Đã chọn / Đã lên sóng / Bỏ qua*, dán
-  link TikTok hoặc YouTube khi đã đăng, xoá vĩnh viễn bài rác
-- **Thống kê** — mức dùng hạn mức, dung lượng, và **số lượt bị chặn**
-- **Kiểu** — thêm bớt các lựa chọn người dùng thấy khi gửi bài
-- **Cài đặt** — số ngày giữ ảnh, số ngày giữ dữ liệu mô tả, số ảnh mỗi bài,
-  ngân sách ghi, số bài mỗi người mỗi ngày, bật tắt nhận bài, tên và câu giới
-  thiệu
-- **Dữ liệu** — số dòng từng bảng, dọn ảnh quá hạn ngay, tải toàn bộ bài gửi ra
+- **Bài gửi**: duyệt tay, đánh dấu *Mới / Đã chọn / Đã lên sóng / Bỏ qua*, **tải
+  gói làm việc** (xem bên dưới), dán link TikTok hoặc YouTube khi đã đăng, xoá
+  vĩnh viễn bài rác
+- **Thống kê**: mức dùng hạn mức, dung lượng, và **số lượt bị chặn**
+- **Kiểu**: thêm bớt các lựa chọn người dùng thấy khi gửi bài
+- **Cài đặt**: số ngày giữ ảnh, số ngày giữ dữ liệu mô tả, số ảnh mỗi bài,
+  ngân sách ghi, số bài mỗi người mỗi ngày, bật tắt nhận bài, tên, câu giới
+  thiệu, và **link kênh TikTok / YouTube** (để trống thì trang giấu nút đi; chỉ
+  nhận `http://` hoặc `https://`)
+- **Dữ liệu**: số dòng từng bảng, dọn ảnh quá hạn ngay, tải toàn bộ bài gửi ra
   CSV, ô chạy câu truy vấn, và vùng nguy hiểm để xoá thống kê hoặc dọn sạch dữ
   liệu thử
 
 Mỗi tab có địa chỉ riêng (`/admin#data`), tải lại trang không bị nhảy về đầu.
+
+### Gói làm việc
+
+Duyệt bài xong thì phải mang ảnh và mô tả sang công cụ dựng clip. Thay vì bấm
+từng ảnh ra tab mới rồi chuột phải lưu, mỗi thẻ bài có nút **Tải gói**, và trên
+đầu hộp thư có nút tải cả đợt đang lọc (tối đa 25 bài một lượt).
+
+Gói một bài (`ta-04716598.zip`):
+
+```
+01.jpg              ảnh gốc, đánh số theo thứ tự người gửi
+02.png
+noi-dung.txt        để đọc và chép: người gửi, ngày, kiểu đã chọn, và
+                    phần mô tả nằm riêng một khối giữa hai đường kẻ
+noi-dung.json       cùng dữ liệu đó dạng máy đọc, để nối sang chỗ khác
+```
+
+Gói cả đợt thì mỗi bài một thư mục mang tên mã bài, kèm `danh-sach.txt` ở gốc
+làm mục lục. Bài đã hết hạn ảnh vẫn tải được, chỉ là trong gói không có ảnh và
+`noi-dung.txt` nói rõ điều đó.
+
+Zip dựng theo luồng, không nén — ảnh JPEG/PNG/WebP đã nén sẵn nên nén thêm chỉ
+tốn CPU — và mỗi lúc chỉ giữ một tấm ảnh trong bộ nhớ, để gói cả đợt không chạm
+trần 128 MB của Worker.
 
 ### Ô truy vấn chỉ cho phép đọc
 
@@ -242,7 +268,7 @@ kể cả khi cố nối nhiều câu bằng dấu chấm phẩy. Lý do: một 
 là mất dữ liệu không hoàn tác, và nếu tài khoản quản trị bị chiếm thì ô này
 thành cửa mở toang. Câu nào thiếu `LIMIT` sẽ được tự thêm `LIMIT 200`.
 
-Việc sửa dữ liệu nằm ở các nút bảo trì — chúng biết phải dọn cả ảnh trong kho
+Việc sửa dữ liệu nằm ở các nút bảo trì, vì chúng biết phải dọn cả ảnh trong kho
 chứ không chỉ xoá dòng trong bảng.
 
 ### Hạn mức và lúc nào nên chuyển sang R2
@@ -254,7 +280,7 @@ ngày**. Chạm ngưỡng thì form hiện lời hẹn kèm đồng hồ đếm 
 Ngày reset tính theo giờ UTC, tức **7 giờ sáng giờ Việt Nam**.
 
 Mỗi lượt bị chặn đều được ghi lại. Khi Thống kê báo **ba ngày liên tiếp có lượt
-bị chặn**, nghĩa là đang mất bài thật — lúc đó mới đáng bật R2:
+bị chặn**, nghĩa là đang mất bài thật, lúc đó mới đáng bật R2:
 
 1. Bật R2 trong dashboard Cloudflare (chỗ này cần thẻ)
 2. `npx wrangler login` lại để token có thêm quyền R2
@@ -273,18 +299,19 @@ bị chặn**, nghĩa là đang mất bài thật — lúc đó mới đáng b�
 
 Hai mốc thời gian, hai việc khác nhau:
 
-**Ảnh — mặc định 7 ngày.** Ảnh gắn TTL đúng bằng số ngày trong Cài đặt, KV tự
+**Ảnh: mặc định 7 ngày.** Ảnh gắn TTL đúng bằng số ngày trong Cài đặt, KV tự
 xoá khi hết hạn mà không tốn hạn mức xoá.
 
-**Dữ liệu mô tả — mặc định 90 ngày.** Sau ngần này ngày kể từ lúc gửi:
+**Email: mặc định 90 ngày.** Sau ngần này ngày kể từ lúc gửi, email và dấu vết
+địa chỉ mạng của bài bị xoá khỏi D1, mọi bài như nhau.
 
-- bài **không** lên sóng bị xoá hẳn khỏi D1 — tên, mô tả, email, tất cả
-- bài **đã** lên sóng giữ lại dòng (khu "Đã lên sóng" ngoài trang chủ đọc từ
-  đây) nhưng email bị xoá, vì email là thứ duy nhất mang tính cá nhân
+Phần còn lại của dòng — tên hiển thị, mô tả, kiểu đã chọn, trạng thái, link đã
+đăng — thì ở lại. Một dòng như vậy chỉ nặng vài trăm byte, trong khi xoá nó biến
+việc tra mã thành ngõ cụt đúng với người không được chọn: cầm mã trong tay, gõ
+vào, nhận về "không tìm thấy". Giữ lại thì một năm sau người gửi vẫn tra được
+bài mình và link clip nếu có; ảnh gốc thì không, vì ảnh đã đi theo mốc bên trên.
 
-Trước đây chỉ ảnh mới tự xoá; email và mô tả của người lạ nằm lại trong D1 mãi
-mãi, dù trang nói với họ là dữ liệu tự biến mất. Muốn giữ thông tin liên lạc lâu
-hơn thì nâng số ngày lên, hoặc xuất CSV trước.
+Muốn giữ thông tin liên lạc lâu hơn thì nâng số ngày lên, hoặc xuất CSV trước.
 
 Bản quét cron chạy 01:00 giờ Việt Nam mỗi đêm lo cả hai việc trên, cộng thêm dọn
 bộ đếm chặn dò mã cũ hơn 7 ngày. Bấm tay được từ tab **Dữ liệu**.
@@ -296,7 +323,7 @@ bộ đếm chặn dò mã cũ hơn 7 ngày. Bấm tay được từ tab **Dữ 
 ```
 src/worker/
   index.ts              gắn route, cron dọn dữ liệu quá hạn
-  lib/storage.ts        tầng lưu ảnh — đổi KV ↔ R2 ở đây
+  lib/storage.ts        tầng lưu ảnh, đổi KV ↔ R2 ở đây
   lib/quota.ts          đếm mức dùng theo ngày, ngưỡng mềm
   lib/settings.ts       đọc ghi cấu hình, có chặn giá trị vô lý
   lib/session.ts        cookie phiên ký bằng HMAC
@@ -311,6 +338,9 @@ src/react-app/
   pages/Lookup.tsx      tra cứu theo mã + danh sách "Bài của bạn"
   pages/Admin.tsx       khung khu quản trị
   pages/admin/          từng tab một file
+  components/Layout.tsx khung chung: điều hướng, chuyển ngôn ngữ, chân trang
+  components/Channels.tsx nút sang kênh TikTok / YouTube
+  lib/site-config.ts    cấu hình trang, tải một lần dùng chung
   lib/compress.ts       nén ảnh trong trình duyệt trước khi gửi
   lib/mine.ts           danh sách mã bài lưu trong máy người dùng
   lib/local.ts          localStorage không bao giờ ném lỗi
@@ -322,7 +352,26 @@ test/                   test cho phần logic dễ hỏng âm thầm
 
 Header bảo mật nằm ở **hai** nơi vì file tĩnh được phục vụ thẳng từ biên
 Cloudflare, không đi qua Worker. Sửa `src/worker/lib/headers.ts` thì sửa luôn
-`public/_headers` cho khớp.
+`public/_headers` cho khớp; `test/headers.test.ts` so hai bên và báo đỏ nếu lệch.
+
+### Thêm route mới thì nhớ `run_worker_first`
+
+Worker và tầng static asset dùng chung một không gian đường dẫn, và **asset
+được ưu tiên trước**. Vì `not_found_handling` để `single-page-application`, mọi
+điều hướng không khớp file tĩnh đều nhận `index.html`, kể cả `/auth/google`.
+
+Cái bẫy: `curl` trần thì Worker vẫn trả lời đúng, chỉ trình duyệt mới hỏng, vì
+trình duyệt gửi `Accept: text/html`. Triệu chứng là bấm nút đăng nhập rồi bị đá
+về trang chủ: React Router thấy đường lạ nên rơi vào `path="*"`.
+
+Danh sách giành lại nằm trong `wrangler.json`:
+
+```json
+"run_worker_first": ["/api/*", "/auth/*", "/i/*"]
+```
+
+Thêm tiền tố route mới cho Worker thì phải thêm vào đây. `test/routing.test.ts`
+quét mã nguồn trong `src/worker/routes/` và bắt lỗi nếu bạn quên.
 
 ## Vài quyết định thiết kế
 
@@ -330,7 +379,7 @@ Cloudflare, không đi qua Worker. Sửa `src/worker/lib/headers.ts` thì sửa 
 dùng. Đây là lý do dung lượng và băng thông không bao giờ thành vấn đề.
 
 **Mã bài chính là chìa khoá.** Không có tài khoản người dùng. Ai giữ mã
-`TA-87418644` thì xem được bài đó — đỡ phải lưu mật khẩu của người lạ.
+`TA-87418644` thì xem được bài đó, đỡ phải lưu mật khẩu của người lạ.
 
 Mã hiển thị đầy đủ cả tiền tố để người dùng biết mã thật của mình, nhưng trong ô
 tra cứu thì `TA-` được gắn cứng sẵn nên **họ chỉ phải gõ tám chữ số**. Ô nhập tự
@@ -342,7 +391,7 @@ nuốt mất số 0 ở đầu khi bạn xuất CSV.
 
 Vì mã là chìa khoá nên nó **sinh ngẫu nhiên, không chạy theo thứ tự**: 100 triệu
 tổ hợp, và biết một mã cũng không đoán được mã kế bên. Kèm theo đó, ai tra sai
-quá 30 lần trong một ngày sẽ bị khoá — chặn việc dò mã hàng loạt. Bộ đếm này
+quá 30 lần trong một ngày sẽ bị khoá, chặn việc dò mã hàng loạt. Bộ đếm này
 tính cả đường lấy ảnh (`/i/…`) chứ không riêng ô tra cứu; ảnh mới là thứ đáng
 giá, khoá cửa trước mà để ngỏ cửa sau thì bằng thừa.
 
@@ -351,12 +400,12 @@ chính máy người dùng, và trang `/r` hiện danh sách "Bài của bạn" 
 là mở lại. Không có tài khoản, nên trước đó mất mã là mất bài vĩnh viễn.
 
 Chỗ này không làm yếu bảo mật: người vừa mở `/r/TA-87418644` thì mã đã nằm trong
-lịch sử trình duyệt rồi — đây chỉ là cái bookmark tự động. Chỉ lưu **mã và tên
+lịch sử trình duyệt rồi, đây chỉ là cái bookmark tự động. Chỉ lưu **mã và tên
 hiển thị**, không bao giờ lưu ảnh, mô tả hay email; trạng thái bài luôn hỏi lại
 máy chủ vì nó đổi khi bạn duyệt.
 
 Và nó là tiện ích chứ không phải nơi cất giữ. Safari xoá storage sau 7 ngày
-không ai vào trang, chưa kể chế độ ẩn danh, dọn dữ liệu duyệt web hay đổi máy —
+không ai vào trang, chưa kể chế độ ẩn danh, dọn dữ liệu duyệt web hay đổi máy,
 nên màn hình gửi bài xong vẫn phô mã ra và vẫn khuyên chụp màn hình. Có nút
 **"Xoá khỏi máy này"** cho người dùng máy chung.
 

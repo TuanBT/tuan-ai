@@ -5,8 +5,8 @@ const SETTING_LABELS: Array<[keyof AdminSettings, string, string]> = [
 	["retention_days", "Số ngày giữ ảnh", "Sau ngần này ngày ảnh gốc tự xoá."],
 	[
 		"data_retention_days",
-		"Số ngày giữ dữ liệu mô tả",
-		"Sau ngần này ngày, bài không lên sóng bị xoá hẳn; bài đã lên sóng giữ lại nhưng xoá email. Không ngắn hơn số ngày giữ ảnh.",
+		"Số ngày giữ email",
+		"Sau ngần này ngày, email và dấu vết địa chỉ mạng bị xoá. Phần mô tả và link thì giữ lại, để người gửi cầm mã vẫn tra được về sau. Không ngắn hơn số ngày giữ ảnh.",
 	],
 	["max_images", "Số ảnh tối đa mỗi bài", "Từ 1 đến 5."],
 	[
@@ -18,6 +18,16 @@ const SETTING_LABELS: Array<[keyof AdminSettings, string, string]> = [
 	["site_title", "Tên hiển thị", ""],
 	["tagline_vi", "Câu giới thiệu (Việt)", ""],
 	["tagline_en", "Câu giới thiệu (Anh)", ""],
+	[
+		"tiktok_url",
+		"Link kênh TikTok",
+		"Dán đầy đủ dạng https://… Để trống thì trang giấu nút đi.",
+	],
+	[
+		"youtube_url",
+		"Link kênh YouTube",
+		"Dán đầy đủ dạng https://… Để trống thì trang giấu nút đi.",
+	],
 ];
 
 export function SettingsPanel() {
@@ -81,7 +91,7 @@ export function SettingsPanel() {
 			</div>
 
 			<p className="hint">
-				Đổi số ngày giữ ảnh sẽ có hiệu lực với cả bài cũ — bản quét chạy mỗi
+				Đổi số ngày giữ ảnh sẽ có hiệu lực với cả bài cũ, bản quét chạy mỗi
 				đêm sẽ dọn những bài đã quá hạn mới.
 			</p>
 

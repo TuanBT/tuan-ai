@@ -3,7 +3,7 @@ import { readLocal, removeLocal, writeLocal } from "./local";
 /**
  * Danh sách mã bài đã gửi, lưu ngay trong trình duyệt của người dùng.
  *
- * Không có tài khoản, nên mã bài chính là chìa khoá — mất mã là mất bài vĩnh
+ * Không có tài khoản, nên mã bài chính là chìa khoá: mất mã là mất bài vĩnh
  * viễn. Cái này chỉ là bookmark tự động: người vừa mở /r/TA-... thì mã đã nằm
  * trong lịch sử trình duyệt rồi, lưu thêm ở đây không mở ra đường vào nào mới.
  *
@@ -54,13 +54,37 @@ export function remember(code: string, nickname: string): void {
 		MAX_ENTRIES,
 	);
 	writeLocal(KEY, JSON.stringify(next));
+	announce();
 }
 
 /** Không truyền mã thì xoá sạch danh sách. */
 export function forget(code?: string): void {
 	if (!code) {
 		removeLocal(KEY);
-		return;
+	} else {
+		writeLocal(KEY, JSON.stringify(mine().filter((item) => item.code !== code)));
 	}
-	writeLocal(KEY, JSON.stringify(mine().filter((item) => item.code !== code)));
+	announce();
+}
+
+/**
+ * Con số trên thanh điều hướng phải khớp với danh sách ngay lập tức.
+ *
+ * `storage` chỉ báo cho *tab khác*, nên tab đang thao tác cần một tiếng gọi
+ * riêng, không có nó thì người vừa gửi bài xong vẫn thấy huy hiệu đếm số cũ cho
+ * tới lần chuyển trang kế tiếp.
+ */
+const CHANGED = "tuanai:mine";
+
+function announce(): void {
+	if (typeof window !== "undefined") window.dispatchEvent(new Event(CHANGED));
+}
+
+export function subscribeMine(listener: () => void): () => void {
+	window.addEventListener(CHANGED, listener);
+	window.addEventListener("storage", listener);
+	return () => {
+		window.removeEventListener(CHANGED, listener);
+		window.removeEventListener("storage", listener);
+	};
 }

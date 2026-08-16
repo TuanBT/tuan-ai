@@ -19,7 +19,7 @@ export function writeLocal(key: string, value: string): void {
 	try {
 		localStorage.setItem(key, value);
 	} catch {
-		// Không lưu được thì thôi — đây luôn là tiện ích thêm, không phải nguồn
+		// Không lưu được thì thôi, đây luôn là tiện ích thêm, không phải nguồn
 		// dữ liệu chính.
 	}
 }

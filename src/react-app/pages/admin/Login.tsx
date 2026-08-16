@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { setProdPreview, type Me } from "./shared";
 
 const LOGIN_ERRORS: Record<string, string> = {
@@ -60,6 +61,11 @@ export function Login({ me }: { me: Me }) {
 					<span>Xem phần “Đăng nhập” trong README để tạo ứng dụng OAuth.</span>
 				</div>
 			)}
+
+			{/* Người bấm nhầm vào đây từ chân trang phải có đường ra. */}
+			<Link className="linkish" to="/">
+				← Về trang chủ
+			</Link>
 		</div>
 	);
 }

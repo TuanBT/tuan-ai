@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Wordmark } from "../components/Layout";
 import { api } from "../lib/api";
 import { DataPanel } from "./admin/DataPanel";
 import { Inbox } from "./admin/Inbox";
@@ -48,13 +50,19 @@ export function Admin() {
 	return (
 		<div className="admin">
 			<header className="topbar">
-				<strong>Tuân AI · Quản trị</strong>
-				<div style={{ display: "flex", gap: 8 }}>
+				{/* Khu quản trị trước đây là ngõ cụt: vào rồi chỉ có cách sửa thanh
+				    địa chỉ mới ra được. Tên trang giờ là đường về trang chủ. */}
+				<Link className="wordmark" to="/">
+					<Wordmark /> <small>· Quản trị</small>
+				</Link>
+				<div className="admin-actions">
+					<Link className="ghost-btn" to="/">
+						← Trang chủ
+					</Link>
 					{me.devBypassAvailable && (
 						<button
 							type="button"
-							className="cta-ghost"
-							style={{ padding: "7px 14px", fontSize: 13 }}
+							className="ghost-btn"
 							onClick={() => setProdPreview(true)}
 							title="Tắt cửa sau để xem trang y như trên production"
 						>
@@ -63,8 +71,7 @@ export function Admin() {
 					)}
 					<button
 						type="button"
-						className="cta-ghost"
-						style={{ padding: "7px 14px", fontSize: 13 }}
+						className="ghost-btn"
 						onClick={() => api.logout().then(() => window.location.reload())}
 					>
 						Thoát
@@ -100,6 +107,13 @@ export function Admin() {
 			{tab === "styles" && <StylesPanel />}
 			{tab === "settings" && <SettingsPanel />}
 			{tab === "data" && <DataPanel />}
+
+			<footer className="footer">
+				<div className="footer-links">
+					<Link to="/">← Trang chủ</Link>
+					<Link to="/r">Tra cứu bài</Link>
+				</div>
+			</footer>
 		</div>
 	);
 }

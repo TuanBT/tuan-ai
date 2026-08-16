@@ -4,9 +4,15 @@ export interface Style {
 	label_en: string;
 }
 
+export interface Channels {
+	tiktok: string | null;
+	youtube: string | null;
+}
+
 export interface SiteConfig {
 	siteTitle: string;
 	tagline: { vi: string; en: string };
+	channels: Channels;
 	styles: Style[];
 	maxImages: number;
 	retentionDays: number;
@@ -65,6 +71,14 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 	return body as T;
 }
 
+/** Bộ lọc hộp thư dạng chuỗi truy vấn, dùng chung cho danh sách và gói tải. */
+function inboxQuery(status: string, search: string): string {
+	const query = new URLSearchParams();
+	if (status) query.set("status", status);
+	if (search) query.set("q", search);
+	return query.size ? `?${query}` : "";
+}
+
 export const api = {
 	config: () => request<SiteConfig>("/api/config"),
 	gallery: () => request<{ items: GalleryItem[] }>("/api/gallery"),
@@ -83,10 +97,11 @@ export const api = {
 		}>("/api/me"),
 	logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),
 
-	adminList: (status: string) =>
-		request<{ items: AdminSubmission[]; counts: Record<string, number> }>(
-			`/api/admin/submissions${status ? `?status=${status}` : ""}`,
-		),
+	adminList: (status: string, search = "") =>
+		request<{
+			items: AdminSubmission[];
+			counts: Record<string, number>;
+		}>(`/api/admin/submissions${inboxQuery(status, search)}`),
 	adminPatch: (code: string, patch: Record<string, unknown>) =>
 		request<{ ok: true }>(`/api/admin/submissions/${code}`, {
 			method: "PATCH",
@@ -97,6 +112,19 @@ export const api = {
 		request<{ ok: true }>(`/api/admin/submissions/${code}`, {
 			method: "DELETE",
 		}),
+	/*
+	 * Hai đường tải gói trả về địa chỉ chứ không tự gọi `fetch`.
+	 *
+	 * Phiên đăng nhập nằm trong cookie nên thẻ <a download> đi thẳng được, và làm
+	 * vậy thì trình duyệt lo phần tải: có thanh tiến trình, ghi thẳng ra ổ đĩa,
+	 * huỷ được giữa chừng. Gọi `fetch` rồi dựng Blob thì gói cả trăm MB phải nằm
+	 * trọn trong bộ nhớ tab, mà người bấm không thấy gì đang xảy ra.
+	 */
+	adminBundleUrl: (code: string) =>
+		`/api/admin/bundle/${encodeURIComponent(code)}`,
+	adminBundleAllUrl: (status: string, search = "") =>
+		`/api/admin/bundle.zip${inboxQuery(status, search)}`,
+
 	adminStats: () => request<Stats>("/api/admin/stats"),
 	adminStyles: () => request<{ items: AdminStyle[] }>("/api/admin/styles"),
 	adminStyleSave: (style: Partial<AdminStyle>) =>
@@ -125,7 +153,7 @@ export const api = {
 		request<{
 			tables: Array<{ name: string; rows: number }>;
 			duePurge: number;
-			dueDelete: number;
+			dueClear: number;
 			dataRetentionDays: number;
 		}>("/api/admin/data"),
 	adminQuery: (sql: string) =>
@@ -139,10 +167,9 @@ export const api = {
 			body: JSON.stringify({ sql }),
 		}),
 	adminPurge: () =>
-		request<{ images: number; rowsDeleted: number; emailsCleared: number }>(
-			"/api/admin/purge",
-			{ method: "POST" },
-		),
+		request<{ images: number; identitiesCleared: number }>("/api/admin/purge", {
+			method: "POST",
+		}),
 	adminReset: (target: "stats" | "lookups" | "submissions") =>
 		request<{ ok: true; deleted?: number }>("/api/admin/reset", {
 			method: "POST",
@@ -178,6 +205,8 @@ export interface AdminSettings {
 	site_title: string;
 	tagline_vi: string;
 	tagline_en: string;
+	tiktok_url: string;
+	youtube_url: string;
 }
 
 export interface Stats {

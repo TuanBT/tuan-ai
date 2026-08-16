@@ -3,6 +3,7 @@ import {
 	b64urlDecode,
 	b64urlEncode,
 	clampText,
+	hasEnoughToSubmit,
 	hashIp,
 	isCode,
 	isLocalRequest,
@@ -63,7 +64,7 @@ describe("băm IP", () => {
 		expect(await hashIp("1.2.3.4", "muoi")).toBe(await hashIp("1.2.3.4", "muoi"));
 	});
 
-	it("đổi muối là đổi kết quả — không dò ngược được sang trang khác", async () => {
+	it("đổi muối là đổi kết quả, không dò ngược được sang trang khác", async () => {
 		expect(await hashIp("1.2.3.4", "muoi-a")).not.toBe(
 			await hashIp("1.2.3.4", "muoi-b"),
 		);
@@ -99,7 +100,7 @@ describe("mốc thời gian theo UTC", () => {
 		expect(secondsUntilUtcMidnight(new Date("2026-05-01T00:00:00Z"))).toBe(86400);
 	});
 
-	it("không bao giờ trả về 0 — đồng hồ đếm ngược cần một con số dương", () => {
+	it("không bao giờ trả về 0, đồng hồ đếm ngược cần một con số dương", () => {
 		expect(
 			secondsUntilUtcMidnight(new Date("2026-05-01T23:59:59.999Z")),
 		).toBeGreaterThan(0);
@@ -125,7 +126,7 @@ describe("nhận diện máy lập trình", () => {
 		expect(isLocalRequest("http://localhost:5173/api/config")).toBe(true);
 		expect(isLocalRequest("http://127.0.0.1:8787/")).toBe(true);
 		expect(isLocalRequest("https://tuan-ai.bttvn-4t.workers.dev/")).toBe(false);
-		// Tên miền cố tình đặt cho giống — không được lọt.
+		// Tên miền cố tình đặt cho giống, không được lọt.
 		expect(isLocalRequest("https://localhost.ke-gian.com/")).toBe(false);
 		expect(isLocalRequest("khong-phai-url")).toBe(false);
 	});
@@ -141,5 +142,24 @@ describe("cắt chữ nhập vào", () => {
 		expect(clampText(null, 10)).toBe("");
 		expect(clampText(undefined, 10)).toBe("");
 		expect(clampText(42, 10)).toBe("");
+	});
+});
+
+describe("bài gửi đã đủ để duyệt chưa", () => {
+	it("có mô tả là đủ, không cần chọn kiểu", () => {
+		expect(hasEnoughToSubmit("Lan", "cho ấm trà cúi chào", [])).toBe(true);
+	});
+
+	it("chỉ chọn kiểu, không viết gì cũng được", () => {
+		// Đây là cả lý do của hàm này: người chỉ có tấm ảnh vẫn gửi được.
+		expect(hasEnoughToSubmit("Lan", "", ["surprise"])).toBe(true);
+	});
+
+	it("không mô tả, không kiểu thì chưa đủ", () => {
+		expect(hasEnoughToSubmit("Lan", "", [])).toBe(false);
+	});
+
+	it("thiếu tên thì không đủ, dù có đủ thứ khác", () => {
+		expect(hasEnoughToSubmit("", "cho gấu bông vẫy tay", ["funny"])).toBe(false);
 	});
 });

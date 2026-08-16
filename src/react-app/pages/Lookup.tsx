@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { CopyCode } from "../components/CopyCode";
 import { Layout } from "../components/Layout";
 import { ApiError, api, type Submission } from "../lib/api";
 import { CODE_LENGTH, CODE_PREFIX, codeDigits, digitsOnly, fullCode } from "../lib/code";
@@ -11,6 +12,14 @@ const BADGE: Record<string, string> = {
 	selected: "ok",
 	done: "ok",
 	rejected: "bad",
+};
+
+/** Chặng đang sáng trên thanh tiến trình: nhận → chọn → lên sóng. */
+const STAGE: Record<string, number> = {
+	new: 0,
+	selected: 1,
+	done: 2,
+	rejected: -1,
 };
 
 /**
@@ -71,6 +80,7 @@ function LookupView({ code }: { code: string | undefined }) {
 			<div className="hero">
 				<span className="eyebrow">{t.lookupBtn}</span>
 				<h1>{t.lookupTitle}</h1>
+				<p>{t.lookupLead}</p>
 			</div>
 
 			<form
@@ -121,11 +131,27 @@ function LookupView({ code }: { code: string | undefined }) {
 			{result && !busy && (
 				<div className="detail">
 					<div className="detail-head">
-						<span className="detail-code">{result.code}</span>
+						<CopyCode code={result.code} compact />
 						<span className={`badge ${BADGE[result.status] ?? ""}`}>
 							{statusText[result.status]?.title ?? result.status}
 						</span>
 					</div>
+
+					{/* "Đang chờ duyệt" một mình thì mơ hồ: chờ tới bao giờ, còn mấy
+					    chặng nữa? Thanh này cho thấy bài đang ở đâu trên đường đi. */}
+					{result.status !== "rejected" && (
+						<ol className="track">
+							{[t.stepReceived, t.stepPicked, t.stepLive].map((label, index) => (
+								<li
+									key={label}
+									className={index <= STAGE[result.status] ? "on" : ""}
+								>
+									<span className="track-dot" aria-hidden="true" />
+									{label}
+								</li>
+							))}
+						</ol>
+					)}
 
 					<p style={{ margin: 0, color: "var(--muted)", fontSize: 14 }}>
 						{statusText[result.status]?.body}
@@ -171,11 +197,13 @@ function LookupView({ code }: { code: string | undefined }) {
 			)}
 
 			{/* Không có tài khoản, nên mất mã là mất bài. Danh sách này là đường
-			    quay lại, và nó nằm trọn trong máy của người dùng. */}
-			{saved.length > 0 && (
-				<section className="mine">
-					<div className="mine-head">
-						<h2>{t.mineTitle}</h2>
+			    quay lại, và nó nằm trọn trong máy của người dùng. Khi rỗng vẫn hiện
+			    khung: người vừa bấm "Bài của tôi" cần biết mình đang ở đúng chỗ,
+			    chứ không phải nhìn một trang trắng. */}
+			<section className="mine">
+				<div className="mine-head">
+					<h2>{t.mineTitle}</h2>
+					{saved.length > 0 && (
 						<button
 							type="button"
 							className="linkish"
@@ -187,37 +215,48 @@ function LookupView({ code }: { code: string | undefined }) {
 						>
 							{t.mineForgetAll}
 						</button>
-					</div>
+					)}
+				</div>
 
-					<div className="rows">
-						{saved.map((entry) => (
-							<div className="row" key={entry.code}>
-								<Link className="mine-link" to={`/r/${entry.code}`}>
-									<strong>{entry.code}</strong>
-									<small>
-										{entry.nickname} ·{" "}
-										{new Date(entry.at).toLocaleDateString(locale)}
-									</small>
-								</Link>
-								<button
-									type="button"
-									className="chip"
-									title={t.mineForgetOne}
-									aria-label={`${t.mineForgetOne} ${entry.code}`}
-									onClick={() => {
-										forget(entry.code);
-										setSaved(mine());
-									}}
-								>
-									×
-								</button>
-							</div>
-						))}
+				{saved.length === 0 ? (
+					<div className="empty">
+						<p>{t.mineEmpty}</p>
+						<Link className="cta-ghost" to="/">
+							{t.navSubmit}
+						</Link>
 					</div>
+				) : (
+					<>
+						<div className="rows">
+							{saved.map((entry) => (
+								<div className="row" key={entry.code}>
+									<Link className="mine-link" to={`/r/${entry.code}`}>
+										<strong>{entry.code}</strong>
+										<small>
+											{entry.nickname} ·{" "}
+											{new Date(entry.at).toLocaleDateString(locale)}
+										</small>
+									</Link>
+									<button
+										type="button"
+										className="chip"
+										title={t.mineForgetOne}
+										aria-label={`${t.mineForgetOne} ${entry.code}`}
+										onClick={() => {
+											forget(entry.code);
+											setSaved(mine());
+										}}
+									>
+										×
+									</button>
+								</div>
+							))}
+						</div>
 
-					<p className="hint">{t.mineHint}</p>
-				</section>
-			)}
+						<p className="hint">{t.mineHint}</p>
+					</>
+				)}
+			</section>
 		</Layout>
 	);
 }

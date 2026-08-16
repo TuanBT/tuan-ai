@@ -8,6 +8,8 @@ export interface Settings {
 	site_title: string;
 	tagline_vi: string;
 	tagline_en: string;
+	tiktok_url: string;
+	youtube_url: string;
 }
 
 const FALLBACK: Settings = {
@@ -18,22 +20,42 @@ const FALLBACK: Settings = {
 	max_per_ip_day: 3,
 	submissions_open: true,
 	site_title: "Tuân AI",
-	tagline_vi: "Biến ảnh tĩnh của bạn thành những video sáng tạo vui nhộn",
-	tagline_en: "Turn your still photos into fun, creative videos",
+	tagline_vi: "Cho đồ vật vô tri sống dậy",
+	tagline_en: "Bring lifeless objects to life",
+	// Rỗng nghĩa là chưa khai báo, giao diện giấu hẳn nút thay vì dẫn đi đâu đó.
+	tiktok_url: "",
+	youtube_url: "",
 };
 
-/** Giới hạn an toàn — chặn việc gõ nhầm trong /admin làm hỏng cả trang. */
+/**
+ * Đường dẫn kênh do người quản trị gõ tay, rồi đổ thẳng vào `href`. Gõ nhầm
+ * thành `javascript:…` là mở đường chạy mã ngay trên trang, nên chỉ nhận đúng
+ * hai giao thức của web; còn lại coi như chưa khai báo.
+ */
+function safeUrl(value: string | undefined): string {
+	if (!value) return "";
+	try {
+		const url = new URL(value.trim());
+		return url.protocol === "https:" || url.protocol === "http:"
+			? url.toString()
+			: "";
+	} catch {
+		return "";
+	}
+}
+
+/** Giới hạn an toàn. Chặn việc gõ nhầm trong /admin làm hỏng cả trang. */
 const BOUNDS: Record<string, [number, number]> = {
 	retention_days: [1, 365],
-	// Không cho ngắn hơn 7 ngày: bản quét đêm phải kịp dọn ảnh trước khi xoá
-	// dòng, nếu không ảnh nằm lại trong kho mà không còn ai biết đường xoá.
+	// Hạn giữ email. Dưới 7 ngày thì gõ nhầm một con số là email của cả tuần vừa
+	// rồi biến mất trong lần quét đêm kế tiếp, không lấy lại được.
 	data_retention_days: [7, 3650],
 	max_images: [1, 5],
 	daily_write_budget: [10, 1000],
 	max_per_ip_day: [1, 50],
 };
 
-/** Đọc cấu hình từ kết quả truy vấn có sẵn — dùng khi đã gộp nhiều query. */
+/** Đọc cấu hình từ kết quả truy vấn có sẵn. Dùng khi đã gộp nhiều query. */
 export function parseSettings(
 	rows: Array<{ key: string; value: string }>,
 ): Settings {
@@ -48,8 +70,8 @@ export function parseSettings(
 	const retention = num("retention_days", FALLBACK.retention_days);
 	return {
 		retention_days: retention,
-		// Giữ dữ liệu mô tả không bao giờ được ngắn hơn giữ ảnh, nếu không dòng
-		// biến mất trước cả ảnh của chính nó.
+		// Giữ email không bao giờ được ngắn hơn giữ ảnh: người gửi còn xem được ảnh
+		// của mình mà chỗ liên lạc để báo tin đã bị xoá là chuyện ngược đời.
 		data_retention_days: Math.max(
 			retention,
 			num("data_retention_days", FALLBACK.data_retention_days),
@@ -61,6 +83,8 @@ export function parseSettings(
 		site_title: raw.get("site_title") || FALLBACK.site_title,
 		tagline_vi: raw.get("tagline_vi") || FALLBACK.tagline_vi,
 		tagline_en: raw.get("tagline_en") || FALLBACK.tagline_en,
+		tiktok_url: safeUrl(raw.get("tiktok_url")),
+		youtube_url: safeUrl(raw.get("youtube_url")),
 	};
 }
 

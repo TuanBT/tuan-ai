@@ -18,7 +18,7 @@ const EMPTY = (day: string): DailyUsage => ({
 
 export const USAGE_TODAY_QUERY = "SELECT * FROM daily_usage WHERE day = ?";
 
-/** Dựng bản ghi từ kết quả có sẵn — dùng khi đã gộp nhiều query. */
+/** Dựng bản ghi từ kết quả có sẵn. Dùng khi đã gộp nhiều query. */
 export function parseUsage(row: DailyUsage | null | undefined): DailyUsage {
 	return row ?? EMPTY(utcDay());
 }

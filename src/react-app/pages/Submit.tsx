@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Countdown } from "../components/Countdown";
+import { CopyCode } from "../components/CopyCode";
 import { Turnstile } from "../components/Turnstile";
-import { ApiError, api, type GalleryItem, type SiteConfig } from "../lib/api";
+import { ApiError, api, type GalleryItem } from "../lib/api";
 import { compressImage, formatBytes } from "../lib/compress";
 import { useLang } from "../lib/lang-context";
 import { remember } from "../lib/mine";
+import { useSiteConfig } from "../lib/site-config";
+import { ChannelLinksRow } from "../components/Channels";
 import { Layout } from "../components/Layout";
 
 interface Picked {
@@ -15,7 +18,7 @@ interface Picked {
 
 export function Submit() {
 	const { lang, t } = useLang();
-	const [config, setConfig] = useState<SiteConfig | null>(null);
+	const { config, failed, reload } = useSiteConfig();
 	const [gallery, setGallery] = useState<GalleryItem[]>([]);
 	const [picked, setPicked] = useState<Picked[]>([]);
 	const [busy, setBusy] = useState(false);
@@ -29,11 +32,19 @@ export function Submit() {
 	const [error, setError] = useState<string | null>(null);
 	const [done, setDone] = useState<string | null>(null);
 	const fileInput = useRef<HTMLInputElement>(null);
+	// Chọn ngẫu nhiên một lần mỗi lượt vào trang: người quay lại lần sau thấy ý
+	// khác, thay vì tưởng trang chỉ làm được đúng ba thứ đó.
+	const [ideaPicks] = useState(() =>
+		[0, 1, 2, 3, 4, 5].sort(() => Math.random() - 0.5).slice(0, 3),
+	);
 
 	useEffect(() => {
-		api.config().then(setConfig).catch(() => setError("network"));
 		api.gallery().then((data) => setGallery(data.items)).catch(() => {});
 	}, []);
+
+	useEffect(() => {
+		if (failed) setError("network");
+	}, [failed]);
 
 	// Ảnh xem trước giữ trong bộ nhớ trình duyệt; thu hồi khi rời trang.
 	useEffect(() => {
@@ -100,7 +111,7 @@ export function Submit() {
 
 		try {
 			const result = await api.submit(form);
-			// Mã là chìa khoá duy nhất để quay lại bài này — nhớ hộ người dùng ngay
+			// Mã là chìa khoá duy nhất để quay lại bài này, nhớ hộ người dùng ngay
 			// trên máy họ, phòng khi họ đóng tab trước lúc kịp chép mã.
 			remember(result.code, nickname.trim());
 			setDone(result.code);
@@ -108,9 +119,9 @@ export function Submit() {
 		} catch (err) {
 			const code = err instanceof ApiError ? err.code : "generic";
 			setError(code);
-			if (code === "quota") {
-				api.config().then(setConfig).catch(() => {});
-			}
+			// Hết hạn mức thì cấu hình vừa đổi ngay lúc này, lấy bản mới để trang
+			// chuyển sang màn hình "tạm đầy" thay vì mời gửi tiếp rồi lại báo lỗi.
+			if (code === "quota") reload();
 		} finally {
 			setBusy(false);
 		}
@@ -137,25 +148,32 @@ export function Submit() {
 				<div className="panel">
 					<span className="badge ok">✓</span>
 					<h2>{t.successTitle}</h2>
-					<div className="code-box">{done}</div>
+					<span className="hint">{t.yourCode}</span>
+					<CopyCode code={done} />
 					<p>{t.successBody}</p>
-					<Link className="cta" to={`/r/${done}`} style={{ marginTop: 6 }}>
-						{t.viewStatus}
-					</Link>
-					<button
-						type="button"
-						className="cta-ghost"
-						onClick={() => window.location.reload()}
-					>
-						{t.another}
-					</button>
+					<div className="panel-actions">
+						<Link className="cta" to={`/r/${done}`}>
+							{t.viewStatus}
+						</Link>
+						<button
+							type="button"
+							className="cta-ghost"
+							onClick={() => window.location.reload()}
+						>
+							{t.another}
+						</button>
+					</div>
+
+					{/* Chờ duyệt mất vài ngày. Mời họ xem kênh ngay lúc đang hào hứng
+					    nhất, thay vì để trang thành ngõ cụt. */}
+					<ChannelLinksRow channels={config.channels} tone="loud" />
 				</div>
 			</Layout>
 		);
 	}
 
 	// Ba lý do đóng form, mỗi lý do một lời giải thích riêng. "setup" là khi chưa
-	// cấu hình chống bot — lỗi của chủ trang, nên nói cho tử tế thay vì để người
+	// cấu hình chống bot, lỗi của chủ trang, nên nói cho tử tế thay vì để người
 	// dùng điền xong cả form rồi mới ăn lỗi.
 	const closed = {
 		paused: {
@@ -175,10 +193,12 @@ export function Submit() {
 		},
 	}[config.closedReason ?? "paused"];
 
+	// Mô tả hoặc kiểu: có một trong hai là đủ. Ai chỉ có tấm ảnh thì chạm
+	// "Để Tuân tự quyết" là gửi được, không phải nặn ra cho đủ chữ.
 	const canSubmit =
 		picked.length > 0 &&
 		nickname.trim().length > 0 &&
-		description.trim().length > 0 &&
+		(description.trim().length > 0 || styles.length > 0) &&
 		consent &&
 		!busy &&
 		!compressing &&
@@ -190,6 +210,18 @@ export function Submit() {
 				<span className="eyebrow">{t.submitEyebrow}</span>
 				<h1>{tagline}</h1>
 			</div>
+
+			{/* Người đến từ TikTok chưa biết trang này là gì và mất bao lâu mới có
+			    kết quả. Ba ô này trả lời trước khi họ phải hỏi. */}
+			<ol className="steps" aria-label={t.howTitle}>
+				{t.steps.map((step, index) => (
+					<li key={step.title}>
+						<span className="steps-num">{index + 1}</span>
+						<strong>{step.title}</strong>
+						<small>{step.body}</small>
+					</li>
+				))}
+			</ol>
 
 			{!config.open ? (
 				<div className="panel">
@@ -254,6 +286,7 @@ export function Submit() {
 					{config.styles.length > 0 && (
 						<div className="field">
 							<span className="label">{t.styleLabel}</span>
+							<span className="hint">{t.styleHint}</span>
 							<div className="chips">
 								{config.styles.map((style) => (
 									<button
@@ -274,6 +307,11 @@ export function Submit() {
 						<label className="label" htmlFor="desc">
 							{t.descLabel}
 						</label>
+						{/* Chỉ nói "để trống cũng được" khi điều đó đúng. Hiện lúc chưa
+						    chọn kiểu nào thì thành lời khuyên sai, gửi sẽ không đi. */}
+						{styles.length > 0 && (
+							<span className="hint">{t.descOptional}</span>
+						)}
 						<textarea
 							id="desc"
 							className="textarea"
@@ -283,6 +321,29 @@ export function Submit() {
 							onChange={(e) => setDescription(e.target.value)}
 						/>
 						<span className="counter">{description.length}/500</span>
+
+						{/* Ô trống là chỗ nhiều người bỏ cuộc. Gợi ý chỉ hiện khi chưa
+						    gõ gì, và biến mất ngay khi họ bắt đầu, chạm vào không bao
+						    giờ đè lên chữ của người dùng. */}
+						{description.length === 0 && (
+							<div className="ideas">
+								<span className="hint">{t.ideasLabel}</span>
+								<div className="chips">
+									{ideaPicks
+										.filter((index) => index < t.ideas.length)
+										.map((index) => (
+											<button
+												key={index}
+												type="button"
+												className="chip idea"
+												onClick={() => setDescription(t.ideas[index])}
+											>
+												{t.ideas[index]}
+											</button>
+										))}
+								</div>
+							</div>
+						)}
 					</div>
 
 					<div className="field">
@@ -329,7 +390,10 @@ export function Submit() {
 
 			{gallery.length > 0 && (
 				<section className="gallery">
-					<h2>{t.galleryTitle}</h2>
+					<div className="section-head">
+						<h2>{t.galleryTitle}</h2>
+						<span className="hint">{t.galleryHint}</span>
+					</div>
 					<div className="gallery-grid">
 						{gallery.map((item) => (
 							<a

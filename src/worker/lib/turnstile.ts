@@ -4,7 +4,7 @@ const VERIFY_URL =
 /**
  * Kiểm tra captcha với Cloudflare.
  *
- * Hàm này đòi `secret` là bắt buộc — trước đây nó tự cho qua khi thiếu secret,
+ * Hàm này đòi `secret` là bắt buộc. Trước đây nó tự cho qua khi thiếu secret,
  * nghĩa là quên nạp `TURNSTILE_SECRET` trên production là form mở toang cho bot
  * mà không có dấu hiệu nào. Việc quyết định "thiếu secret thì làm gì" nay nằm ở
  * phía route: bỏ qua khi chạy local, từ chối nhận bài khi chạy thật.
