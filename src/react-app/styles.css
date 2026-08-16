@@ -33,42 +33,51 @@
 }
 
 /* Phần lớn người xem mở link từ TikTok lúc tối, máy để chế độ tối, nền trắng
-   loá cả màn hình. Chỉ đổi bảng màu, mọi bố cục giữ nguyên. */
-@media (prefers-color-scheme: dark) {
-	:root {
-		--bg: #15141a;
-		--ink: #f1eef5;
-		--muted: #a49fae;
-		--faint: #7b7586;
-		--line: #2b2833;
-		--field: #1d1b24;
-		--accent: #f2795c;
-		--accent-dark: #ff9077;
-		--accent-ink: #1a1017;
-		--chip: #2c2027;
-		--ok: #74c79c;
-		--warn: #dda862;
-		--bad: #f08b77;
-		--ok-bg: #1b2b24;
-		--warn-bg: #2d2517;
-		--bad-bg: #32201d;
-		--warn-ink: #e8c48c;
-		--bad-ink: #f3ac9c;
-	}
+   loá cả màn hình. Chỉ đổi bảng màu, mọi bố cục giữ nguyên.
 
-	/* Ảnh chụp thường sáng hơn hẳn nền tối; hạ một chút cho đỡ chói. */
-	.thumb img,
-	.gallery-item img,
-	.card-imgs img {
-		filter: brightness(0.94);
-	}
+   Chọn theo `[data-theme]` chứ không theo `@media (prefers-color-scheme)`: thẻ
+   <html> luôn được gắn sẵn thuộc tính này ngay lúc khởi động (xem lib/theme.ts),
+   lấy theo máy khi người dùng chưa tự chọn. Nhờ vậy bảng màu dưới đây chỉ tồn
+   tại một bản, và cái nút bật tắt nền tối dùng đúng bản đó. */
+:root[data-theme="light"] {
+	color-scheme: light;
+}
 
-	/* Nền tối thì "nổi lên" phải là sáng hơn, không phải tối hơn như bản sáng;
-	   và bóng đổ đen trên nền đen thì bằng không nhìn thấy gì. */
-	.mainnav a.active {
-		background: #322e3d;
-		box-shadow: none;
-	}
+:root[data-theme="dark"] {
+	color-scheme: dark;
+
+	--bg: #15141a;
+	--ink: #f1eef5;
+	--muted: #a49fae;
+	--faint: #7b7586;
+	--line: #2b2833;
+	--field: #1d1b24;
+	--accent: #f2795c;
+	--accent-dark: #ff9077;
+	--accent-ink: #1a1017;
+	--chip: #2c2027;
+	--ok: #74c79c;
+	--warn: #dda862;
+	--bad: #f08b77;
+	--ok-bg: #1b2b24;
+	--warn-bg: #2d2517;
+	--bad-bg: #32201d;
+	--warn-ink: #e8c48c;
+	--bad-ink: #f3ac9c;
+}
+
+/* Ảnh chụp thường sáng hơn hẳn nền tối; hạ một chút cho đỡ chói. */
+[data-theme="dark"] .thumb img,
+[data-theme="dark"] .gallery-item img,
+[data-theme="dark"] .card-imgs img {
+	filter: brightness(0.94);
+}
+
+/* Nền tối thì "nổi lên" phải là sáng hơn, không phải tối hơn như bản sáng; và
+   bóng đổ đen trên nền đen thì bằng không nhìn thấy gì. */
+[data-theme="dark"] .mainnav a.active {
+	background: #322e3d;
+	box-shadow: none;
 }
 
 * {
@@ -205,6 +214,33 @@ select {
 	color: var(--accent-ink);
 }
 
+.topbar-tools {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* Cùng chiều cao và cùng viền bo tròn với ô chọn ngôn ngữ bên cạnh, để hai thứ
+   đứng cạnh nhau thành một cặp chứ không phải hai món rời. */
+.theme-toggle {
+	width: 30px;
+	height: 30px;
+	display: grid;
+	place-items: center;
+	border: 1px solid var(--line);
+	border-radius: 99px;
+	background: none;
+	color: var(--muted);
+	font-size: 14px;
+	line-height: 1;
+	cursor: pointer;
+	transition: color 0.15s, border-color 0.15s;
+}
+.theme-toggle:hover {
+	color: var(--accent);
+	border-color: var(--accent);
+}
+
 .lang-toggle {
 	display: flex;
 	border: 1px solid var(--line);
@@ -292,30 +328,38 @@ select {
 
 /* ---------- ba bước ---------- */
 
-/* Trên điện thoại xếp dọc cho dễ đọc; màn rộng thì thành ba cột ngang. */
-.steps {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: grid;
+/* ---------- biểu mẫu ---------- */
+
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 26px;
+}
+
+/*
+ * Số bước gắn thẳng vào từng phần của biểu mẫu.
+ *
+ * Trước đây trang mở đầu bằng ba ô "ba bước là xong" kể quy trình, rồi mới tới
+ * biểu mẫu không đánh số: người đọc phải khớp lời kể với việc làm trong đầu.
+ * Giờ con số đứng ngay trên việc mà nó nói tới, và khối kể chuyện kia biến mất.
+ */
+.step {
+	display: flex;
+	flex-direction: column;
 	gap: 10px;
 }
-.steps li {
-	display: grid;
-	grid-template-columns: auto 1fr;
-	column-gap: 11px;
-	row-gap: 2px;
-	align-items: baseline;
-	border: 1px solid var(--line);
-	border-radius: var(--radius);
-	padding: 13px 15px;
-	background: var(--field);
+.step-head {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	margin: 0;
+	font-size: 16px;
+	font-weight: 700;
+	letter-spacing: -0.015em;
 }
-.steps-num {
-	grid-row: span 2;
-	align-self: center;
-	width: 25px;
-	height: 25px;
+.step-num {
+	width: 24px;
+	height: 24px;
 	flex: none;
 	display: grid;
 	place-items: center;
@@ -326,48 +370,61 @@ select {
 	font-size: 12px;
 	font-weight: 700;
 }
-.steps strong {
-	font-size: 14.5px;
-	letter-spacing: -0.01em;
+
+/* Câu ngắn, chữ đậm hơn hint: đây là điều kiện nhận bài, không phải lời khuyên. */
+.rule {
+	margin: 0;
+	font-size: 12.5px;
+	color: var(--muted);
 }
-.steps small {
+
+/*
+ * Phần gấp lại. Mọi thứ chỉ cần cho người còn phân vân đều nằm trong này: hướng
+ * dẫn chọn ảnh, gợi ý ý tưởng. Người đã biết mình muốn gì thì không phải cuộn
+ * qua chúng, mà người bí vẫn tìm thấy chỉ bằng một cú chạm.
+ */
+.more > summary {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	width: fit-content;
+	cursor: pointer;
+	list-style: none;
+	font-size: 12.5px;
+	font-weight: 600;
+	color: var(--accent);
+}
+.more > summary::-webkit-details-marker {
+	display: none;
+}
+/* Mũi tên tự vẽ: dấu tam giác mặc định của trình duyệt mỗi nơi một kiểu, và
+   không đổi màu theo phần còn lại của trang được. */
+.more > summary::before {
+	content: "";
+	width: 0;
+	height: 0;
+	border-left: 5px solid currentColor;
+	border-top: 4px solid transparent;
+	border-bottom: 4px solid transparent;
+	transition: transform 0.15s;
+}
+.more[open] > summary::before {
+	transform: rotate(90deg);
+}
+.more > summary:hover {
+	text-decoration: underline;
+}
+.more > *:not(summary) {
+	margin: 8px 0 0;
 	font-size: 12.5px;
 	color: var(--muted);
 	line-height: 1.45;
-}
-
-@media (min-width: 560px) {
-	.steps {
-		grid-template-columns: repeat(3, 1fr);
-	}
-	.steps li {
-		grid-template-columns: 1fr;
-		align-content: start;
-	}
-	.steps-num {
-		grid-row: auto;
-		margin-bottom: 7px;
-	}
-}
-
-/* ---------- biểu mẫu ---------- */
-
-.form {
-	display: flex;
-	flex-direction: column;
-	gap: 20px;
 }
 
 .field {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
-}
-
-.label {
-	font-size: 14px;
-	font-weight: 700;
-	letter-spacing: -0.01em;
 }
 
 .hint {
@@ -457,23 +514,6 @@ select {
 	color: #fff;
 }
 
-.advisory {
-	display: flex;
-	gap: 10px;
-	font-size: 12.5px;
-	line-height: 1.5;
-	color: var(--muted);
-	background: var(--chip);
-	border-radius: var(--radius);
-	padding: 12px 14px;
-}
-.advisory-bar {
-	width: 3px;
-	flex: none;
-	border-radius: 3px;
-	background: var(--accent);
-}
-
 .chips {
 	display: flex;
 	flex-wrap: wrap;
@@ -497,12 +537,6 @@ select {
 
 /* ---------- gợi ý ý tưởng ---------- */
 
-.ideas {
-	display: flex;
-	flex-direction: column;
-	gap: 7px;
-	margin-top: 4px;
-}
 /* Gợi ý là cả một câu, không phải nhãn ngắn, nên cho xuống dòng và căn trái, chứ
    ép vào viên thuốc tròn một dòng thì cắt mất chữ. */
 .chip.idea {
@@ -815,11 +849,6 @@ select {
 	gap: 10px;
 	font-size: 12px;
 	color: var(--faint);
-}
-.footer p {
-	margin: 0;
-	max-width: 46ch;
-	line-height: 1.5;
 }
 .footer-links {
 	display: flex;

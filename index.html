@@ -3,16 +3,11 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta
-			name="theme-color"
-			content="#ffffff"
-			media="(prefers-color-scheme: light)"
-		/>
-		<meta
-			name="theme-color"
-			content="#15141a"
-			media="(prefers-color-scheme: dark)"
-		/>
+		<!-- Màu thanh trình duyệt trên điện thoại. Trước đây có hai thẻ gắn theo
+		     `prefers-color-scheme`, nhưng từ khi có nút bật tắt nền tối thì cài đặt
+		     của máy không còn là tiếng nói cuối cùng; lib/theme.ts đổi nội dung thẻ
+		     này theo đúng bảng màu đang hiện. -->
+		<meta name="theme-color" content="#ffffff" />
 		<title>Tuân AI · Gửi ảnh, nhận tác phẩm</title>
 		<meta
 			name="description"

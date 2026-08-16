@@ -22,28 +22,32 @@ interface Dictionary {
 	navSubmit: string;
 	navMine: string;
 	navAdmin: string;
-	footerBlurb: string;
 	backHome: string;
 	copyCode: string;
 	copied: string;
 	submitEyebrow: string;
-	howTitle: string;
-	steps: Array<{ title: string; body: string }>;
+	/* Ba bước của chính biểu mẫu. Trước đây trang mở đầu bằng một khối "ba bước"
+	   kể chuyện quy trình, tách rời khỏi việc phải làm; giờ số bước gắn thẳng vào
+	   từng phần của biểu mẫu, nên không còn phải nói trước rồi làm lại từ đầu. */
+	stepPhotos: string;
+	stepIdea: string;
+	stepIdeaHint: string;
+	stepYou: string;
 	pickImages: string;
 	pickHint: (max: number) => string;
 	compressing: string;
 	advisory: string;
-	styleLabel: string;
-	styleHint: string;
-	descLabel: string;
-	descOptional: string;
+	advisoryTitle: string;
+	advisoryMore: string;
 	descPlaceholder: string;
-	ideasLabel: string;
+	ideasTitle: string;
 	ideas: string[];
 	nickname: string;
 	email: string;
-	emailHint: string;
 	consent: string;
+	/* Câu này sống ở trang tra cứu, không phải trang gửi bài: chỗ đó nó chỉ là
+	   thêm một dòng phải đọc trước khi được bấm gửi, còn ở đây nó trả lời đúng
+	   câu người vừa tra mã sắp hỏi. */
 	retentionNote: (days: number) => string;
 	submit: string;
 	sending: string;
@@ -97,39 +101,24 @@ export const copy: Record<Lang, Dictionary> = {
 		navSubmit: "Gửi ý tưởng",
 		navMine: "Bài của tôi",
 		navAdmin: "Quản trị",
-		footerBlurb:
-			"Hộp thu ý tưởng của kênh Tuân AI. Bạn gửi ảnh, mình dựng clip, tác phẩm lên sóng.",
 		backHome: "Trang chủ",
 		copyCode: "Chép mã",
 		copied: "Đã chép!",
 		submitEyebrow: "Gửi ý tưởng",
-		howTitle: "Ba bước là xong",
-		steps: [
-			{
-				title: "Chọn ảnh, kể ý tưởng",
-				body: "Một bức tranh, một món đồ, một chú gấu bông, càng vô tri càng vui.",
-			},
-			{
-				title: "Mình dựng clip",
-				body: "Mình xem từng bài một và chọn những ý nghe là thấy buồn cười.",
-			},
-			{
-				title: "Giữ mã theo dõi",
-				body: "Có mã là tra được bài của bạn đã lên sóng hay chưa, bất cứ lúc nào.",
-			},
-		],
+		stepPhotos: "Chọn ảnh",
+		stepIdea: "Muốn clip thế nào?",
+		stepIdeaHint: "Chọn một kiểu, hoặc gõ vài chữ. Một trong hai là đủ.",
+		stepYou: "Bạn là ai?",
 		pickImages: "Chạm để chọn ảnh",
 		pickHint: (max: number) => `1–${max} tấm · JPG, PNG`,
 		compressing: "Đang xử lý ảnh…",
-		advisory:
-			"Hợp nhất là ảnh tranh vẽ, đồ vật, món ăn, đồ chơi, càng vô tri càng dễ thành clip vui. Nếu ảnh có mặt người, hãy chắc chắn đó là ảnh bạn được phép dùng. Không gửi ảnh nhạy cảm liên quan tới trẻ em.",
-		styleLabel: "Bạn muốn kiểu nào?",
-		styleHint:
-			"Chưa hình dung ra gì thì chạm “Để Tuân tự quyết” là xong, bạn chỉ cần gửi ảnh.",
-		descLabel: "Kể mình nghe bạn muốn gì nhé",
-		descOptional: "Đã chọn kiểu ở trên rồi thì để trống ô này cũng được.",
+		// Phần bắt buộc phải thấy ngay: đây là luật, không phải lời khuyên.
+		advisory: "Đừng gửi ảnh nhạy cảm hay ảnh trẻ em.",
+		advisoryTitle: "Ảnh thế nào thì hợp?",
+		advisoryMore:
+			"Hợp nhất là tranh vẽ, đồ vật, món ăn, đồ chơi — càng vô tri càng dễ thành clip vui. Nếu ảnh có mặt người, hãy chắc chắn đó là ảnh bạn được phép dùng.",
 		descPlaceholder: "Ví dụ: cho ấm trà tự rót nước rồi cúi chào khán giả…",
-		ideasLabel: "Chưa nghĩ ra gì? Chạm thử một ý:",
+		ideasTitle: "Chưa nghĩ ra gì?",
 		ideas: [
 			"Ly cà phê trên bàn tự nhảy cha-cha, khói bốc lên theo nhịp nhạc.",
 			"Bức tranh phong cảnh: gió thổi qua đồng lúa, con thuyền trôi dần ra khỏi khung.",
@@ -140,10 +129,9 @@ export const copy: Record<Lang, Dictionary> = {
 		],
 		nickname: "Tên hiển thị khi lên sóng",
 		email: "Email (không bắt buộc)",
-		emailHint: "Chỉ dùng để báo khi bài của bạn được chọn.",
 		consent: "Mình đồng ý cho ảnh và tác phẩm xuất hiện trên kênh.",
 		retentionNote: (days: number) =>
-			`Ảnh gốc của bạn tự xoá sau ${days} ngày, email cũng vậy. Giữ mã lại thì sau này vẫn tra được bài và link clip.`,
+			`Ảnh gốc tự xoá sau ${days} ngày kể từ lúc gửi. Phần nội dung thì giữ lại, cứ giữ mã là sau này vẫn tra được.`,
 		submit: "Gửi ngay",
 		sending: "Đang gửi…",
 		galleryTitle: "Đã lên sóng",
@@ -197,7 +185,8 @@ export const copy: Record<Lang, Dictionary> = {
 		statusRejectedBody:
 			"Lần này mình chưa dùng được bài của bạn, nhưng đừng ngại gửi bài khác nhé.",
 		watchNow: "Xem tác phẩm",
-		imagesGone: "Ảnh gốc đã được xoá tự động để bảo vệ riêng tư của bạn.",
+		imagesGone:
+			"Ảnh gốc đã hết hạn và được xoá tự động. Phần nội dung dưới đây thì vẫn còn.",
 		errors: {
 			quota: "Hôm nay đã nhận đủ bài, bạn quay lại sau nhé.",
 			ip_limit: "Bạn đã gửi khá nhiều bài hôm nay rồi. Mai gửi tiếp nhé!",
@@ -218,40 +207,24 @@ export const copy: Record<Lang, Dictionary> = {
 		navSubmit: "Send an idea",
 		navMine: "My submissions",
 		navAdmin: "Admin",
-		footerBlurb:
-			"The idea inbox for the Tuân AI channel. You send a photo, I make the clip, it goes on air.",
 		backHome: "Home",
 		copyCode: "Copy code",
 		copied: "Copied!",
 		submitEyebrow: "Send an idea",
-		howTitle: "Three steps, that's it",
-		steps: [
-			{
-				title: "Pick a photo, tell the idea",
-				body: "A painting, an object, a teddy bear: the more lifeless, the better.",
-			},
-			{
-				title: "I build the clip",
-				body: "I go through every idea by hand and pick the ones that make me laugh.",
-			},
-			{
-				title: "Keep your code",
-				body: "With the code you can check whether yours has gone on air, any time.",
-			},
-		],
+		stepPhotos: "Pick photos",
+		stepIdea: "What should it do?",
+		stepIdeaHint: "Pick a style or type a few words. Either one is enough.",
+		stepYou: "Who's sending?",
 		pickImages: "Tap to choose photos",
 		pickHint: (max: number) => `1–${max} images · JPG, PNG`,
 		compressing: "Processing images…",
-		advisory:
-			"Paintings, objects, food and toys work best. The more lifeless, the funnier the clip. If a photo shows a person, make sure it's yours to share. Never send sensitive images involving children.",
-		styleLabel: "What would you like?",
-		styleHint:
-			"No idea yet? Tap “Let Tuân decide” and you're done, just send the photo.",
-		descLabel: "Tell me what you have in mind",
-		descOptional: "If you picked a style above, you can leave this empty.",
+		advisory: "Never send sensitive images or images of children.",
+		advisoryTitle: "Which photos work best?",
+		advisoryMore:
+			"Paintings, objects, food and toys work best — the more lifeless, the funnier the clip. If a photo shows a person, make sure it's yours to share.",
 		descPlaceholder:
 			"For example: the teapot pours itself a cup, then takes a bow…",
-		ideasLabel: "Stuck? Tap an idea to start:",
+		ideasTitle: "Stuck?",
 		ideas: [
 			"The coffee cup does a little cha-cha while the steam keeps the beat.",
 			"A landscape painting: wind moves through the field and the boat drifts out of the frame.",
@@ -262,10 +235,9 @@ export const copy: Record<Lang, Dictionary> = {
 		],
 		nickname: "Name to show on air",
 		email: "Email (optional)",
-		emailHint: "Only used to tell you when your idea gets picked.",
 		consent: "I agree to my photo and the result appearing on the channel.",
 		retentionNote: (days: number) =>
-			`Your original photos are deleted automatically after ${days} days, and so is your email. Keep your code and you can still look the entry up later, clip link included.`,
+			`Photos are deleted ${days} days after they arrive. The text stays, so keep your code and you can still look this up later.`,
 		submit: "Send it",
 		sending: "Sending…",
 		galleryTitle: "Recently on air",
@@ -319,7 +291,8 @@ export const copy: Record<Lang, Dictionary> = {
 		statusRejectedBody:
 			"I couldn't use this one, but please do send another idea.",
 		watchNow: "Watch it",
-		imagesGone: "The original photos were deleted automatically for your privacy.",
+		imagesGone:
+			"The original photos have expired and been deleted. The text below is still here.",
 		errors: {
 			quota: "Today's inbox is full. Please come back later.",
 			ip_limit: "You've sent quite a few today. Try again tomorrow!",

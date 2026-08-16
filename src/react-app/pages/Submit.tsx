@@ -211,18 +211,6 @@ export function Submit() {
 				<h1>{tagline}</h1>
 			</div>
 
-			{/* Người đến từ TikTok chưa biết trang này là gì và mất bao lâu mới có
-			    kết quả. Ba ô này trả lời trước khi họ phải hỏi. */}
-			<ol className="steps" aria-label={t.howTitle}>
-				{t.steps.map((step, index) => (
-					<li key={step.title}>
-						<span className="steps-num">{index + 1}</span>
-						<strong>{step.title}</strong>
-						<small>{step.body}</small>
-					</li>
-				))}
-			</ol>
-
 			{!config.open ? (
 				<div className="panel">
 					<span className="badge warn">{closed.badge}</span>
@@ -237,7 +225,11 @@ export function Submit() {
 				</div>
 			) : (
 				<form className="form" onSubmit={send}>
-					<div className="field">
+					<section className="step">
+						<h2 className="step-head">
+							<span className="step-num">1</span>
+							{t.stepPhotos}
+						</h2>
 						<button
 							type="button"
 							className="drop"
@@ -276,17 +268,26 @@ export function Submit() {
 								))}
 							</div>
 						)}
-					</div>
 
-					<div className="advisory">
-						<span className="advisory-bar" />
-						<span>{t.advisory}</span>
-					</div>
+						{/* Luật thì phải thấy ngay; phần hướng dẫn chọn ảnh cho ai còn phân
+						    vân thì gấp lại, vì người đã cầm sẵn ảnh không cần đọc. */}
+						<p className="rule">{t.advisory}</p>
+						<details className="more">
+							<summary>{t.advisoryTitle}</summary>
+							<p>{t.advisoryMore}</p>
+						</details>
+					</section>
 
-					{config.styles.length > 0 && (
-						<div className="field">
-							<span className="label">{t.styleLabel}</span>
-							<span className="hint">{t.styleHint}</span>
+					<section className="step">
+						<h2 className="step-head">
+							<span className="step-num">2</span>
+							{t.stepIdea}
+						</h2>
+						{/* Một dòng lo cả hai ô bên dưới: trước đây kiểu và mô tả mỗi thứ
+						    một lời dặn riêng, nói cùng một ý theo hai cách. */}
+						<span className="hint">{t.stepIdeaHint}</span>
+
+						{config.styles.length > 0 && (
 							<div className="chips">
 								{config.styles.map((style) => (
 									<button
@@ -300,91 +301,91 @@ export function Submit() {
 									</button>
 								))}
 							</div>
+						)}
+
+						<div className="field">
+							<textarea
+								// Nhãn chữ của ô này đã gộp vào tiêu đề bước, mà tiêu đề thì
+								// không gắn được với ô nhập; nói tên ra đây cho trình đọc
+								// màn hình, nếu không ô này thành ô trống không tên.
+								aria-label={t.stepIdea}
+								className="textarea"
+								maxLength={500}
+								placeholder={t.descPlaceholder}
+								value={description}
+								onChange={(e) => setDescription(e.target.value)}
+							/>
+							{/* Bộ đếm chỉ có nghĩa khi đã gõ; hiện sẵn "0/500" ở ô trống chỉ
+							    là thêm một con số vào màn hình. */}
+							{description.length > 0 && (
+								<span className="counter">{description.length}/500</span>
+							)}
+
+							{/* Ô trống là chỗ nhiều người bỏ cuộc, nhưng ba câu gợi ý dài
+							    bày sẵn thì lại thành một bức tường chữ. Gấp lại: ai bí mới
+							    mở, và chạm vào không bao giờ đè lên chữ của người dùng. */}
+							{description.length === 0 && (
+								<details className="more">
+									<summary>{t.ideasTitle}</summary>
+									<div className="chips">
+										{ideaPicks
+											.filter((index) => index < t.ideas.length)
+											.map((index) => (
+												<button
+													key={index}
+													type="button"
+													className="chip idea"
+													onClick={() => setDescription(t.ideas[index])}
+												>
+													{t.ideas[index]}
+												</button>
+											))}
+									</div>
+								</details>
+							)}
 						</div>
-					)}
+					</section>
 
-					<div className="field">
-						<label className="label" htmlFor="desc">
-							{t.descLabel}
+					<section className="step">
+						<h2 className="step-head">
+							<span className="step-num">3</span>
+							{t.stepYou}
+						</h2>
+						<div className="field">
+							<input
+								className="input"
+								maxLength={60}
+								placeholder={t.nickname}
+								value={nickname}
+								onChange={(e) => setNickname(e.target.value)}
+							/>
+							<input
+								className="input"
+								type="email"
+								maxLength={120}
+								placeholder={t.email}
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+							/>
+						</div>
+
+						<label className="consent">
+							<input
+								type="checkbox"
+								checked={consent}
+								onChange={(e) => setConsent(e.target.checked)}
+							/>
+							<span>{t.consent}</span>
 						</label>
-						{/* Chỉ nói "để trống cũng được" khi điều đó đúng. Hiện lúc chưa
-						    chọn kiểu nào thì thành lời khuyên sai, gửi sẽ không đi. */}
-						{styles.length > 0 && (
-							<span className="hint">{t.descOptional}</span>
-						)}
-						<textarea
-							id="desc"
-							className="textarea"
-							maxLength={500}
-							placeholder={t.descPlaceholder}
-							value={description}
-							onChange={(e) => setDescription(e.target.value)}
-						/>
-						<span className="counter">{description.length}/500</span>
 
-						{/* Ô trống là chỗ nhiều người bỏ cuộc. Gợi ý chỉ hiện khi chưa
-						    gõ gì, và biến mất ngay khi họ bắt đầu, chạm vào không bao
-						    giờ đè lên chữ của người dùng. */}
-						{description.length === 0 && (
-							<div className="ideas">
-								<span className="hint">{t.ideasLabel}</span>
-								<div className="chips">
-									{ideaPicks
-										.filter((index) => index < t.ideas.length)
-										.map((index) => (
-											<button
-												key={index}
-												type="button"
-												className="chip idea"
-												onClick={() => setDescription(t.ideas[index])}
-											>
-												{t.ideas[index]}
-											</button>
-										))}
-								</div>
-							</div>
-						)}
-					</div>
+						<Turnstile siteKey={config.turnstileSiteKey} onToken={setToken} />
 
-					<div className="field">
-						<input
-							className="input"
-							maxLength={60}
-							placeholder={t.nickname}
-							value={nickname}
-							onChange={(e) => setNickname(e.target.value)}
-						/>
-						<input
-							className="input"
-							type="email"
-							maxLength={120}
-							placeholder={t.email}
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-						/>
-						<span className="hint">{t.emailHint}</span>
-					</div>
+						{errorText && <div className="error">{errorText}</div>}
 
-					<label className="consent">
-						<input
-							type="checkbox"
-							checked={consent}
-							onChange={(e) => setConsent(e.target.checked)}
-						/>
-						<span>{t.consent}</span>
-					</label>
-
-					{/* Nói thẳng thời hạn giữ ảnh ngay chỗ người ta quyết định gửi hay
-					    không, thay vì giấu trong một trang điều khoản không ai đọc. */}
-					<span className="hint">{t.retentionNote(config.retentionDays)}</span>
-
-					<Turnstile siteKey={config.turnstileSiteKey} onToken={setToken} />
-
-					{errorText && <div className="error">{errorText}</div>}
-
-					<button className="cta" type="submit" disabled={!canSubmit}>
-						{busy ? t.sending : t.submit}
-					</button>
+						<button className="cta" type="submit" disabled={!canSubmit}>
+							{busy ? t.sending : t.submit}
+						</button>
+					</section>
 				</form>
 			)}
 

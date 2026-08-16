@@ -3,6 +3,7 @@ import { NavLink, Link } from "react-router-dom";
 import { useLang } from "../lib/lang-context";
 import { mine, subscribeMine } from "../lib/mine";
 import { useSiteConfig } from "../lib/site-config";
+import { useTheme } from "../lib/theme";
 import { ChannelLinksRow } from "./Channels";
 
 /** Số bài đã lưu trên máy này, tự cập nhật khi danh sách đổi. */
@@ -29,7 +30,10 @@ export function Layout({
 				<Link className="wordmark" to="/">
 					<Wordmark title={title} />
 				</Link>
-				<LangToggle />
+				<div className="topbar-tools">
+					<ThemeToggle />
+					<LangToggle />
+				</div>
 			</header>
 
 			{/* Hai đường đi duy nhất của người dùng thường. Trước đây đường thứ hai
@@ -48,7 +52,6 @@ export function Layout({
 
 			<footer className="footer">
 				<ChannelLinksRow channels={config?.channels} />
-				<p>{t.footerBlurb}</p>
 				<div className="footer-links">
 					<Link to="/">{t.navSubmit}</Link>
 					<Link to="/r">{t.navMine}</Link>
@@ -66,6 +69,39 @@ export function Wordmark({ title = "Tuân AI" }: { title?: string }) {
 		<>
 			{first} <span>{rest.join(" ")}</span>
 		</>
+	);
+}
+
+/**
+ * Bật tắt nền tối.
+ *
+ * Bảng màu tối vốn đã có, nhưng trước đây chỉ chạy theo cài đặt của máy: ai muốn
+ * đọc nền sáng giữa đêm, hay nền tối trên một máy để chế độ sáng, đều không có
+ * đường nào. Một nút, hai trạng thái — biểu tượng cho thấy thứ sẽ nhận được khi
+ * bấm, chứ không phải thứ đang xem.
+ */
+function ThemeToggle() {
+	const { lang } = useLang();
+	const { theme, toggle } = useTheme();
+	const toDark = theme === "light";
+	const label = toDark
+		? lang === "vi"
+			? "Chuyển sang nền tối"
+			: "Switch to dark mode"
+		: lang === "vi"
+			? "Chuyển sang nền sáng"
+			: "Switch to light mode";
+
+	return (
+		<button
+			type="button"
+			className="theme-toggle"
+			onClick={toggle}
+			title={label}
+			aria-label={label}
+		>
+			<span aria-hidden="true">{toDark ? "☾" : "☀"}</span>
+		</button>
 	);
 }
 

@@ -6,6 +6,7 @@ import { ApiError, api, type Submission } from "../lib/api";
 import { CODE_LENGTH, CODE_PREFIX, codeDigits, digitsOnly, fullCode } from "../lib/code";
 import { useLang } from "../lib/lang-context";
 import { forget, mine, remember, type MineEntry } from "../lib/mine";
+import { useSiteConfig } from "../lib/site-config";
 
 const BADGE: Record<string, string> = {
 	new: "",
@@ -34,6 +35,9 @@ export function Lookup() {
 function LookupView({ code }: { code: string | undefined }) {
 	const navigate = useNavigate();
 	const { lang, t } = useLang();
+	// Cấu hình đã nằm sẵn trong bộ nhớ từ lúc khung trang tải nó, nên đọc ở đây
+	// không tốn thêm lượt gọi nào.
+	const { config } = useSiteConfig();
 	const [input, setInput] = useState(codeDigits(code ?? ""));
 	const [result, setResult] = useState<Submission | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -169,14 +173,25 @@ function LookupView({ code }: { code: string | undefined }) {
 						</a>
 					)}
 
+					{/* Chỗ duy nhất câu này có nghĩa thật. Trên trang gửi bài nó là một
+					    dòng chữ nữa phải đọc trước khi được bấm gửi; ở đây nó trả lời
+					    đúng câu người tra mã sắp hỏi: ảnh của tôi còn tới bao giờ, và
+					    lát nữa quay lại thì còn thấy gì. */}
 					{result.imageUrls.length > 0 ? (
-						<div className="thumbs">
-							{result.imageUrls.map((url) => (
-								<div className="thumb" key={url}>
-									<img src={url} alt="" />
-								</div>
-							))}
-						</div>
+						<>
+							<div className="thumbs">
+								{result.imageUrls.map((url) => (
+									<div className="thumb" key={url}>
+										<img src={url} alt="" />
+									</div>
+								))}
+							</div>
+							{config && (
+								<span className="hint">
+									{t.retentionNote(config.retentionDays)}
+								</span>
+							)}
+						</>
 					) : (
 						<span className="hint">{t.imagesGone}</span>
 					)}
