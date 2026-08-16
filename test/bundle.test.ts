@@ -21,7 +21,8 @@ function row(patch: Partial<SubmissionRow> = {}): SubmissionRow {
 		styles: '["animate","funny"]',
 		images: '[{"key":"img/TA-12345678/0","type":"image/jpeg","size":1000}]',
 		status: "selected",
-		published_url: null,
+		published_tiktok: null,
+		published_youtube: null,
 		admin_note: null,
 		lang: "vi",
 		bytes: 1000,
@@ -64,6 +65,31 @@ describe("readableText", () => {
 		expect(text).toContain("Đã chọn");
 		expect(text).toContain("Cho cựa quậy, sống dậy · Miễn sao thật vui");
 		expect(text).toContain("01.jpg");
+	});
+
+	it("ghi riêng link của từng kênh, kênh chưa đăng thì để gạch ngang", () => {
+		const text = readableText(
+			row({
+				status: "done",
+				published_tiktok: "https://www.tiktok.com/@tuan/video/1",
+				published_youtube: "https://youtu.be/abc123",
+			}),
+			LABELS,
+			files,
+		);
+		expect(text).toContain("Link TikTok");
+		expect(text).toContain("https://www.tiktok.com/@tuan/video/1");
+		expect(text).toContain("Link YouTube");
+		expect(text).toContain("https://youtu.be/abc123");
+
+		// Mới đăng một nơi thì ô kia phải trống rõ ràng, chứ không phải biến mất
+		// khiến người đọc tưởng đã đăng đủ cả hai.
+		const half = readableText(
+			row({ published_tiktok: "https://www.tiktok.com/@tuan/video/1" }),
+			LABELS,
+			files,
+		);
+		expect(half).toMatch(/Link YouTube\s+: —/);
 	});
 
 	it("nói rõ khi trong gói không có ảnh nào", () => {

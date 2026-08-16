@@ -3,6 +3,7 @@ import {
 	b64urlDecode,
 	b64urlEncode,
 	clampText,
+	devRelaxed,
 	hasEnoughToSubmit,
 	hashIp,
 	isCode,
@@ -129,6 +130,21 @@ describe("nhận diện máy lập trình", () => {
 		// Tên miền cố tình đặt cho giống, không được lọt.
 		expect(isLocalRequest("https://localhost.ke-gian.com/")).toBe(false);
 		expect(isLocalRequest("khong-phai-url")).toBe(false);
+	});
+
+	it("chỉ nới lỏng cho máy lập trình, và tắt được bằng cookie", () => {
+		expect(devRelaxed("http://localhost:5173/api/submit", "")).toBe(true);
+		expect(devRelaxed("http://127.0.0.1:8787/api/submit", "abc=1")).toBe(true);
+
+		// Nút "Xem như production" trong /admin: local nhưng chịu đúng luật thật.
+		expect(
+			devRelaxed("http://localhost:5173/api/submit", "tuanai_devmode=prod"),
+		).toBe(false);
+
+		// Trên production thì không cookie nào mở được cửa này.
+		const live = "https://tuan-ai.bttvn-4t.workers.dev/api/submit";
+		expect(devRelaxed(live, "")).toBe(false);
+		expect(devRelaxed(live, "tuanai_devmode=dev")).toBe(false);
 	});
 });
 

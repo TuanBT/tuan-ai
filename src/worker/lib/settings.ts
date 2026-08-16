@@ -15,7 +15,9 @@ export interface Settings {
 const FALLBACK: Settings = {
 	retention_days: 7,
 	data_retention_days: 90,
-	max_images: 3,
+	// Hai tấm là đủ cho một clip: gần như mọi bài chỉ cần đúng một tấm, tấm thứ
+	// hai để đổi góc. Mở tới ba chỉ làm bước chọn ảnh dài ra và gói tải nặng thêm.
+	max_images: 2,
 	daily_write_budget: 850,
 	max_per_ip_day: 3,
 	submissions_open: true,

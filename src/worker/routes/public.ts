@@ -13,6 +13,7 @@ import { turnstileReady, verifyTurnstile } from "../lib/turnstile";
 import {
 	clampText,
 	clientIp,
+	devRelaxed,
 	hasEnoughToSubmit,
 	hashIp,
 	isCode,
@@ -120,15 +121,19 @@ export function publicRoutes() {
 	});
 
 	app.get("/api/gallery", async (c) => {
+		// Đăng ở đâu cũng là đã lên sóng; ô trong thư viện dẫn sang TikTok trước,
+		// vì kênh chính nằm ở đó, thiếu thì mới sang YouTube.
 		const rows = await c.env.DB.prepare(
-			`SELECT code, nickname, published_url, images_purged
+			`SELECT code, nickname, published_tiktok, published_youtube, images_purged
 			 FROM submissions
-			 WHERE status = 'done' AND published_url IS NOT NULL AND published_url <> ''
+			 WHERE status = 'done'
+			   AND (IFNULL(published_tiktok, '') <> '' OR IFNULL(published_youtube, '') <> '')
 			 ORDER BY created_at DESC LIMIT 12`,
 		).all<{
 			code: string;
 			nickname: string;
-			published_url: string;
+			published_tiktok: string | null;
+			published_youtube: string | null;
 			images_purged: number;
 		}>();
 
@@ -138,7 +143,7 @@ export function publicRoutes() {
 			// dưới, chấp nhận được, vì nội dung đó đã công khai trên kênh rồi.)
 			items: rows.results.map((row) => ({
 				nickname: row.nickname,
-				publishedUrl: row.published_url,
+				publishedUrl: row.published_tiktok || row.published_youtube,
 				thumb: row.images_purged ? null : `/i/${row.code}/0`,
 			})),
 		});
@@ -157,7 +162,8 @@ export function publicRoutes() {
 
 		const row = await c.env.DB.prepare(
 			`SELECT code, nickname, description, styles, images, status,
-			        published_url, created_at, expires_at, images_purged
+			        published_tiktok, published_youtube,
+			        created_at, expires_at, images_purged
 			 FROM submissions WHERE code = ?`,
 		)
 			.bind(code)
@@ -168,7 +174,8 @@ export function publicRoutes() {
 				styles: string;
 				images: string;
 				status: string;
-				published_url: string | null;
+				published_tiktok: string | null;
+				published_youtube: string | null;
 				created_at: number;
 				expires_at: number;
 				images_purged: number;
@@ -186,7 +193,8 @@ export function publicRoutes() {
 			description: row.description,
 			styles: JSON.parse(row.styles) as string[],
 			status: row.status,
-			publishedUrl: row.published_url,
+			publishedTiktok: row.published_tiktok,
+			publishedYoutube: row.published_youtube,
 			createdAt: row.created_at,
 			expiresAt: row.expires_at,
 			imageUrls: row.images_purged
@@ -318,19 +326,30 @@ export function publicRoutes() {
 		}
 
 		const ipHash = await hashIp(ip, c.env.SESSION_SECRET);
-		const sinceMidnight =
-			Math.floor(Date.parse(`${utcDay()}T00:00:00Z`) / 1000) * 1000;
-		const fromThisIp = await c.env.DB.prepare(
-			"SELECT COUNT(*) AS n FROM submissions WHERE ip_hash = ? AND created_at >= ?",
-		)
-			.bind(ipHash, sinceMidnight)
-			.first<{ n: number }>();
 
-		if ((fromThisIp?.n ?? 0) >= settings.max_per_ip_day) {
-			return c.json(
-				{ error: "ip_limit", resetInSeconds: secondsUntilUtcMidnight() },
-				429,
-			);
+		/*
+		 * Hạn mức mỗi người mỗi ngày, bỏ qua khi đang chạy trên máy lập trình.
+		 *
+		 * Local không có `cf-connecting-ip` nên mọi lượt gửi đều chung một mã băm:
+		 * gửi vài bài thử là tự khoá chính mình tới nửa đêm UTC, mà cách gỡ duy
+		 * nhất là vào tận cơ sở dữ liệu xoá bài. Muốn thử đúng cái chặn này thì
+		 * bấm "Xem như production" trong /admin.
+		 */
+		if (!devRelaxed(c.req.url, c.req.header("cookie") ?? "")) {
+			const sinceMidnight =
+				Math.floor(Date.parse(`${utcDay()}T00:00:00Z`) / 1000) * 1000;
+			const fromThisIp = await c.env.DB.prepare(
+				"SELECT COUNT(*) AS n FROM submissions WHERE ip_hash = ? AND created_at >= ?",
+			)
+				.bind(ipHash, sinceMidnight)
+				.first<{ n: number }>();
+
+			if ((fromThisIp?.n ?? 0) >= settings.max_per_ip_day) {
+				return c.json(
+					{ error: "ip_limit", resetInSeconds: secondsUntilUtcMidnight() },
+					429,
+				);
+			}
 		}
 
 		const code = newCode();

@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
-import { api, type AdminSubmission } from "../../lib/api";
+import { api, INBOX_PAGE, type AdminStyle, type AdminSubmission } from "../../lib/api";
 import { formatBytes } from "../../lib/compress";
+import { useImageViewer } from "../../lib/image-viewer";
+import { styleNames } from "../../lib/styles";
 import { BUNDLE_LIMIT, relativeTime, STATUS_LABEL, STATUS_TONE } from "./shared";
+
+/** Hai ô dán link, mỗi kênh một ô. Thêm kênh thứ ba thì thêm một dòng ở đây. */
+const LINK_FIELDS = [
+	["publishedTiktok", "Link TikTok"],
+	["publishedYoutube", "Link YouTube"],
+] as const;
 
 export function Inbox() {
 	const [items, setItems] = useState<AdminSubmission[]>([]);
@@ -10,7 +18,17 @@ export function Inbox() {
 	const [search, setSearch] = useState("");
 	const [query, setQuery] = useState("");
 	const [busy, setBusy] = useState(true);
+	const [more, setMore] = useState(false);
+	const [loadingMore, setLoadingMore] = useState(false);
 	const [savedUrl, setSavedUrl] = useState<string | null>(null);
+	const [styles, setStyles] = useState<AdminStyle[]>([]);
+	const { view, viewer } = useImageViewer();
+
+	// Bảng tên kiểu đọc một lần cho cả hộp thư: bài chỉ lưu mã kiểu, mà mã thì
+	// không nói được người gửi đã chọn gì.
+	useEffect(() => {
+		api.adminStyles().then((data) => setStyles(data.items)).catch(() => {});
+	}, []);
 
 	// Tìm kiếm chạy trên máy chủ để với tới cả bài cũ, nên phải chờ người dùng gõ
 	// xong. Bắn một lượt mỗi phím thì vừa tốn truy vấn vừa nhấp nháy kết quả.
@@ -25,6 +43,7 @@ export function Inbox() {
 			const data = await api.adminList(filter, query);
 			setItems(data.items);
 			setCounts(data.counts);
+			setMore(data.items.length === INBOX_PAGE);
 		} finally {
 			setBusy(false);
 		}
@@ -34,27 +53,87 @@ export function Inbox() {
 		load();
 	}, [load]);
 
-	async function update(code: string, patch: Record<string, unknown>) {
-		await api.adminPatch(code, patch);
-		load();
+	/**
+	 * Lấy tiếp đợt sau, tính từ bài cũ nhất đang hiện.
+	 *
+	 * Con trỏ là mốc thời gian chứ không phải số thứ tự trang: người duyệt vừa
+	 * lướt vừa đổi trạng thái bài, mà đánh số trang thì mỗi lần thứ tự xê dịch là
+	 * một bài bị nhảy qua hoặc hiện hai lần.
+	 */
+	async function loadMore() {
+		const last = items[items.length - 1];
+		if (!last || loadingMore) return;
+
+		setLoadingMore(true);
+		try {
+			const data = await api.adminList(filter, query, last.createdAt);
+			setItems((current) => [...current, ...data.items]);
+			setMore(data.items.length === INBOX_PAGE);
+		} finally {
+			setLoadingMore(false);
+		}
 	}
 
-	async function saveUrl(item: AdminSubmission, value: string) {
-		if (value === (item.publishedUrl ?? "")) return;
-		await api.adminPatch(item.code, { publishedUrl: value });
+	/**
+	 * Sửa ngay trên danh sách đang có thay vì tải lại cả hộp thư.
+	 *
+	 * Tải lại thì mọi đợt "tải thêm" đã bấm đều bị cuốn về đợt đầu, nên người
+	 * duyệt đang làm dở ở bài thứ sáu mươi bị ném về đầu danh sách sau mỗi cú bấm.
+	 */
+	function patchLocal(code: string, patch: Partial<AdminSubmission>) {
+		setItems((current) =>
+			current.map((entry) =>
+				entry.code === code ? { ...entry, ...patch } : entry,
+			),
+		);
+	}
+
+	function shiftCount(from: string | null, to: string | null) {
+		setCounts((current) => {
+			const next = { ...current };
+			if (from) next[from] = Math.max(0, (next[from] ?? 1) - 1);
+			if (to) next[to] = (next[to] ?? 0) + 1;
+			return next;
+		});
+	}
+
+	async function setStatus(item: AdminSubmission, status: string) {
+		if (item.status === status) return;
+		await api.adminPatch(item.code, { status });
+		shiftCount(item.status, status);
+
+		// Đang lọc theo một trạng thái mà bài vừa đổi sang trạng thái khác thì nó
+		// không còn thuộc danh sách này nữa: cho khuất đi, đúng như trước đây.
+		if (filter && filter !== status) {
+			setItems((current) =>
+				current.filter((entry) => entry.code !== item.code),
+			);
+		} else {
+			patchLocal(item.code, { status });
+		}
+	}
+
+	async function saveUrl(
+		item: AdminSubmission,
+		field: "publishedTiktok" | "publishedYoutube",
+		value: string,
+	) {
+		if (value === (item[field] ?? "")) return;
+		await api.adminPatch(item.code, { [field]: value });
+		patchLocal(item.code, { [field]: value || null });
 		// Lưu lúc rời ô là im lặng: không có dấu hiệu này thì không ai biết link
 		// đã vào hay mình vừa gõ vào chỗ trống.
 		setSavedUrl(item.code);
 		setTimeout(() => setSavedUrl(null), 1800);
-		load();
 	}
 
-	async function remove(code: string) {
-		if (!confirm(`Xoá vĩnh viễn bài ${code}? Ảnh sẽ bị xoá khỏi kho luôn.`)) {
+	async function remove(item: AdminSubmission) {
+		if (!confirm(`Xoá vĩnh viễn bài ${item.code}? Ảnh sẽ bị xoá khỏi kho luôn.`)) {
 			return;
 		}
-		await api.adminDelete(code);
-		load();
+		await api.adminDelete(item.code);
+		setItems((current) => current.filter((entry) => entry.code !== item.code));
+		shiftCount(item.status, null);
 	}
 
 	const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
@@ -110,12 +189,11 @@ export function Inbox() {
 						>
 							⬇ Tải gói {Math.min(items.length, BUNDLE_LIMIT)} bài đang xem
 						</a>
-						<span className="hint">
-							Mỗi bài một thư mục: ảnh gốc, <code>noi-dung.txt</code> để chép,
-							<code> noi-dung.json</code> để tự động hoá.
-							{items.length > BUNDLE_LIMIT &&
-								` Một lượt tải tối đa ${BUNDLE_LIMIT} bài mới nhất.`}
-						</span>
+						{items.length > BUNDLE_LIMIT && (
+							<span className="hint">
+								Một lượt tải tối đa {BUNDLE_LIMIT} bài mới nhất.
+							</span>
+						)}
 					</div>
 				)}
 			</div>
@@ -145,10 +223,18 @@ export function Inbox() {
 					<article className="card" key={item.code}>
 						{item.imageUrls.length > 0 ? (
 							<div className="card-imgs">
-								{item.imageUrls.map((url) => (
-									<a key={url} href={url} target="_blank" rel="noreferrer">
+								{item.imageUrls.map((url, index) => (
+									// Trước đây mỗi ảnh mở ra một tab trơ trọi, xem xong phải
+									// đóng tab quay lại. Giờ phóng to ngay tại chỗ, lật qua lại
+									// được giữa các ảnh của cùng một bài.
+									<button
+										key={url}
+										type="button"
+										onClick={() => view(item.imageUrls, index)}
+										aria-label="Xem ảnh lớn"
+									>
 										<img src={url} alt="" loading="lazy" />
-									</a>
+									</button>
 								))}
 							</div>
 						) : (
@@ -163,11 +249,6 @@ export function Inbox() {
 							>
 								⬇ Tải gói
 							</a>
-							<span className="hint">
-								{item.imageUrls.length > 0
-									? `${item.imageUrls.length} ảnh + nội dung`
-									: "chỉ nội dung"}
-							</span>
 						</div>
 
 						<div className="card-head">
@@ -189,7 +270,9 @@ export function Inbox() {
 
 						{item.styles.length > 0 && (
 							<div className="card-meta">
-								<span>Kiểu: {item.styles.join(", ")}</span>
+								<span>
+									Kiểu: {styleNames(styles, item.styles, "vi").join(", ")}
+								</span>
 							</div>
 						)}
 						{item.email && (
@@ -204,21 +287,28 @@ export function Inbox() {
 									key={value}
 									type="button"
 									aria-pressed={item.status === value}
-									onClick={() => update(item.code, { status: value })}
+									onClick={() => setStatus(item, value)}
 								>
 									{label}
 								</button>
 							))}
 						</div>
 
+						{/* Một bài thường lên cả hai kênh. Trước đây chỉ có một ô chung,
+						    nên dán link thứ hai là đè mất link thứ nhất. */}
 						<div className="field">
-							<input
-								className="input"
-								style={{ fontSize: 13, padding: "8px 11px" }}
-								placeholder="Dán link TikTok / YouTube khi đã đăng"
-								defaultValue={item.publishedUrl ?? ""}
-								onBlur={(e) => saveUrl(item, e.target.value)}
-							/>
+							{LINK_FIELDS.map(([field, label]) => (
+								<label className="link-field" key={field}>
+									<span>{label}</span>
+									<input
+										className="input"
+										type="url"
+										placeholder="https://…"
+										defaultValue={item[field] ?? ""}
+										onBlur={(e) => saveUrl(item, field, e.target.value)}
+									/>
+								</label>
+							))}
 							{savedUrl === item.code && (
 								<span className="hint" style={{ color: "var(--ok)" }}>
 									Đã lưu link.
@@ -226,18 +316,20 @@ export function Inbox() {
 							)}
 							{/* Khu "Đã lên sóng" ngoài trang chủ lọc theo link, nên bài đánh
 							    dấu xong mà quên dán link sẽ không bao giờ hiện ra. */}
-							{item.status === "done" && !item.publishedUrl && (
-								<span className="hint" style={{ color: "var(--warn)" }}>
-									Chưa có link nên bài này không hiện ở khu “Đã lên sóng”.
-								</span>
-							)}
+							{item.status === "done" &&
+								!item.publishedTiktok &&
+								!item.publishedYoutube && (
+									<span className="hint" style={{ color: "var(--warn)" }}>
+										Chưa có link nào nên bài này không hiện ở khu “Đã lên sóng”.
+									</span>
+								)}
 						</div>
 
 						<div className="card-actions">
 							<button
 								type="button"
 								className="danger"
-								onClick={() => remove(item.code)}
+								onClick={() => remove(item)}
 							>
 								Xoá vĩnh viễn
 							</button>
@@ -245,6 +337,25 @@ export function Inbox() {
 					</article>
 				))}
 			</div>
+
+			{/* Hộp thư có thể dài hàng trăm bài, mà mỗi thẻ kéo theo ảnh gốc. Lấy
+			    từng đợt, và nói rõ đang hiện bao nhiêu để người duyệt biết mình
+			    đứng ở đâu. */}
+			{!busy && more && (
+				<div className="load-more">
+					<button
+						type="button"
+						className="ghost-btn"
+						onClick={loadMore}
+						disabled={loadingMore}
+					>
+						{loadingMore ? "Đang tải…" : `Tải thêm ${INBOX_PAGE} bài`}
+					</button>
+					<span className="hint">Đang hiện {items.length} bài.</span>
+				</div>
+			)}
+
+			{viewer}
 		</>
 	);
 }

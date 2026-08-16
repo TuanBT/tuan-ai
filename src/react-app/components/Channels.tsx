@@ -9,10 +9,8 @@ import { useLang } from "../lib/lang-context";
  */
 export function ChannelLinksRow({
 	channels,
-	tone = "quiet",
 }: {
 	channels: ChannelLinks | undefined;
-	tone?: "quiet" | "loud";
 }) {
 	const { lang } = useLang();
 	if (!channels?.tiktok && !channels?.youtube) return null;
@@ -20,7 +18,7 @@ export function ChannelLinksRow({
 	const label = lang === "vi" ? "Xem kênh trên" : "Watch on";
 
 	return (
-		<div className={`channels ${tone}`} aria-label={label}>
+		<div className="channels" aria-label={label}>
 			{channels.tiktok && (
 				<a href={channels.tiktok} target="_blank" rel="noopener noreferrer">
 					<TikTokMark />
@@ -37,7 +35,9 @@ export function ChannelLinksRow({
 	);
 }
 
-function TikTokMark() {
+/* Hai dấu hiệu nhận biết kênh, dùng lại ở trang tra cứu cho nút xem tác phẩm:
+   người ta nhận ra biểu tượng nhanh hơn đọc chữ. */
+export function TikTokMark() {
 	return (
 		<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
 			<path
@@ -48,7 +48,7 @@ function TikTokMark() {
 	);
 }
 
-function YouTubeMark() {
+export function YouTubeMark() {
 	return (
 		<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
 			<path

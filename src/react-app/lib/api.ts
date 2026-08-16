@@ -28,7 +28,10 @@ export interface Submission {
 	description: string;
 	styles: string[];
 	status: "new" | "selected" | "done" | "rejected";
-	publishedUrl: string | null;
+	/* Một bài thường lên cả hai kênh, và người gửi muốn xem ở đâu là việc của
+	   họ, nên giữ riêng từng link chứ không gộp thành "link đã đăng". */
+	publishedTiktok: string | null;
+	publishedYoutube: string | null;
 	createdAt: number;
 	expiresAt: number;
 	imageUrls: string[];
@@ -36,6 +39,7 @@ export interface Submission {
 
 export interface GalleryItem {
 	nickname: string;
+	/** Ô trong thư viện chỉ dẫn đi một nơi: TikTok trước, thiếu thì YouTube. */
 	publishedUrl: string;
 	thumb: string | null;
 }
@@ -79,6 +83,15 @@ function inboxQuery(status: string, search: string): string {
 	return query.size ? `?${query}` : "";
 }
 
+/**
+ * Số bài mỗi lượt tải trong hộp thư.
+ *
+ * Mỗi thẻ bài kéo về tới hai tấm ảnh gốc, nên một trang dài là vài chục lượt tải
+ * ảnh cùng lúc: máy chậm thì đứng hình, mà người duyệt cũng chỉ nhìn được vài
+ * bài đầu. Lấy từng đợt, ai cần xem sâu thì bấm tải thêm.
+ */
+export const INBOX_PAGE = 24;
+
 export const api = {
 	config: () => request<SiteConfig>("/api/config"),
 	gallery: () => request<{ items: GalleryItem[] }>("/api/gallery"),
@@ -97,11 +110,18 @@ export const api = {
 		}>("/api/me"),
 	logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),
 
-	adminList: (status: string, search = "") =>
-		request<{
+	/** `before` là mốc thời gian của bài cuối đang hiện: lấy tiếp từ đó trở về trước. */
+	adminList: (status: string, search = "", before?: number) => {
+		const query = new URLSearchParams();
+		if (status) query.set("status", status);
+		if (search) query.set("q", search);
+		query.set("limit", String(INBOX_PAGE));
+		if (before) query.set("before", String(before));
+		return request<{
 			items: AdminSubmission[];
 			counts: Record<string, number>;
-		}>(`/api/admin/submissions${inboxQuery(status, search)}`),
+		}>(`/api/admin/submissions?${query}`);
+	},
 	adminPatch: (code: string, patch: Record<string, unknown>) =>
 		request<{ ok: true }>(`/api/admin/submissions/${code}`, {
 			method: "PATCH",

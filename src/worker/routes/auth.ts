@@ -9,7 +9,13 @@ import {
 	SESSION_COOKIE,
 	sessionCookie,
 } from "../lib/session";
-import { b64urlEncode, isLocalRequest, timingSafeEqual } from "../lib/util";
+import {
+	b64urlEncode,
+	DEV_MODE_COOKIE,
+	devRelaxed,
+	isLocalRequest,
+	timingSafeEqual,
+} from "../lib/util";
 
 const STATE_COOKIE = "tuanai_oauth";
 
@@ -90,9 +96,6 @@ async function fetchIdentity(
 	return { email, name: user.name ?? user.login ?? email };
 }
 
-/** Cookie do trang /admin đặt để tạm tắt cửa sau, xem trang y như production. */
-export const DEV_MODE_COOKIE = "tuanai_devmode";
-
 /**
  * Cửa sau chỉ dành cho máy lập trình, để không phải dựng OAuth mới test được
  * trang quản trị.
@@ -107,9 +110,9 @@ function devSession(
 	cookies: string,
 ): AdminSession | null {
 	if (env.DEV_ADMIN_BYPASS !== "1") return null;
-	if (!isLocalRequest(url)) return null;
-	// Bấm "Xem như production" trong /admin đặt cookie này để tắt cửa sau.
-	if (cookies.includes(`${DEV_MODE_COOKIE}=prod`)) return null;
+	// Cùng một câu hỏi với chỗ nới lỏng hạn mức bên routes/public.ts: đang chạy
+	// local, và chưa bấm "Xem như production" trong /admin.
+	if (!devRelaxed(url, cookies)) return null;
 	const email = (env.ADMIN_EMAILS ?? "dev@localhost").split(",")[0].trim();
 	return {
 		email,

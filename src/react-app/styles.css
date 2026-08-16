@@ -315,17 +315,6 @@ select {
 .channels a svg {
 	flex: none;
 }
-/* Bản "loud" dùng ở màn hình gửi xong, lúc đó đây là việc đáng làm tiếp theo. */
-.channels.loud {
-	justify-content: center;
-	margin-top: 4px;
-}
-.channels.loud a {
-	background: var(--chip);
-	border-color: transparent;
-	color: var(--accent-dark);
-}
-
 /* ---------- ba bước ---------- */
 
 /* ---------- biểu mẫu ---------- */
@@ -369,13 +358,6 @@ select {
 	font-family: var(--mono);
 	font-size: 12px;
 	font-weight: 700;
-}
-
-/* Câu ngắn, chữ đậm hơn hint: đây là điều kiện nhận bài, không phải lời khuyên. */
-.rule {
-	margin: 0;
-	font-size: 12.5px;
-	color: var(--muted);
 }
 
 /*
@@ -485,6 +467,17 @@ select {
 	height: 100%;
 	object-fit: cover;
 	display: block;
+}
+/* Cả ô ảnh là một nút mở khung xem lớn. Nút chứ không phải thẻ liên kết: nó
+   không dẫn đi đâu, và nút xoá nằm đè lên trên thì không lồng được vào <a>. */
+.thumb-open {
+	display: block;
+	width: 100%;
+	height: 100%;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: zoom-in;
 }
 .thumb-remove {
 	position: absolute;
@@ -838,6 +831,89 @@ select {
 	text-overflow: ellipsis;
 }
 
+/* ---------- xem ảnh toàn màn hình ---------- */
+
+/* Nền gần như đen, không theo bảng màu sáng/tối: khi đang xem một tấm ảnh thì
+   thứ duy nhất nên sáng trên màn hình là chính tấm ảnh đó. */
+.lightbox {
+	position: fixed;
+	inset: 0;
+	z-index: 50;
+	display: grid;
+	place-items: center;
+	padding: max(16px, env(safe-area-inset-top)) 16px
+		max(16px, env(safe-area-inset-bottom));
+	background: rgb(12 11 15 / 0.94);
+	backdrop-filter: blur(3px);
+	animation: fade-in 0.14s ease-out;
+}
+@keyframes fade-in {
+	from {
+		opacity: 0;
+	}
+}
+.lightbox-img {
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
+	border-radius: var(--radius-sm);
+	/* Ảnh dọc chụp bằng điện thoại phủ gần kín màn hình; viền sáng mờ cho thấy
+	   đâu là mép ảnh, đâu là nền. */
+	box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+
+/* Ba nút nổi trên nền tối dùng chung một kiểu: tròn, chữ trắng, nền mờ. */
+.lightbox-close,
+.lightbox-nav {
+	position: absolute;
+	display: grid;
+	place-items: center;
+	border: 0;
+	border-radius: 50%;
+	background: rgb(255 255 255 / 0.14);
+	color: #fff;
+	line-height: 1;
+	cursor: pointer;
+	transition: background 0.15s;
+}
+.lightbox-close:hover,
+.lightbox-nav:hover {
+	background: rgb(255 255 255 / 0.28);
+}
+.lightbox-close {
+	top: max(12px, env(safe-area-inset-top));
+	right: 12px;
+	width: 40px;
+	height: 40px;
+	font-size: 24px;
+}
+.lightbox-nav {
+	top: 50%;
+	transform: translateY(-50%);
+	width: 42px;
+	height: 42px;
+	font-size: 28px;
+	padding-bottom: 4px;
+}
+.lightbox-nav.prev {
+	left: 10px;
+}
+.lightbox-nav.next {
+	right: 10px;
+}
+.lightbox-count {
+	position: absolute;
+	bottom: max(14px, env(safe-area-inset-bottom));
+	left: 50%;
+	transform: translateX(-50%);
+	font-family: var(--mono);
+	font-size: 12px;
+	color: rgb(255 255 255 / 0.75);
+	background: rgb(0 0 0 / 0.4);
+	padding: 4px 10px;
+	border-radius: 99px;
+}
+
 /* ---------- chân trang ---------- */
 
 .footer {
@@ -846,9 +922,18 @@ select {
 	padding-top: 18px;
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	gap: 12px;
 	font-size: 12px;
 	color: var(--faint);
+}
+/* Dòng cuối cùng của trang: bản quyền một bên, lối vào khu quản trị bên kia.
+   Hai mục điều hướng cũ đã bỏ, vì thanh điều hướng đầu trang có sẵn cả hai. */
+.footer-base {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	font-size: 11.5px;
 }
 .footer-links {
 	display: flex;
@@ -859,6 +944,10 @@ select {
 	color: var(--muted);
 	text-decoration: none;
 	font-weight: 600;
+}
+.footer-base a {
+	color: var(--faint);
+	font-weight: 500;
 }
 .footer a:hover {
 	color: var(--accent);
@@ -1005,6 +1094,40 @@ select {
 	font-size: 14.5px;
 }
 
+/* Bài lên cả hai kênh thì hai nút đứng cạnh nhau, chia đôi bề ngang; chỉ một
+   kênh thì nút đó tự chiếm cả hàng. */
+.watch-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.cta.watch {
+	flex: 1 1 130px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 13px;
+	font-size: 15px;
+	text-decoration: none;
+}
+
+/* Kiểu đã chọn: hiện lại đúng hình dạng viên thuốc mà người gửi đã chạm ở trang
+   gửi bài, để họ nhận ra ngay đó là lựa chọn của mình. */
+.tag-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+.tag {
+	font-size: 12.5px;
+	padding: 4px 11px;
+	border-radius: 99px;
+	background: var(--chip);
+	color: var(--accent-dark);
+	font-weight: 600;
+}
+
 /* ---------- khu quản trị ---------- */
 
 .admin {
@@ -1127,12 +1250,16 @@ select {
 	display: flex;
 	gap: 6px;
 }
-/* Mỗi ảnh bọc trong thẻ liên kết; phải cho chính thẻ liên kết co giãn, nếu
-   không nó lấy kích thước gốc của ảnh và làm vỡ khung thẻ. */
-.card-imgs a {
+/* Mỗi ảnh bọc trong một nút mở khung xem lớn; phải cho chính cái nút co giãn,
+   nếu không nó lấy kích thước gốc của ảnh và làm vỡ khung thẻ. */
+.card-imgs button {
 	flex: 1 1 0;
 	min-width: 0;
 	display: block;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: zoom-in;
 }
 .card-imgs img {
 	width: 100%;
@@ -1194,6 +1321,31 @@ select {
 .card-actions .danger:hover {
 	border-color: var(--bad);
 	color: var(--bad);
+}
+
+/* Ô dán link trong thẻ bài: nhãn nhỏ ở trên, vì hai ô trống giống hệt nhau thì
+   không biết ô nào của kênh nào, mà placeholder thì biến mất ngay khi gõ. */
+.link-field {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+.link-field span {
+	font-size: 11.5px;
+	color: var(--muted);
+}
+.link-field .input {
+	font-size: 13px;
+	padding: 8px 11px;
+}
+
+/* Cuối danh sách hộp thư: nút lấy đợt sau và một dòng nói đang hiện bao nhiêu. */
+.load-more {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 0 4px;
 }
 
 .stat-grid {

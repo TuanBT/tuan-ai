@@ -1,6 +1,6 @@
 # Tuân AI
 
-Hộp thu ý tưởng: người xem gửi 1–3 tấm ảnh kèm mô tả, bạn duyệt tay rồi dựng
+Hộp thu ý tưởng: người xem gửi 1–2 tấm ảnh kèm mô tả, bạn duyệt tay rồi dựng
 clip AI và đăng lên kênh. Không có khâu tạo ảnh tự động, trang này chỉ nhận và
 sắp xếp ý tưởng.
 
@@ -54,11 +54,17 @@ phải dựng OAuth mới xem được. Cửa sau này khoá hai lớp: biến c
 `.dev.vars` (không bao giờ được đẩy lên Cloudflare), và kể cả nếu lọt lên thì
 yêu cầu vẫn buộc phải đến từ `localhost`.
 
+Hạn mức **số bài mỗi người mỗi ngày** cũng được bỏ qua khi chạy local. Máy lập
+trình không có `cf-connecting-ip` nên mọi lượt gửi mang chung một mã băm địa chỉ:
+để nguyên thì gửi vài bài thử là tự khoá chính mình tới nửa đêm UTC, mà cách gỡ
+duy nhất là vào tận cơ sở dữ liệu xoá bài.
+
 ### Xem thử y như production, không cần deploy
 
-Trong `/admin` có nút **“Xem như production”**. Bấm vào là cửa sau tắt ngay
-trong trình duyệt đó: bạn thấy đúng màn hình đăng nhập mà người lạ thấy, và mọi
-API quản trị trả về 401. Bấm **“Quay lại chế độ phát triển”** để trở về.
+Trong `/admin` có nút **“Xem như production”**. Bấm vào là mọi nới lỏng tắt ngay
+trong trình duyệt đó: bạn thấy đúng màn hình đăng nhập mà người lạ thấy, mọi API
+quản trị trả về 401, và hạn mức mỗi người mỗi ngày chặn thật. Bấm **“Quay lại
+chế độ phát triển”** để trở về.
 
 Muốn thử luôn cả luồng đăng nhập thật trên máy, thêm địa chỉ localhost vào phần
 callback của ứng dụng OAuth (Google và GitHub đều cho phép):
@@ -223,8 +229,8 @@ Trang `/admin` có năm mục. Mọi thứ chỉnh được ở đây, không c�
 Cloudflare.
 
 - **Bài gửi**: duyệt tay, đánh dấu *Mới / Đã chọn / Đã lên sóng / Bỏ qua*, **tải
-  gói làm việc** (xem bên dưới), dán link TikTok hoặc YouTube khi đã đăng, xoá
-  vĩnh viễn bài rác
+  gói làm việc** (xem bên dưới), dán link TikTok và link YouTube khi đã đăng
+  (mỗi kênh một ô riêng, vì một bài thường lên cả hai), xoá vĩnh viễn bài rác
 - **Thống kê**: mức dùng hạn mức, dung lượng, và **số lượt bị chặn**
 - **Kiểu**: thêm bớt các lựa chọn người dùng thấy khi gửi bài
 - **Cài đặt**: số ngày giữ ảnh, số ngày giữ dữ liệu mô tả, số ảnh mỗi bài,
@@ -340,9 +346,12 @@ src/react-app/
   pages/admin/          từng tab một file
   components/Layout.tsx khung chung: điều hướng, chuyển ngôn ngữ, chân trang
   components/Channels.tsx nút sang kênh TikTok / YouTube
+  components/Lightbox.tsx khung xem ảnh toàn màn hình
+  lib/image-viewer.tsx  móc nối mở khung xem ảnh từ bất kỳ trang nào
   lib/site-config.ts    cấu hình trang, tải một lần dùng chung
   lib/compress.ts       nén ảnh trong trình duyệt trước khi gửi
   lib/mine.ts           danh sách mã bài lưu trong máy người dùng
+  lib/styles.ts         đổi mã kiểu thành tên đọc được, theo ngôn ngữ
   lib/local.ts          localStorage không bao giờ ném lỗi
   lib/i18n.ts           toàn bộ chữ tiếng Việt và tiếng Anh
 

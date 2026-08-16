@@ -36,8 +36,11 @@ interface Dictionary {
 	pickImages: string;
 	pickHint: (max: number) => string;
 	compressing: string;
-	advisory: string;
+	/* Luật nhận ảnh nằm gọn trong phần "Ảnh thế nào thì hợp?" chứ không đứng
+	   riêng một dòng: cùng một chuyện "ảnh nào được, ảnh nào không", tách làm hai
+	   chỗ thì bước chọn ảnh có tới ba dòng chữ chen nhau. */
 	advisoryTitle: string;
+	advisoryRule: string;
 	advisoryMore: string;
 	descPlaceholder: string;
 	ideasTitle: string;
@@ -93,6 +96,11 @@ interface Dictionary {
 	statusRejectedBody: string;
 	watchNow: string;
 	imagesGone: string;
+	viewerTitle: string;
+	viewerOpen: string;
+	viewerClose: string;
+	viewerPrev: string;
+	viewerNext: string;
 	errors: Record<string, string>;
 }
 
@@ -112,9 +120,8 @@ export const copy: Record<Lang, Dictionary> = {
 		pickImages: "Chạm để chọn ảnh",
 		pickHint: (max: number) => `1–${max} tấm · JPG, PNG`,
 		compressing: "Đang xử lý ảnh…",
-		// Phần bắt buộc phải thấy ngay: đây là luật, không phải lời khuyên.
-		advisory: "Đừng gửi ảnh nhạy cảm hay ảnh trẻ em.",
 		advisoryTitle: "Ảnh thế nào thì hợp?",
+		advisoryRule: "Đừng gửi ảnh nhạy cảm hay ảnh trẻ em.",
 		advisoryMore:
 			"Hợp nhất là tranh vẽ, đồ vật, món ăn, đồ chơi — càng vô tri càng dễ thành clip vui. Nếu ảnh có mặt người, hãy chắc chắn đó là ảnh bạn được phép dùng.",
 		descPlaceholder: "Ví dụ: cho ấm trà tự rót nước rồi cúi chào khán giả…",
@@ -187,6 +194,11 @@ export const copy: Record<Lang, Dictionary> = {
 		watchNow: "Xem tác phẩm",
 		imagesGone:
 			"Ảnh gốc đã hết hạn và được xoá tự động. Phần nội dung dưới đây thì vẫn còn.",
+		viewerTitle: "Xem ảnh",
+		viewerOpen: "Xem ảnh lớn",
+		viewerClose: "Đóng",
+		viewerPrev: "Ảnh trước",
+		viewerNext: "Ảnh sau",
 		errors: {
 			quota: "Hôm nay đã nhận đủ bài, bạn quay lại sau nhé.",
 			ip_limit: "Bạn đã gửi khá nhiều bài hôm nay rồi. Mai gửi tiếp nhé!",
@@ -218,8 +230,8 @@ export const copy: Record<Lang, Dictionary> = {
 		pickImages: "Tap to choose photos",
 		pickHint: (max: number) => `1–${max} images · JPG, PNG`,
 		compressing: "Processing images…",
-		advisory: "Never send sensitive images or images of children.",
 		advisoryTitle: "Which photos work best?",
+		advisoryRule: "Never send sensitive images or images of children.",
 		advisoryMore:
 			"Paintings, objects, food and toys work best — the more lifeless, the funnier the clip. If a photo shows a person, make sure it's yours to share.",
 		descPlaceholder:
@@ -293,6 +305,11 @@ export const copy: Record<Lang, Dictionary> = {
 		watchNow: "Watch it",
 		imagesGone:
 			"The original photos have expired and been deleted. The text below is still here.",
+		viewerTitle: "Photo viewer",
+		viewerOpen: "View larger",
+		viewerClose: "Close",
+		viewerPrev: "Previous photo",
+		viewerNext: "Next photo",
 		errors: {
 			quota: "Today's inbox is full. Please come back later.",
 			ip_limit: "You've sent quite a few today. Try again tomorrow!",

@@ -8,8 +8,8 @@ import { compressImage, formatBytes } from "../lib/compress";
 import { useLang } from "../lib/lang-context";
 import { remember } from "../lib/mine";
 import { useSiteConfig } from "../lib/site-config";
-import { ChannelLinksRow } from "../components/Channels";
 import { Layout } from "../components/Layout";
+import { useImageViewer } from "../lib/image-viewer";
 
 interface Picked {
 	file: File;
@@ -32,6 +32,7 @@ export function Submit() {
 	const [error, setError] = useState<string | null>(null);
 	const [done, setDone] = useState<string | null>(null);
 	const fileInput = useRef<HTMLInputElement>(null);
+	const { view, viewer } = useImageViewer();
 	// Chọn ngẫu nhiên một lần mỗi lượt vào trang: người quay lại lần sau thấy ý
 	// khác, thay vì tưởng trang chỉ làm được đúng ba thứ đó.
 	const [ideaPicks] = useState(() =>
@@ -51,7 +52,7 @@ export function Submit() {
 		return () => picked.forEach((item) => URL.revokeObjectURL(item.preview));
 	}, [picked]);
 
-	const maxImages = config?.maxImages ?? 3;
+	const maxImages = config?.maxImages ?? 2;
 
 	async function addFiles(list: FileList | null) {
 		if (!list?.length) return;
@@ -164,9 +165,9 @@ export function Submit() {
 						</button>
 					</div>
 
-					{/* Chờ duyệt mất vài ngày. Mời họ xem kênh ngay lúc đang hào hứng
-					    nhất, thay vì để trang thành ngõ cụt. */}
-					<ChannelLinksRow channels={config.channels} tone="loud" />
+					{/* Không nhắc lại nút sang kênh ở đây: chân trang ngay bên dưới đã
+					    có đúng hai nút đó, và hai lần cùng một lời mời trong một màn
+					    hình ngắn thì lời mời nào cũng nhạt đi. */}
 				</div>
 			</Layout>
 		);
@@ -252,7 +253,21 @@ export function Submit() {
 							<div className="thumbs">
 								{picked.map((item, index) => (
 									<div className="thumb" key={item.preview}>
-										<img src={item.preview} alt="" />
+										{/* Ô vuông 100px không đủ để soi lại tấm ảnh vừa chọn có
+										    đúng tấm mình định gửi không. Chạm vào là xem cả tấm. */}
+										<button
+											type="button"
+											className="thumb-open"
+											onClick={() =>
+												view(
+													picked.map((entry) => entry.preview),
+													index,
+												)
+											}
+											aria-label={t.viewerOpen}
+										>
+											<img src={item.preview} alt="" />
+										</button>
 										<span className="thumb-size">
 											{formatBytes(item.file.size)}
 										</span>
@@ -260,7 +275,7 @@ export function Submit() {
 											type="button"
 											className="thumb-remove"
 											onClick={() => removeAt(index)}
-											aria-label="Bỏ ảnh này"
+											aria-label={lang === "vi" ? "Bỏ ảnh này" : "Remove photo"}
 										>
 											×
 										</button>
@@ -269,12 +284,13 @@ export function Submit() {
 							</div>
 						)}
 
-						{/* Luật thì phải thấy ngay; phần hướng dẫn chọn ảnh cho ai còn phân
-						    vân thì gấp lại, vì người đã cầm sẵn ảnh không cần đọc. */}
-						<p className="rule">{t.advisory}</p>
+						{/* Luật nhận ảnh và lời khuyên chọn ảnh nói cùng một chuyện, nên
+						    nằm cùng một chỗ: luật đứng trước, in đậm, ngay khi mở ra. */}
 						<details className="more">
 							<summary>{t.advisoryTitle}</summary>
-							<p>{t.advisoryMore}</p>
+							<p>
+								<strong>{t.advisoryRule}</strong> {t.advisoryMore}
+							</p>
 						</details>
 					</section>
 
@@ -411,6 +427,8 @@ export function Submit() {
 					</div>
 				</section>
 			)}
+
+			{viewer}
 		</Layout>
 	);
 }

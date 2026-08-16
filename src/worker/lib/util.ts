@@ -68,6 +68,24 @@ export function isLocalRequest(url: string): boolean {
 	}
 }
 
+/** Cookie do nút "Xem như production" trong /admin đặt, để tắt mọi nới lỏng. */
+export const DEV_MODE_COOKIE = "tuanai_devmode";
+
+/**
+ * Yêu cầu này có được hưởng các nới lỏng của chế độ phát triển hay không.
+ *
+ * Chạy local thì mọi yêu cầu đều mang cùng một địa chỉ mạng giả (`0.0.0.0`, xem
+ * `clientIp`), nên các ngưỡng tính theo người dùng chặn ngay chính người đang
+ * ngồi test: gửi ba bài thử là trang khoá cho tới nửa đêm UTC.
+ *
+ * Nút "Xem như production" trong /admin đặt cookie tắt cửa này, để kiểm tra
+ * đúng những gì người lạ gặp mà không cần deploy.
+ */
+export function devRelaxed(url: string, cookies: string): boolean {
+	if (!isLocalRequest(url)) return false;
+	return !cookies.includes(`${DEV_MODE_COOKIE}=prod`);
+}
+
 /** Ngày UTC, trùng với mốc reset hạn mức KV của Cloudflare. */
 export function utcDay(at: Date = new Date()): string {
 	return at.toISOString().slice(0, 10);

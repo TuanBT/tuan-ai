@@ -65,7 +65,9 @@ describe("Worker giữ được những đường của nó", () => {
 
 	it("không giành nhầm những đường của giao diện", () => {
 		// Các đường này phải trả index.html cho React Router lo.
-		for (const spa of ["/admin/*", "/r/*", "/*"]) {
+		// `/r/*` không nằm ở đây: nó đi qua Worker trước để route OG trả meta tags
+		// cho bot crawler, rồi `next()` để SPA phục vụ người dùng bình thường.
+		for (const spa of ["/admin/*", "/*"]) {
 			expect(claimed).not.toContain(spa);
 		}
 	});

@@ -20,7 +20,7 @@ const KV_FREE_BYTES = 1024 ** 3;
 /**
  * Trần số bài cho một gói tải cả đợt.
  *
- * Mỗi bài tối đa 3 ảnh × 1,5 MB, nên 25 bài đã là gói hơn trăm MB và vài phút
+ * Mỗi bài tối đa 2 ảnh × 1,5 MB, nên 25 bài đã là gói cả trăm MB và vài phút
  * chờ. Cắt ở đây để một cú bấm nhầm không thành một lượt tải bất tận, còn muốn
  * lấy tiếp thì lọc theo trạng thái rồi tải đợt sau.
  */
@@ -119,7 +119,8 @@ export function adminRoutes() {
 				description: row.description,
 				styles: JSON.parse(row.styles) as string[],
 				status: row.status,
-				publishedUrl: row.published_url,
+				publishedTiktok: row.published_tiktok,
+				publishedYoutube: row.published_youtube,
 				adminNote: row.admin_note,
 				lang: row.lang,
 				bytes: row.bytes,
@@ -148,12 +149,18 @@ export function adminRoutes() {
 			sets.push("status = ?");
 			values.push(body.status);
 		}
-		if ("publishedUrl" in body) {
-			const url = clampText(body.publishedUrl, 500);
+		// Hai kênh, hai cột, cùng một luật: bỏ trống được, mà đã điền thì phải là
+		// https. Duyệt theo bảng để thêm kênh thứ ba sau này chỉ là thêm một dòng.
+		for (const [field, column] of [
+			["publishedTiktok", "published_tiktok"],
+			["publishedYoutube", "published_youtube"],
+		] as const) {
+			if (!(field in body)) continue;
+			const url = clampText(body[field], 500);
 			if (url && !/^https:\/\//.test(url)) {
 				return c.json({ error: "bad_url" }, 400);
 			}
-			sets.push("published_url = ?");
+			sets.push(`${column} = ?`);
 			values.push(url || null);
 		}
 		if ("adminNote" in body) {
@@ -420,7 +427,8 @@ export function adminRoutes() {
 	app.get("/api/admin/export.csv", async (c) => {
 		const rows = await c.env.DB.prepare(
 			`SELECT code, nickname, email, description, styles, status,
-			        published_url, admin_note, lang, bytes, created_at
+			        published_tiktok, published_youtube, admin_note, lang, bytes,
+			        created_at
 			 FROM submissions ORDER BY created_at DESC`,
 		).all<Record<string, unknown>>();
 
@@ -431,7 +439,8 @@ export function adminRoutes() {
 			"mo_ta",
 			"kieu",
 			"trang_thai",
-			"link_da_dang",
+			"link_tiktok",
+			"link_youtube",
 			"ghi_chu",
 			"ngon_ngu",
 			"dung_luong",
@@ -446,7 +455,8 @@ export function adminRoutes() {
 				row.description,
 				row.styles,
 				row.status,
-				row.published_url ?? "",
+				row.published_tiktok ?? "",
+				row.published_youtube ?? "",
 				row.admin_note ?? "",
 				row.lang,
 				row.bytes,

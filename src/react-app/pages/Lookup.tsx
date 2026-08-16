@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { TikTokMark, YouTubeMark } from "../components/Channels";
 import { CopyCode } from "../components/CopyCode";
 import { Layout } from "../components/Layout";
 import { ApiError, api, type Submission } from "../lib/api";
 import { CODE_LENGTH, CODE_PREFIX, codeDigits, digitsOnly, fullCode } from "../lib/code";
+import { useImageViewer } from "../lib/image-viewer";
 import { useLang } from "../lib/lang-context";
 import { forget, mine, remember, type MineEntry } from "../lib/mine";
 import { useSiteConfig } from "../lib/site-config";
+import { styleNames } from "../lib/styles";
 
 const BADGE: Record<string, string> = {
 	new: "",
@@ -43,6 +46,7 @@ function LookupView({ code }: { code: string | undefined }) {
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState(Boolean(code));
 	const [saved, setSaved] = useState<MineEntry[]>(() => mine());
+	const { view, viewer } = useImageViewer();
 
 	useEffect(() => {
 		if (!code) return;
@@ -161,16 +165,36 @@ function LookupView({ code }: { code: string | undefined }) {
 						{statusText[result.status]?.body}
 					</p>
 
-					{result.publishedUrl && (
-						<a
-							className="cta"
-							href={result.publishedUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							style={{ textAlign: "center", textDecoration: "none" }}
-						>
-							{t.watchNow}
-						</a>
+					{/* Bài lên cả hai kênh thì hiện cả hai nút: người xem quen TikTok hay
+					    quen YouTube là chuyện của họ, đừng chọn hộ. */}
+					{(result.publishedTiktok || result.publishedYoutube) && (
+						<div className="field">
+							<span className="hint">{t.watchNow}</span>
+							<div className="watch-row">
+								{result.publishedTiktok && (
+									<a
+										className="cta watch"
+										href={result.publishedTiktok}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										<TikTokMark />
+										TikTok
+									</a>
+								)}
+								{result.publishedYoutube && (
+									<a
+										className="cta watch"
+										href={result.publishedYoutube}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										<YouTubeMark />
+										YouTube
+									</a>
+								)}
+							</div>
+						</div>
 					)}
 
 					{/* Chỗ duy nhất câu này có nghĩa thật. Trên trang gửi bài nó là một
@@ -180,9 +204,18 @@ function LookupView({ code }: { code: string | undefined }) {
 					{result.imageUrls.length > 0 ? (
 						<>
 							<div className="thumbs">
-								{result.imageUrls.map((url) => (
+								{result.imageUrls.map((url, index) => (
 									<div className="thumb" key={url}>
-										<img src={url} alt="" />
+										{/* Người vào đây là để nhìn lại ảnh mình đã gửi, nên ô
+										    vuông nhỏ phải mở ra được thành cả tấm. */}
+										<button
+											type="button"
+											className="thumb-open"
+											onClick={() => view(result.imageUrls, index)}
+											aria-label={t.viewerOpen}
+										>
+											<img src={url} alt="" />
+										</button>
 									</div>
 								))}
 							</div>
@@ -200,10 +233,30 @@ function LookupView({ code }: { code: string | undefined }) {
 						<dt>{lang === "vi" ? "Tên hiển thị" : "Display name"}</dt>
 						<dd>{result.nickname}</dd>
 					</dl>
-					<dl>
-						<dt>{lang === "vi" ? "Mô tả" : "Description"}</dt>
-						<dd>{result.description}</dd>
-					</dl>
+
+					{/* Kiểu đã chọn trước đây không hiện ở đâu cả, nên ai chỉ chạm một
+					    kiểu rồi gửi (không gõ chữ nào) mở bài ra chỉ thấy mỗi cái tên:
+					    trang không nhắc lại được chính thứ họ đã chọn. */}
+					{result.styles.length > 0 && (
+						<dl>
+							<dt>{lang === "vi" ? "Kiểu đã chọn" : "Style picked"}</dt>
+							<dd className="tag-row">
+								{styleNames(config?.styles, result.styles, lang).map((name) => (
+									<span className="tag" key={name}>
+										{name}
+									</span>
+								))}
+							</dd>
+						</dl>
+					)}
+
+					{result.description && (
+						<dl>
+							<dt>{lang === "vi" ? "Mô tả" : "Description"}</dt>
+							<dd>{result.description}</dd>
+						</dl>
+					)}
+
 					<dl>
 						<dt>{lang === "vi" ? "Ngày gửi" : "Sent on"}</dt>
 						<dd>{new Date(result.createdAt).toLocaleDateString(locale)}</dd>
@@ -272,6 +325,8 @@ function LookupView({ code }: { code: string | undefined }) {
 					</>
 				)}
 			</section>
+
+			{viewer}
 		</Layout>
 	);
 }

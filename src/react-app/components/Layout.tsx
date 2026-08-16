@@ -50,11 +50,14 @@ export function Layout({
 
 			{children}
 
+			{/* Chân trang trước đây chép lại đúng hai mục của thanh điều hướng ngay
+			    đầu trang, trên một trang chỉ cao vài màn hình. Giữ lại thứ không có
+			    ở chỗ nào khác: đường sang kênh, và lối vào khu quản trị cho chủ
+			    trang — nhỏ, đứng riêng một bên. */}
 			<footer className="footer">
 				<ChannelLinksRow channels={config?.channels} />
-				<div className="footer-links">
-					<Link to="/">{t.navSubmit}</Link>
-					<Link to="/r">{t.navMine}</Link>
+				<div className="footer-base">
+					<span>© {new Date().getFullYear()} {title}</span>
 					<Link to="/admin">{t.navAdmin}</Link>
 				</div>
 			</footer>

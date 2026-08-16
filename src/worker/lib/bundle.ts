@@ -18,7 +18,8 @@ export interface SubmissionRow {
 	styles: string;
 	images: string;
 	status: string;
-	published_url: string | null;
+	published_tiktok: string | null;
+	published_youtube: string | null;
 	admin_note: string | null;
 	lang: string;
 	bytes: number;
@@ -118,7 +119,8 @@ export function readableText(
 				: "không có (ảnh gốc đã hết hạn lưu)",
 		],
 		["Ghi chú của bạn", row.admin_note || dash],
-		["Link đã đăng", row.published_url || dash],
+		["Link TikTok", row.published_tiktok || dash],
+		["Link YouTube", row.published_youtube || dash],
 	];
 
 	const width = Math.max(...fields.map(([label]) => label.length));
@@ -155,7 +157,10 @@ export function machineJson(
 		styles: ids.map((id) => ({ id, label: labels.get(id) ?? id })),
 		status: row.status,
 		statusLabel: STATUS_TEXT[row.status] ?? row.status,
-		publishedUrl: row.published_url,
+		published: {
+			tiktok: row.published_tiktok,
+			youtube: row.published_youtube,
+		},
 		adminNote: row.admin_note,
 		lang: row.lang,
 		createdAt: row.created_at,
