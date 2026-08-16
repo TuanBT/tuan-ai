@@ -975,6 +975,13 @@ select {
 .footer a:hover {
 	color: var(--accent);
 }
+.footer-version {
+	text-align: center;
+	font-size: 10px;
+	color: var(--faint);
+	opacity: 0.6;
+	letter-spacing: 0.02em;
+}
 
 /* ---------- trang pháp lý (privacy, terms) ---------- */
 

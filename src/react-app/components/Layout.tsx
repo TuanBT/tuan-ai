@@ -70,6 +70,9 @@ export function Layout({
 						<Link to="/admin">{t.navAdmin}</Link>
 					</div>
 				</div>
+				<div className="footer-version">
+					v.{__BUILD_HASH__} · {new Date(__BUILD_TIME__).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}
+				</div>
 			</footer>
 		</div>
 	);
