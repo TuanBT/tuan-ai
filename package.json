@@ -31,17 +31,22 @@
 		"typescript": "5.9.3",
 		"typescript-eslint": "8.48.0",
 		"vite": "^7.0.0",
+		"vitest": "^3.2.7",
 		"wrangler": "4.88.0"
 	},
 	"private": true,
 	"scripts": {
 		"build": "tsc -b && vite build",
 		"cf-typegen": "wrangler types",
-		"check": "tsc && vite build && wrangler deploy --dry-run",
+		"check": "npm run verify && wrangler deploy --dry-run",
 		"deploy": "wrangler deploy",
 		"dev": "vite",
 		"lint": "eslint .",
-		"preview": "npm run build && vite preview"
+		"preview": "npm run build && vite preview",
+		"ship": "npm run check && wrangler d1 migrations apply tuan-ai-db --remote && wrangler deploy",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"verify": "tsc -b && vitest run && eslint . && vite build"
 	},
 	"type": "module"
 }

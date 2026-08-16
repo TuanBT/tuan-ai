@@ -9,7 +9,7 @@ import {
 	SESSION_COOKIE,
 	sessionCookie,
 } from "../lib/session";
-import { b64urlEncode, timingSafeEqual } from "../lib/util";
+import { b64urlEncode, isLocalRequest, timingSafeEqual } from "../lib/util";
 
 const STATE_COOKIE = "tuanai_oauth";
 
@@ -90,8 +90,6 @@ async function fetchIdentity(
 	return { email, name: user.name ?? user.login ?? email };
 }
 
-const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "0.0.0.0"]);
-
 /** Cookie do trang /admin đặt để tạm tắt cửa sau, xem trang y như production. */
 export const DEV_MODE_COOKIE = "tuanai_devmode";
 
@@ -109,7 +107,7 @@ function devSession(
 	cookies: string,
 ): AdminSession | null {
 	if (env.DEV_ADMIN_BYPASS !== "1") return null;
-	if (!LOCAL_HOSTS.has(new URL(url).hostname)) return null;
+	if (!isLocalRequest(url)) return null;
 	// Bấm "Xem như production" trong /admin đặt cookie này để tắt cửa sau.
 	if (cookies.includes(`${DEV_MODE_COOKIE}=prod`)) return null;
 	const email = (env.ADMIN_EMAILS ?? "dev@localhost").split(",")[0].trim();
@@ -228,8 +226,7 @@ export function authRoutes() {
 			session,
 			// Cho giao diện biết có nên hiện công tắc chuyển chế độ hay không.
 			devBypassAvailable:
-				c.env.DEV_ADMIN_BYPASS === "1" &&
-				LOCAL_HOSTS.has(new URL(c.req.url).hostname),
+				c.env.DEV_ADMIN_BYPASS === "1" && isLocalRequest(c.req.url),
 			prodPreview: cookies.includes(`${DEV_MODE_COOKIE}=prod`),
 			providers: {
 				google: Boolean(c.env.GOOGLE_CLIENT_ID && c.env.GOOGLE_CLIENT_SECRET),

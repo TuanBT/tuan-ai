@@ -1,13 +1,21 @@
 import { Hono } from "hono";
 import { blobs, imageKey } from "../lib/storage";
-import { bumpUsage, remainingWrites, usageToday } from "../lib/quota";
-import { readSettings } from "../lib/settings";
-import { verifyTurnstile } from "../lib/turnstile";
+import {
+	bumpUsage,
+	parseUsage,
+	remainingWrites,
+	usageToday,
+	USAGE_TODAY_QUERY,
+	type DailyUsage,
+} from "../lib/quota";
+import { parseSettings, readSettings, SETTINGS_QUERY } from "../lib/settings";
+import { turnstileReady, verifyTurnstile } from "../lib/turnstile";
 import {
 	clampText,
 	clientIp,
 	hashIp,
 	isCode,
+	isLocalRequest,
 	newCode,
 	normalizeCode,
 	secondsUntilUtcMidnight,
@@ -26,37 +34,89 @@ interface ImageMeta {
 	size: number;
 }
 
+/**
+ * Bộ đếm chặn dò mã, dùng chung cho cả tra cứu lẫn đường lấy ảnh.
+ *
+ * Phải hỏi *trước* khi trả lời, chứ không phải đếm sau: đếm sau thì người đã
+ * vượt ngưỡng vẫn dò tiếp được — đoán trúng là vẫn được phục vụ, và cái gọi là
+ * giới hạn thành ra không giới hạn gì cả.
+ */
+async function overLookupLimit(
+	db: D1Database,
+	ipHash: string,
+	day: string,
+): Promise<boolean> {
+	const seen = await db
+		.prepare("SELECT misses FROM lookup_misses WHERE ip_hash = ? AND day = ?")
+		.bind(ipHash, day)
+		.first<{ misses: number }>();
+	return (seen?.misses ?? 0) >= MAX_LOOKUP_MISSES;
+}
+
+async function noteLookupMiss(
+	db: D1Database,
+	ipHash: string,
+	day: string,
+): Promise<void> {
+	await db
+		.prepare(
+			`INSERT INTO lookup_misses (ip_hash, day, misses) VALUES (?1, ?2, 1)
+			 ON CONFLICT(ip_hash, day) DO UPDATE SET misses = misses + 1`,
+		)
+		.bind(ipHash, day)
+		.run();
+}
+
 export function publicRoutes() {
 	const app = new Hono<{ Bindings: Env }>();
 
 	app.get("/api/config", async (c) => {
-		const settings = await readSettings(c.env.DB);
-		const usage = await usageToday(c.env.DB);
-		const left = remainingWrites(usage, settings.daily_write_budget);
+		// Ba câu này trước đây chạy nối tiếp nhau ở mỗi lượt tải trang.
+		const [settingsRows, usageRow, styleRows] = await c.env.DB.batch([
+			c.env.DB.prepare(SETTINGS_QUERY),
+			c.env.DB.prepare(USAGE_TODAY_QUERY).bind(utcDay()),
+			c.env.DB.prepare(
+				"SELECT id, label_vi, label_en FROM styles WHERE active = 1 ORDER BY sort_order, id",
+			),
+		]);
 
-		const styles = await c.env.DB.prepare(
-			"SELECT id, label_vi, label_en FROM styles WHERE active = 1 ORDER BY sort_order, id",
-		).all<{ id: string; label_vi: string; label_en: string }>();
+		const settings = parseSettings(
+			settingsRows.results as Array<{ key: string; value: string }>,
+		);
+		const usage = parseUsage(
+			(usageRow.results as DailyUsage[])[0],
+		);
+		const left = remainingWrites(usage, settings.daily_write_budget);
+		const captchaReady = turnstileReady(
+			c.env.TURNSTILE_SECRET,
+			isLocalRequest(c.req.url),
+		);
 
 		return c.json({
 			siteTitle: settings.site_title,
 			tagline: { vi: settings.tagline_vi, en: settings.tagline_en },
-			styles: styles.results,
+			styles: styleRows.results,
 			maxImages: settings.max_images,
+			retentionDays: settings.retention_days,
 			turnstileSiteKey: c.env.TURNSTILE_SITE_KEY ?? null,
-			open: settings.submissions_open && left >= 1,
-			closedReason: !settings.submissions_open
-				? "paused"
-				: left < 1
-					? "quota"
-					: null,
+			open: captchaReady && settings.submissions_open && left >= 1,
+			// Thiếu captcha xếp trước mọi lý do khác: đó là lỗi cấu hình của chủ
+			// trang, và người dùng nên thấy lời xin lỗi tử tế thay vì điền xong cả
+			// form rồi mới ăn lỗi lúc bấm gửi.
+			closedReason: !captchaReady
+				? "setup"
+				: !settings.submissions_open
+					? "paused"
+					: left < 1
+						? "quota"
+						: null,
 			resetInSeconds: secondsUntilUtcMidnight(),
 		});
 	});
 
 	app.get("/api/gallery", async (c) => {
 		const rows = await c.env.DB.prepare(
-			`SELECT code, nickname, published_url, images, images_purged
+			`SELECT code, nickname, published_url, images_purged
 			 FROM submissions
 			 WHERE status = 'done' AND published_url IS NOT NULL AND published_url <> ''
 			 ORDER BY created_at DESC LIMIT 12`,
@@ -64,13 +124,14 @@ export function publicRoutes() {
 			code: string;
 			nickname: string;
 			published_url: string;
-			images: string;
 			images_purged: number;
 		}>();
 
 		return c.json({
+			// Không trả `code` ra ngoài: mã là chìa khoá xem bài, không phải dữ liệu
+			// hiển thị. (Mã của bài đã lên sóng vẫn đoán được từ đường dẫn ảnh bên
+			// dưới — chấp nhận được, vì nội dung đó đã công khai trên kênh rồi.)
 			items: rows.results.map((row) => ({
-				code: row.code,
 				nickname: row.nickname,
 				publishedUrl: row.published_url,
 				thumb: row.images_purged ? null : `/i/${row.code}/0`,
@@ -84,13 +145,8 @@ export function publicRoutes() {
 
 		const ipHash = await hashIp(clientIp(c.req.raw), c.env.SESSION_SECRET);
 		const day = utcDay();
-		const seen = await c.env.DB.prepare(
-			"SELECT misses FROM lookup_misses WHERE ip_hash = ? AND day = ?",
-		)
-			.bind(ipHash, day)
-			.first<{ misses: number }>();
 
-		if ((seen?.misses ?? 0) >= MAX_LOOKUP_MISSES) {
+		if (await overLookupLimit(c.env.DB, ipHash, day)) {
 			return c.json({ error: "too_many_lookups" }, 429);
 		}
 
@@ -114,12 +170,7 @@ export function publicRoutes() {
 			}>();
 
 		if (!row) {
-			await c.env.DB.prepare(
-				`INSERT INTO lookup_misses (ip_hash, day, misses) VALUES (?1, ?2, 1)
-				 ON CONFLICT(ip_hash, day) DO UPDATE SET misses = misses + 1`,
-			)
-				.bind(ipHash, day)
-				.run();
+			await noteLookupMiss(c.env.DB, ipHash, day);
 			return c.json({ error: "not_found" }, 404);
 		}
 
@@ -140,14 +191,31 @@ export function publicRoutes() {
 	});
 
 	app.get("/i/:code/:index", async (c) => {
-		const code = c.req.param("code").toUpperCase();
+		const code = normalizeCode(c.req.param("code"));
 		const index = Number(c.req.param("index"));
 		if (!isCode(code) || !Number.isInteger(index) || index < 0 || index > 9) {
 			return c.notFound();
 		}
 
-		const found = await blobs(c.env).get(imageKey(code, index));
-		if (!found) return c.notFound();
+		const ipHash = await hashIp(clientIp(c.req.raw), c.env.SESSION_SECRET);
+		const day = utcDay();
+
+		/*
+		 * Đường lấy ảnh trước đây không bị đếm lượt dò, dù ảnh mới là thứ đáng giá
+		 * — bộ đếm chỉ gắn ở /api/s. Chạy song song hai việc để không phải trả thêm
+		 * một vòng chờ D1 cho mỗi tấm ảnh hiển thị bình thường; nếu quá ngưỡng thì
+		 * kết quả KV bị vứt đi chứ không bao giờ được gửi ra.
+		 */
+		const [blocked, found] = await Promise.all([
+			overLookupLimit(c.env.DB, ipHash, day),
+			blobs(c.env).get(imageKey(code, index)),
+		]);
+
+		if (blocked) return c.text("", 429);
+		if (!found) {
+			await noteLookupMiss(c.env.DB, ipHash, day);
+			return c.notFound();
+		}
 
 		return new Response(found.data, {
 			headers: {
@@ -163,6 +231,19 @@ export function publicRoutes() {
 	app.post("/api/submit", async (c) => {
 		const settings = await readSettings(c.env.DB);
 		const ip = clientIp(c.req.raw);
+		const secret = c.env.TURNSTILE_SECRET;
+
+		/*
+		 * Thiếu captcha thì đóng form lại, đừng nhận bài.
+		 *
+		 * Trước đây hàm kiểm tra tự trả về "đạt" khi không có secret — tiện lúc
+		 * chạy local, nhưng nghĩa là chỉ cần quên một lệnh `wrangler secret put`
+		 * là form mở toang cho bot mà không có gì báo ngoài một dòng chữ trong
+		 * trang Thống kê. Mất bài còn hơn mất trắng vì bot.
+		 */
+		if (!turnstileReady(secret, isLocalRequest(c.req.url))) {
+			return c.json({ error: "turnstile_unconfigured" }, 503);
+		}
 
 		if (!settings.submissions_open) {
 			return c.json({ error: "paused" }, 503);
@@ -202,12 +283,14 @@ export function publicRoutes() {
 			);
 		}
 
-		const ok = await verifyTurnstile(
-			form.get("turnstile") as string | null,
-			c.env.TURNSTILE_SECRET,
-			ip,
-		);
-		if (!ok) return c.json({ error: "turnstile" }, 400);
+		if (secret) {
+			const ok = await verifyTurnstile(
+				form.get("turnstile") as string | null,
+				secret,
+				ip,
+			);
+			if (!ok) return c.json({ error: "turnstile" }, 400);
+		}
 
 		const nickname = clampText(form.get("nickname"), 60);
 		const description = clampText(form.get("description"), 500);

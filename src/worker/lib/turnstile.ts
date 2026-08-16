@@ -2,16 +2,18 @@ const VERIFY_URL =
 	"https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
 /**
- * Khi chưa cấu hình TURNSTILE_SECRET (ví dụ lúc chạy local), bỏ qua bước kiểm
- * tra để còn phát triển được. Trên production thì thiếu khoá đồng nghĩa với
- * việc form mở toang, nên /api/config sẽ cảnh báo trong trang quản trị.
+ * Kiểm tra captcha với Cloudflare.
+ *
+ * Hàm này đòi `secret` là bắt buộc — trước đây nó tự cho qua khi thiếu secret,
+ * nghĩa là quên nạp `TURNSTILE_SECRET` trên production là form mở toang cho bot
+ * mà không có dấu hiệu nào. Việc quyết định "thiếu secret thì làm gì" nay nằm ở
+ * phía route: bỏ qua khi chạy local, từ chối nhận bài khi chạy thật.
  */
 export async function verifyTurnstile(
 	token: string | null,
-	secret: string | undefined,
+	secret: string,
 	ip: string,
 ): Promise<boolean> {
-	if (!secret) return true;
 	if (!token) return false;
 
 	const form = new FormData();
@@ -26,4 +28,14 @@ export async function verifyTurnstile(
 	} catch {
 		return false;
 	}
+}
+
+/**
+ * Chưa cấu hình captcha thì chỉ máy lập trình mới được nhận bài.
+ */
+export function turnstileReady(
+	secret: string | undefined,
+	local: boolean,
+): boolean {
+	return Boolean(secret) || local;
 }

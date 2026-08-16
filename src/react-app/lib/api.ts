@@ -9,9 +9,10 @@ export interface SiteConfig {
 	tagline: { vi: string; en: string };
 	styles: Style[];
 	maxImages: number;
+	retentionDays: number;
 	turnstileSiteKey: string | null;
 	open: boolean;
-	closedReason: "paused" | "quota" | null;
+	closedReason: "paused" | "quota" | "setup" | null;
 	resetInSeconds: number;
 }
 
@@ -28,7 +29,6 @@ export interface Submission {
 }
 
 export interface GalleryItem {
-	code: string;
 	nickname: string;
 	publishedUrl: string;
 	thumb: string | null;
@@ -125,6 +125,8 @@ export const api = {
 		request<{
 			tables: Array<{ name: string; rows: number }>;
 			duePurge: number;
+			dueDelete: number;
+			dataRetentionDays: number;
 		}>("/api/admin/data"),
 	adminQuery: (sql: string) =>
 		request<{
@@ -137,7 +139,10 @@ export const api = {
 			body: JSON.stringify({ sql }),
 		}),
 	adminPurge: () =>
-		request<{ purged: number }>("/api/admin/purge", { method: "POST" }),
+		request<{ images: number; rowsDeleted: number; emailsCleared: number }>(
+			"/api/admin/purge",
+			{ method: "POST" },
+		),
 	adminReset: (target: "stats" | "lookups" | "submissions") =>
 		request<{ ok: true; deleted?: number }>("/api/admin/reset", {
 			method: "POST",
@@ -165,6 +170,7 @@ export interface AdminStyle {
 
 export interface AdminSettings {
 	retention_days: number;
+	data_retention_days: number;
 	max_images: number;
 	daily_write_budget: number;
 	max_per_ip_day: number;

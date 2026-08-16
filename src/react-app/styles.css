@@ -514,18 +514,49 @@ select {
 	display: flex;
 	gap: 8px;
 }
-.lookup-row .input {
+/* Ô nhập mã có tiền tố TA- gắn cứng: người dùng thấy mã thật đầy đủ nhưng chỉ
+   phải gõ tám chữ số. Giãn chữ cho dễ đối chiếu khi chép tay từ video. */
+.code-field {
 	flex: 1;
 	min-width: 0;
-	text-transform: uppercase;
-	font-family: var(--mono);
-	letter-spacing: 0.05em;
+	display: flex;
+	align-items: center;
+	gap: 1px;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: var(--field);
+	padding: 0 14px;
+	transition: border-color 0.15s;
 }
-/* Viết hoa áp cho mã người dùng gõ vào, không áp cho câu gợi ý. */
-.lookup-row .input::placeholder {
-	text-transform: none;
-	font-family: var(--sans);
-	letter-spacing: 0;
+.code-field:focus-within {
+	border-color: var(--accent);
+}
+.code-field-prefix {
+	font-family: var(--mono);
+	font-size: 16px;
+	font-weight: 700;
+	color: var(--accent);
+	letter-spacing: 0.06em;
+	user-select: none;
+	flex: none;
+}
+.code-field input {
+	flex: 1;
+	min-width: 0;
+	border: 0;
+	background: none;
+	padding: 12px 0;
+	font-family: var(--mono);
+	font-size: 16px;
+	letter-spacing: 0.18em;
+	font-variant-numeric: tabular-nums;
+}
+.code-field input:focus {
+	outline: none;
+}
+.code-field input::placeholder {
+	color: var(--faint);
+	letter-spacing: 0.12em;
 }
 .lookup-row .cta {
 	padding: 12px 20px;
@@ -799,6 +830,43 @@ select {
 	font-size: 12px;
 }
 
+/* ---------- bảng dữ liệu trong khu quản trị ---------- */
+
+.data-table {
+	border-collapse: collapse;
+	font-size: 13px;
+	width: 100%;
+	font-variant-numeric: tabular-nums;
+}
+.data-table th,
+.data-table td {
+	border: 1px solid var(--line);
+	padding: 7px 10px;
+	text-align: left;
+	white-space: nowrap;
+	max-width: 320px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.data-table th {
+	background: var(--field);
+	font-family: var(--mono);
+	font-size: 11.5px;
+	font-weight: 600;
+	color: var(--muted);
+}
+
+a.chip {
+	text-decoration: none;
+	display: inline-block;
+}
+
+.chip.danger {
+	background: #fdeceb;
+	color: var(--bad);
+	font-weight: 600;
+}
+
 .login {
 	max-width: 380px;
 	margin: 12vh auto;
@@ -837,4 +905,61 @@ select {
 	.page {
 		padding-top: 34px;
 	}
+}
+
+/* ---------- "Bài của bạn" — danh sách mã lưu trong máy người dùng ---------- */
+
+.mine {
+	margin-top: 30px;
+	padding-top: 20px;
+	border-top: 1px solid var(--line);
+}
+.mine-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 10px;
+}
+.mine-head h2 {
+	margin: 0;
+	font-size: 15px;
+}
+.mine-link {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	color: inherit;
+	text-decoration: none;
+	padding: 2px 0;
+}
+.mine-link strong {
+	font-family: var(--mono);
+	font-size: 14px;
+	letter-spacing: 0.05em;
+}
+.mine-link small {
+	color: var(--faint);
+	font-size: 12px;
+}
+.mine-link:hover strong {
+	color: var(--accent);
+}
+.mine .hint {
+	margin-top: 12px;
+}
+
+/* Nút trông như liên kết — dùng cho thao tác phụ, không tranh chỗ với nút chính. */
+.linkish {
+	border: 0;
+	background: none;
+	padding: 0;
+	color: var(--muted);
+	font: inherit;
+	font-size: 13px;
+	text-decoration: underline;
+	cursor: pointer;
+}
+.linkish:hover {
+	color: var(--accent);
 }

@@ -5,6 +5,7 @@ import { Turnstile } from "../components/Turnstile";
 import { ApiError, api, type GalleryItem, type SiteConfig } from "../lib/api";
 import { compressImage, formatBytes } from "../lib/compress";
 import { useLang } from "../lib/lang-context";
+import { remember } from "../lib/mine";
 import { Layout } from "../components/Layout";
 
 interface Picked {
@@ -99,6 +100,9 @@ export function Submit() {
 
 		try {
 			const result = await api.submit(form);
+			// Mã là chìa khoá duy nhất để quay lại bài này — nhớ hộ người dùng ngay
+			// trên máy họ, phòng khi họ đóng tab trước lúc kịp chép mã.
+			remember(result.code, nickname.trim());
 			setDone(result.code);
 			window.scrollTo({ top: 0, behavior: "smooth" });
 		} catch (err) {
@@ -150,6 +154,27 @@ export function Submit() {
 		);
 	}
 
+	// Ba lý do đóng form, mỗi lý do một lời giải thích riêng. "setup" là khi chưa
+	// cấu hình chống bot — lỗi của chủ trang, nên nói cho tử tế thay vì để người
+	// dùng điền xong cả form rồi mới ăn lỗi.
+	const closed = {
+		paused: {
+			badge: lang === "vi" ? "Tạm ngưng" : "Paused",
+			title: t.closedPaused,
+			body: t.closedPausedBody,
+		},
+		quota: {
+			badge: lang === "vi" ? "Tạm đầy" : "Full",
+			title: t.closedQuota,
+			body: t.closedQuotaBody,
+		},
+		setup: {
+			badge: lang === "vi" ? "Đang cài đặt" : "Setting up",
+			title: t.closedSetup,
+			body: t.closedSetupBody,
+		},
+	}[config.closedReason ?? "paused"];
+
 	const canSubmit =
 		picked.length > 0 &&
 		nickname.trim().length > 0 &&
@@ -168,23 +193,15 @@ export function Submit() {
 
 			{!config.open ? (
 				<div className="panel">
-					<span className="badge warn">
-						{config.closedReason === "paused" ? "Tạm ngưng" : "Tạm đầy"}
-					</span>
-					<h2>
-						{config.closedReason === "paused" ? t.closedPaused : t.closedQuota}
-					</h2>
+					<span className="badge warn">{closed.badge}</span>
+					<h2>{closed.title}</h2>
 					{config.closedReason === "quota" && (
 						<>
 							<span className="hint">{t.backIn}</span>
 							<Countdown seconds={config.resetInSeconds} />
 						</>
 					)}
-					<p>
-						{config.closedReason === "paused"
-							? t.closedPausedBody
-							: t.closedQuotaBody}
-					</p>
+					<p>{closed.body}</p>
 				</div>
 			) : (
 				<form className="form" onSubmit={send}>
@@ -296,6 +313,10 @@ export function Submit() {
 						<span>{t.consent}</span>
 					</label>
 
+					{/* Nói thẳng thời hạn giữ ảnh ngay chỗ người ta quyết định gửi hay
+					    không, thay vì giấu trong một trang điều khoản không ai đọc. */}
+					<span className="hint">{t.retentionNote(config.retentionDays)}</span>
+
 					<Turnstile siteKey={config.turnstileSiteKey} onToken={setToken} />
 
 					{errorText && <div className="error">{errorText}</div>}
@@ -312,7 +333,7 @@ export function Submit() {
 					<div className="gallery-grid">
 						{gallery.map((item) => (
 							<a
-								key={item.code}
+								key={item.publishedUrl}
 								className="gallery-item"
 								href={item.publishedUrl}
 								target="_blank"

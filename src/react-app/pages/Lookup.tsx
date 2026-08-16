@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { ApiError, api, type Submission } from "../lib/api";
+import { CODE_LENGTH, CODE_PREFIX, codeDigits, digitsOnly, fullCode } from "../lib/code";
 import { useLang } from "../lib/lang-context";
+import { forget, mine, remember, type MineEntry } from "../lib/mine";
 
 const BADGE: Record<string, string> = {
 	new: "",
@@ -23,10 +25,11 @@ export function Lookup() {
 function LookupView({ code }: { code: string | undefined }) {
 	const navigate = useNavigate();
 	const { lang, t } = useLang();
-	const [input, setInput] = useState(code ?? "");
+	const [input, setInput] = useState(codeDigits(code ?? ""));
 	const [result, setResult] = useState<Submission | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState(Boolean(code));
+	const [saved, setSaved] = useState<MineEntry[]>(() => mine());
 
 	useEffect(() => {
 		if (!code) return;
@@ -38,6 +41,10 @@ function LookupView({ code }: { code: string | undefined }) {
 				if (cancelled) return;
 				setResult(data);
 				setBusy(false);
+				// Nhớ luôn cả những mã tra bằng tay: mở link ở máy khác thì máy đó
+				// cũng có đường quay lại, không phải gõ mã thêm lần nữa.
+				remember(data.code, data.nickname);
+				setSaved(mine());
 			})
 			.catch((err) => {
 				if (cancelled) return;
@@ -57,6 +64,8 @@ function LookupView({ code }: { code: string | undefined }) {
 		rejected: { title: t.statusRejected, body: t.statusRejectedBody },
 	};
 
+	const locale = lang === "vi" ? "vi-VN" : "en-GB";
+
 	return (
 		<Layout>
 			<div className="hero">
@@ -68,22 +77,31 @@ function LookupView({ code }: { code: string | undefined }) {
 				className="lookup-row"
 				onSubmit={(e) => {
 					e.preventDefault();
-					// Người dùng hay chỉ gõ phần số, hoặc chép cả dấu cách; nhận hết.
-					const digits = input.replace(/\D/g, "");
-					const clean =
-						digits.length === 8 ? `TA-${digits}` : input.trim().toUpperCase();
-					if (clean) navigate(`/r/${clean}`);
+					if (input.length === CODE_LENGTH) navigate(`/r/${fullCode(input)}`);
 				}}
 			>
-				<input
-					className="input"
-					inputMode="numeric"
-					placeholder={t.lookupPlaceholder}
-					value={input}
-					maxLength={11}
-					onChange={(e) => setInput(e.target.value)}
-				/>
-				<button className="cta" type="submit">
+				{/* Tiền tố gắn cố định trong ô: người dùng nhìn thấy mã thật là
+				    TA-xxxxxxxx nhưng chỉ phải gõ tám chữ số. */}
+				<div className="code-field">
+					<span className="code-field-prefix" aria-hidden="true">
+						{CODE_PREFIX}
+					</span>
+					<input
+						inputMode="numeric"
+						autoComplete="off"
+						aria-label={t.lookupPlaceholder}
+						placeholder={t.lookupPlaceholder}
+						value={input}
+						maxLength={CODE_LENGTH}
+						// Dán cả "TA-04829173" hay "TA 048 291 73" đều ra đúng tám chữ số.
+						onChange={(e) => setInput(digitsOnly(e.target.value))}
+					/>
+				</div>
+				<button
+					className="cta"
+					type="submit"
+					disabled={input.length !== CODE_LENGTH}
+				>
 					{t.lookupBtn}
 				</button>
 			</form>
@@ -147,13 +165,58 @@ function LookupView({ code }: { code: string | undefined }) {
 					</dl>
 					<dl>
 						<dt>{lang === "vi" ? "Ngày gửi" : "Sent on"}</dt>
-						<dd>
-							{new Date(result.createdAt).toLocaleDateString(
-								lang === "vi" ? "vi-VN" : "en-GB",
-							)}
-						</dd>
+						<dd>{new Date(result.createdAt).toLocaleDateString(locale)}</dd>
 					</dl>
 				</div>
+			)}
+
+			{/* Không có tài khoản, nên mất mã là mất bài. Danh sách này là đường
+			    quay lại, và nó nằm trọn trong máy của người dùng. */}
+			{saved.length > 0 && (
+				<section className="mine">
+					<div className="mine-head">
+						<h2>{t.mineTitle}</h2>
+						<button
+							type="button"
+							className="linkish"
+							onClick={() => {
+								if (!confirm(t.mineConfirm)) return;
+								forget();
+								setSaved([]);
+							}}
+						>
+							{t.mineForgetAll}
+						</button>
+					</div>
+
+					<div className="rows">
+						{saved.map((entry) => (
+							<div className="row" key={entry.code}>
+								<Link className="mine-link" to={`/r/${entry.code}`}>
+									<strong>{entry.code}</strong>
+									<small>
+										{entry.nickname} ·{" "}
+										{new Date(entry.at).toLocaleDateString(locale)}
+									</small>
+								</Link>
+								<button
+									type="button"
+									className="chip"
+									title={t.mineForgetOne}
+									aria-label={`${t.mineForgetOne} ${entry.code}`}
+									onClick={() => {
+										forget(entry.code);
+										setSaved(mine());
+									}}
+								>
+									×
+								</button>
+							</div>
+						))}
+					</div>
+
+					<p className="hint">{t.mineHint}</p>
+				</section>
 			)}
 		</Layout>
 	);

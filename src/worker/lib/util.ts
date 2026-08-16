@@ -50,6 +50,24 @@ export function clientIp(req: Request): string {
 	return req.headers.get("cf-connecting-ip") ?? "0.0.0.0";
 }
 
+const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "0.0.0.0"]);
+
+/**
+ * Yêu cầu có đến từ máy lập trình hay không.
+ *
+ * Dùng để nới lỏng vài thứ khi chạy local (bỏ qua captcha, mở cửa sau vào
+ * /admin) mà vẫn siết chặt trên production. Suy ra từ hostname của chính yêu
+ * cầu, không phải từ biến môi trường — biến có thể bị đặt nhầm, hostname thì
+ * không giả được.
+ */
+export function isLocalRequest(url: string): boolean {
+	try {
+		return LOCAL_HOSTS.has(new URL(url).hostname);
+	} catch {
+		return false;
+	}
+}
+
 /** Ngày UTC — trùng với mốc reset hạn mức KV của Cloudflare. */
 export function utcDay(at: Date = new Date()): string {
 	return at.toISOString().slice(0, 10);

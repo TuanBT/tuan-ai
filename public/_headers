@@ -1,0 +1,12 @@
+# Header cho phần tĩnh (index.html, JS, CSS).
+#
+# Những file này được phục vụ thẳng từ biên Cloudflare, KHÔNG đi qua Worker,
+# nên middleware trong src/worker/lib/headers.ts không với tới được. Sửa ở đây
+# thì sửa luôn bên đó cho khớp.
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()

@@ -16,13 +16,19 @@ const EMPTY = (day: string): DailyUsage => ({
 	bytes: 0,
 });
 
+export const USAGE_TODAY_QUERY = "SELECT * FROM daily_usage WHERE day = ?";
+
+/** Dựng bản ghi từ kết quả có sẵn — dùng khi đã gộp nhiều query. */
+export function parseUsage(row: DailyUsage | null | undefined): DailyUsage {
+	return row ?? EMPTY(utcDay());
+}
+
 export async function usageToday(db: D1Database): Promise<DailyUsage> {
-	const day = utcDay();
 	const row = await db
-		.prepare("SELECT * FROM daily_usage WHERE day = ?")
-		.bind(day)
+		.prepare(USAGE_TODAY_QUERY)
+		.bind(utcDay())
 		.first<DailyUsage>();
-	return row ?? EMPTY(day);
+	return parseUsage(row);
 }
 
 export async function bumpUsage(

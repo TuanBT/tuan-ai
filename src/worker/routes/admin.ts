@@ -264,11 +264,22 @@ export function adminRoutes() {
 			),
 		);
 
+		const settings = await readSettings(c.env.DB);
+		const now = Date.now();
+
 		const pending = await c.env.DB.prepare(
 			`SELECT COUNT(*) AS n FROM submissions
 			 WHERE images_purged = 0 AND MIN(expires_at, created_at + ?1) <= ?2`,
 		)
-			.bind((await readSettings(c.env.DB)).retention_days * 86_400_000, Date.now())
+			.bind(settings.retention_days * 86_400_000, now)
+			.first<{ n: number }>();
+
+		const stale = await c.env.DB.prepare(
+			`SELECT COUNT(*) AS n FROM submissions
+			 WHERE created_at < ?1
+			   AND NOT (published_url IS NOT NULL AND published_url <> '')`,
+		)
+			.bind(now - settings.data_retention_days * 86_400_000)
 			.first<{ n: number }>();
 
 		return c.json({
@@ -277,6 +288,8 @@ export function adminRoutes() {
 				rows: counts[index].results[0]?.n ?? 0,
 			})),
 			duePurge: pending?.n ?? 0,
+			dueDelete: stale?.n ?? 0,
+			dataRetentionDays: settings.data_retention_days,
 		});
 	});
 
@@ -300,9 +313,7 @@ export function adminRoutes() {
 		}
 	});
 
-	app.post("/api/admin/purge", async (c) => {
-		return c.json({ purged: await purgeExpired(c.env) });
-	});
+	app.post("/api/admin/purge", async (c) => c.json(await purgeExpired(c.env)));
 
 	app.get("/api/admin/export.csv", async (c) => {
 		const rows = await c.env.DB.prepare(
@@ -344,7 +355,7 @@ export function adminRoutes() {
 		);
 
 		// BOM để Excel mở tiếng Việt không bị vỡ dấu.
-		const csv = `﻿${[header.join(","), ...body].join("\r\n")}`;
+		const csv = `\uFEFF${[header.join(","), ...body].join("\r\n")}`;
 		return new Response(csv, {
 			headers: {
 				"Content-Type": "text/csv; charset=utf-8",
@@ -403,7 +414,7 @@ const WRITE_KEYWORDS =
  * và nếu tài khoản quản trị bị chiếm thì nó thành cửa mở toang. Muốn sửa dữ
  * liệu thì dùng các nút bảo trì có sẵn — chúng biết phải dọn cả ảnh trong kho.
  */
-function readOnlySql(raw: string): string | null {
+export function readOnlySql(raw: string): string | null {
 	const sql = raw.trim().replace(/;+\s*$/, "");
 	if (!sql) return null;
 	if (!/^(select|with)\b/i.test(sql)) return null;
@@ -412,7 +423,18 @@ function readOnlySql(raw: string): string | null {
 	return /\blimit\b/i.test(sql) ? sql : `${sql} LIMIT 200`;
 }
 
-function csvCell(value: unknown): string {
-	const text = String(value ?? "");
+/**
+ * Ký tự mà Excel và Google Sheets hiểu là "ô này là công thức".
+ *
+ * Tên và mô tả trong file CSV do người lạ gõ vào. Một ô bắt đầu bằng `=` là một
+ * công thức chạy ngay khi bạn mở file — kể cả `=HYPERLINK(...)` dẫn đi đâu đó.
+ * Thêm dấu nháy đơn ở đầu thì bảng tính coi nó là chữ, và dấu nháy đó không
+ * hiện ra trong ô.
+ */
+const FORMULA_LEAD = /^[=+\-@\t\r]/;
+
+export function csvCell(value: unknown): string {
+	const raw = String(value ?? "");
+	const text = FORMULA_LEAD.test(raw) ? `'${raw}` : raw;
 	return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
