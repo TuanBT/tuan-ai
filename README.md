@@ -6,6 +6,8 @@ sắp xếp ý tưởng.
 
 Chạy trọn vẹn trên gói miễn phí của Cloudflare, **không cần thẻ tín dụng**.
 
+Đang chạy tại **<https://tuan-ai.tuanbt.workers.dev>** — khu quản trị ở `/admin`.
+
 | Thành phần | Vai trò |
 | --- | --- |
 | Workers + static assets | Trang React và API trong cùng một lần deploy |
@@ -148,15 +150,15 @@ npx wrangler secret put GITHUB_CLIENT_SECRET
    dụng, thêm email của bạn vào phần *Test users*
 3. **Credentials → Create credentials → OAuth client ID** → loại *Web application*
 4. Mục **Authorized redirect URIs** thêm chính xác:
-   `https://tuan-ai.bttvn-4t.workers.dev/auth/google/callback`
+   `https://tuan-ai.tuanbt.workers.dev/auth/google/callback`
 5. Lấy Client ID và Client Secret nạp vào hai secret tương ứng
 
 ### Đăng nhập GitHub
 
 1. GitHub → **Settings → Developer settings → OAuth Apps → New OAuth App**
-2. Homepage URL: `https://tuan-ai.bttvn-4t.workers.dev`
+2. Homepage URL: `https://tuan-ai.tuanbt.workers.dev`
 3. Authorization callback URL:
-   `https://tuan-ai.bttvn-4t.workers.dev/auth/github/callback`
+   `https://tuan-ai.tuanbt.workers.dev/auth/github/callback`
 4. Bấm *Generate a new client secret* rồi nạp cả hai giá trị
 
 ### Turnstile — chống bot
@@ -172,7 +174,7 @@ Turnstile cho bạn **hai** khoá, và chúng đi thành cặp:
 *Hostnames* thêm cả hai dòng, mỗi dòng một hostname:
 
 ```
-tuan-ai.bttvn-4t.workers.dev
+tuan-ai.tuanbt.workers.dev
 localhost
 ```
 
