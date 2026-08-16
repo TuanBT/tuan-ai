@@ -12,7 +12,7 @@ import { normalizeCode, isCode } from "../lib/util";
  * nếu không thì bỏ qua, để Cloudflare Assets trả `index.html` bình thường.
  */
 const BOT_UA_PATTERN =
-	/facebookexternalhit|Facebot|Twitterbot|LinkedInBot|TelegramBot|Slackbot|Discordbot|WhatsApp|Zalobot|viettelbot|Googlebot|bingbot|yandex|Pinterestbot|Applebot|redditbot/i;
+	/facebookexternalhit|Facebot|Twitterbot|LinkedInBot|TelegramBot|Slackbot|Discordbot|WhatsApp|Zalobot|viettelbot|Googlebot|Google-Safety|Google-APIs-Explorer|Google-InspectionTool|bingbot|yandex|Pinterestbot|Applebot|redditbot/i;
 
 function isBot(userAgent: string | null | undefined): boolean {
 	if (!userAgent) return false;

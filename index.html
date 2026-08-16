@@ -31,6 +31,14 @@
 
 	<body>
 		<div id="root"></div>
+		<!-- Nội dung SEO cho bot / crawler không chạy JS (Google OAuth verification,
+		     Googlebot, v.v.). Ẩn hoàn toàn với người dùng. React mount vào #root
+		     ở trên nên div này không bị ảnh hưởng. -->
+		<div id="seo" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">
+			<h1>Tuân AI</h1>
+			<p>Tuân AI là nền tảng sáng tạo nơi bạn gửi ảnh kèm ý tưởng, và chúng tôi biến chúng thành video hoạt hình bằng AI để đăng trên kênh TikTok và YouTube.</p>
+			<p>Tuân AI is a creative platform where you submit photos with ideas, and we turn them into AI-animated videos published on our TikTok and YouTube channels.</p>
+		</div>
 		<script type="module" src="/src/react-app/main.tsx"></script>
 	</body>
 </html>
