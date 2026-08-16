@@ -1,6 +1,6 @@
 {
 	"name": "tuan-ai",
-	"description": "A template for building a React application with Vite, Hono, and Cloudflare Workers",
+	"description": "Tuân AI",
 	"cloudflare": {
 		"label": "Vite React Template",
 		"products": [

@@ -181,7 +181,7 @@ export const copy: Record<Lang, Dictionary> = {
 		mineForgetAll: "Xoá khỏi máy này",
 		mineForgetOne: "Bỏ khỏi danh sách",
 		mineConfirm:
-			"Xoá danh sách đã lưu trên máy này? Bài gửi của bạn vẫn còn nguyên, chỉ mất đường tắt để mở lại thôi.",
+			"Xoá danh sách mã, cùng tên và email đã nhớ trên máy này? Bài gửi của bạn vẫn còn nguyên, chỉ mất đường tắt để mở lại thôi.",
 		stepReceived: "Đã nhận",
 		stepPicked: "Đã chọn",
 		stepLive: "Lên sóng",
@@ -298,7 +298,7 @@ export const copy: Record<Lang, Dictionary> = {
 		mineForgetAll: "Forget on this device",
 		mineForgetOne: "Remove from list",
 		mineConfirm:
-			"Clear the list saved on this device? Your submissions stay exactly as they are, you'd only lose the shortcut back to them.",
+			"Clear the saved codes, along with the name and email remembered on this device? Your submissions stay exactly as they are, you'd only lose the shortcut back to them.",
 		stepReceived: "Received",
 		stepPicked: "Picked",
 		stepLive: "On air",

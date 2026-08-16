@@ -5,6 +5,7 @@ import { CopyCode } from "../components/CopyCode";
 import { Turnstile } from "../components/Turnstile";
 import { ApiError, api, type GalleryItem } from "../lib/api";
 import { compressImage, formatBytes } from "../lib/compress";
+import { readContact, saveContact } from "../lib/contact";
 import { useLang } from "../lib/lang-context";
 import { remember } from "../lib/mine";
 import { useSiteConfig } from "../lib/site-config";
@@ -25,8 +26,12 @@ export function Submit() {
 	const [compressing, setCompressing] = useState(false);
 	const [styles, setStyles] = useState<string[]>([]);
 	const [description, setDescription] = useState("");
-	const [nickname, setNickname] = useState("");
-	const [email, setEmail] = useState("");
+	// Tên và email của lần gửi trước, điền sẵn hộ. Đọc một lần lúc dựng form,
+	// không phải trong useEffect: ô nhập không nên nhấp nháy từ rỗng sang có chữ
+	// ngay trước mắt người đang gõ.
+	const [remembered] = useState(readContact);
+	const [nickname, setNickname] = useState(remembered.nickname);
+	const [email, setEmail] = useState(remembered.email);
 	const [consent, setConsent] = useState(false);
 	const [token, setToken] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -115,6 +120,9 @@ export function Submit() {
 			// Mã là chìa khoá duy nhất để quay lại bài này, nhớ hộ người dùng ngay
 			// trên máy họ, phòng khi họ đóng tab trước lúc kịp chép mã.
 			remember(result.code, nickname.trim());
+			// Chỉ nhớ khi máy chủ đã nhận: gửi hỏng thì email vừa gõ chưa chắc đúng
+			// dạng, điền lại nó cho lần sau chỉ là chép lại cái sai.
+			saveContact({ nickname, email });
 			setDone(result.code);
 			window.scrollTo({ top: 0, behavior: "smooth" });
 		} catch (err) {

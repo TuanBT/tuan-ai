@@ -5,6 +5,7 @@ import { CopyCode } from "../components/CopyCode";
 import { Layout } from "../components/Layout";
 import { ApiError, api, type Submission } from "../lib/api";
 import { CODE_LENGTH, CODE_PREFIX, codeDigits, digitsOnly, fullCode } from "../lib/code";
+import { forgetContact, hasContact } from "../lib/contact";
 import { useImageViewer } from "../lib/image-viewer";
 import { useLang } from "../lib/lang-context";
 import { forget, mine, remember, type MineEntry } from "../lib/mine";
@@ -46,6 +47,10 @@ function LookupView({ code }: { code: string | undefined }) {
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState(Boolean(code));
 	const [saved, setSaved] = useState<MineEntry[]>(() => mine());
+	// Tên và email điền sẵn cho form cũng nằm trong máy này, nên nút "Xoá khỏi
+	// máy này" phải dọn cả chúng — và phải hiện ra ngay cả khi chưa lưu mã nào,
+	// nếu không thì có thứ đã lưu mà không có chỗ nào xoá.
+	const [storedContact, setStoredContact] = useState(hasContact);
 	const { view, viewer } = useImageViewer();
 
 	useEffect(() => {
@@ -271,14 +276,16 @@ function LookupView({ code }: { code: string | undefined }) {
 			<section className="mine">
 				<div className="mine-head">
 					<h2>{t.mineTitle}</h2>
-					{saved.length > 0 && (
+					{(saved.length > 0 || storedContact) && (
 						<button
 							type="button"
 							className="linkish"
 							onClick={() => {
 								if (!confirm(t.mineConfirm)) return;
 								forget();
+								forgetContact();
 								setSaved([]);
+								setStoredContact(false);
 							}}
 						>
 							{t.mineForgetAll}

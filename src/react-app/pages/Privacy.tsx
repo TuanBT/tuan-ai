@@ -123,9 +123,11 @@ function PrivacyVi() {
 				<h2>4. Cookie và lưu trữ trên máy</h2>
 				<p>
 					Trang sử dụng <code>localStorage</code> của trình duyệt để nhớ ngôn
-					ngữ, bảng màu và danh sách mã bài đã gửi. Không có cookie theo dõi
-					hay quảng cáo nào. Dịch vụ Turnstile của Cloudflare có thể đặt cookie
-					kỹ thuật để xác minh bạn là người thật.
+					ngữ, bảng màu, danh sách mã bài đã gửi, cùng tên hiển thị và email
+					bạn đã điền để lần sau khỏi gõ lại. Những thứ này nằm trong máy bạn,
+					và nút "Xoá khỏi máy này" ở trang Bài của bạn xoá hết. Không có cookie
+					theo dõi hay quảng cáo nào. Dịch vụ Turnstile của Cloudflare có thể
+					đặt cookie kỹ thuật để xác minh bạn là người thật.
 				</p>
 			</section>
 
@@ -217,9 +219,12 @@ function PrivacyEn() {
 				<h2>4. Cookies and Local Storage</h2>
 				<p>
 					The site uses your browser's <code>localStorage</code> to remember your
-					language preference, color theme, and the list of submission codes
-					you've sent. There are no tracking or advertising cookies. Cloudflare
-					Turnstile may set technical cookies to verify you are human.
+					language preference, color theme, the list of submission codes you've
+					sent, and the display name and email you filled in, so you don't have
+					to type them again. All of it stays on your device, and the "Forget on
+					this device" button on the Your submissions page clears it. There are
+					no tracking or advertising cookies. Cloudflare Turnstile may set
+					technical cookies to verify you are human.
 				</p>
 			</section>
 
