@@ -210,6 +210,7 @@ export function Submit() {
 			<div className="hero">
 				<span className="eyebrow">{t.submitEyebrow}</span>
 				<h1>{tagline}</h1>
+				<p className="hero-desc">{t.appDescription}</p>
 			</div>
 
 			{!config.open ? (

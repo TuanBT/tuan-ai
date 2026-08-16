@@ -26,6 +26,7 @@ interface Dictionary {
 	copyCode: string;
 	copied: string;
 	submitEyebrow: string;
+	appDescription: string;
 	/* Ba bước của chính biểu mẫu. Trước đây trang mở đầu bằng một khối "ba bước"
 	   kể chuyện quy trình, tách rời khỏi việc phải làm; giờ số bước gắn thẳng vào
 	   từng phần của biểu mẫu, nên không còn phải nói trước rồi làm lại từ đầu. */
@@ -101,6 +102,10 @@ interface Dictionary {
 	viewerClose: string;
 	viewerPrev: string;
 	viewerNext: string;
+	privacyTitle: string;
+	privacyUpdated: string;
+	termsTitle: string;
+	termsUpdated: string;
 	errors: Record<string, string>;
 }
 
@@ -113,6 +118,8 @@ export const copy: Record<Lang, Dictionary> = {
 		copyCode: "Chép mã",
 		copied: "Đã chép!",
 		submitEyebrow: "Gửi ý tưởng",
+		appDescription:
+			"Tuân AI là nền tảng sáng tạo nơi bạn gửi ảnh kèm ý tưởng, và chúng tôi biến chúng thành video hoạt hình bằng AI để đăng trên kênh TikTok và YouTube.",
 		stepPhotos: "Chọn ảnh",
 		stepIdea: "Muốn clip thế nào?",
 		stepIdeaHint: "Chọn một kiểu, hoặc gõ vài chữ. Một trong hai là đủ.",
@@ -199,6 +206,10 @@ export const copy: Record<Lang, Dictionary> = {
 		viewerClose: "Đóng",
 		viewerPrev: "Ảnh trước",
 		viewerNext: "Ảnh sau",
+		privacyTitle: "Chính sách quyền riêng tư",
+		privacyUpdated: "Cập nhật lần cuối: 16 tháng 8, 2026",
+		termsTitle: "Điều khoản sử dụng",
+		termsUpdated: "Cập nhật lần cuối: 16 tháng 8, 2026",
 		errors: {
 			quota: "Hôm nay đã nhận đủ bài, bạn quay lại sau nhé.",
 			ip_limit: "Bạn đã gửi khá nhiều bài hôm nay rồi. Mai gửi tiếp nhé!",
@@ -223,6 +234,8 @@ export const copy: Record<Lang, Dictionary> = {
 		copyCode: "Copy code",
 		copied: "Copied!",
 		submitEyebrow: "Send an idea",
+		appDescription:
+			"Tuân AI is a creative platform where you submit photos with ideas, and we turn them into AI-animated videos published on our TikTok and YouTube channels.",
 		stepPhotos: "Pick photos",
 		stepIdea: "What should it do?",
 		stepIdeaHint: "Pick a style or type a few words. Either one is enough.",
@@ -310,6 +323,10 @@ export const copy: Record<Lang, Dictionary> = {
 		viewerClose: "Close",
 		viewerPrev: "Previous photo",
 		viewerNext: "Next photo",
+		privacyTitle: "Privacy Policy",
+		privacyUpdated: "Last updated: August 16, 2026",
+		termsTitle: "Terms of Service",
+		termsUpdated: "Last updated: August 16, 2026",
 		errors: {
 			quota: "Today's inbox is full. Please come back later.",
 			ip_limit: "You've sent quite a few today. Try again tomorrow!",
