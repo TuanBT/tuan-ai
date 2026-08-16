@@ -68,8 +68,6 @@ export function Layout({
 				<div className="footer-base">
 					<span>© {new Date().getFullYear()} {title}</span>
 					<div className="footer-links">
-						<Link to="/privacy">{t.privacyTitle}</Link>
-						<Link to="/terms">{t.termsTitle}</Link>
 						<Link to="/admin">{t.navAdmin}</Link>
 					</div>
 				</div>

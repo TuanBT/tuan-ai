@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Countdown } from "../components/Countdown";
 import { CopyCode } from "../components/CopyCode";
-import { CheckIcon, CloseIcon } from "../components/icons";
+import { CheckIcon, CloseIcon, TikTokMark, YouTubeMark } from "../components/icons";
 import { Turnstile } from "../components/Turnstile";
 import { ApiError, api, type GalleryItem } from "../lib/api";
 import { compressImage, formatBytes } from "../lib/compress";
@@ -426,17 +426,36 @@ export function Submit() {
 						<span className="hint">{t.galleryHint}</span>
 					</div>
 					<div className="gallery-grid">
-						{gallery.map((item) => (
-							<a
-								key={item.publishedUrl}
+						{gallery.map((item, index) => (
+							<div
+								key={`${item.publishedTiktok ?? ""}${item.publishedYoutube ?? ""}-${index}`}
 								className="gallery-item"
-								href={item.publishedUrl}
-								target="_blank"
-								rel="noopener noreferrer"
 							>
 								{item.thumb && <img src={item.thumb} alt="" loading="lazy" />}
 								<span className="gallery-name">{item.nickname}</span>
-							</a>
+								<span className="gallery-links">
+									{item.publishedTiktok && (
+										<a
+											href={item.publishedTiktok}
+											target="_blank"
+											rel="noopener noreferrer"
+											aria-label={`${item.nickname} – TikTok`}
+										>
+											<TikTokMark size={15} />
+										</a>
+									)}
+									{item.publishedYoutube && (
+										<a
+											href={item.publishedYoutube}
+											target="_blank"
+											rel="noopener noreferrer"
+											aria-label={`${item.nickname} – YouTube`}
+										>
+											<YouTubeMark size={15} />
+										</a>
+									)}
+								</span>
+							</div>
 						))}
 					</div>
 				</section>

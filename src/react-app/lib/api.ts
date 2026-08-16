@@ -44,8 +44,10 @@ export interface Submission {
 
 export interface GalleryItem {
 	nickname: string;
-	/** Ô trong thư viện chỉ dẫn đi một nơi: TikTok trước, thiếu thì YouTube. */
-	publishedUrl: string;
+	/** Link clip trên TikTok, nếu đã đăng. */
+	publishedTiktok: string | null;
+	/** Link clip trên YouTube, nếu đã đăng. */
+	publishedYoutube: string | null;
 	thumb: string | null;
 }
 

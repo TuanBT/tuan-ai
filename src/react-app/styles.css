@@ -853,6 +853,26 @@ select {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+.gallery-links {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	display: flex;
+	gap: 4px;
+}
+.gallery-links a {
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background: rgba(20, 18, 24, 0.55);
+	color: #fff;
+	transition: background 0.15s;
+}
+.gallery-links a:hover {
+	background: rgba(20, 18, 24, 0.82);
+}
 
 /* ---------- xem ảnh toàn màn hình ---------- */
 

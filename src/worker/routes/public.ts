@@ -190,7 +190,8 @@ export function publicRoutes() {
 			// dưới, chấp nhận được, vì nội dung đó đã công khai trên kênh rồi.)
 			items: rows.results.map((row) => ({
 				nickname: row.nickname,
-				publishedUrl: row.published_tiktok || row.published_youtube,
+				publishedTiktok: row.published_tiktok || null,
+				publishedYoutube: row.published_youtube || null,
 				thumb: row.images_purged ? null : `/i/${row.code}/0`,
 			})),
 		});
