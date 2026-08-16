@@ -18,11 +18,11 @@ export const TURNSTILE_ORIGIN = "https://challenges.cloudflare.com";
  */
 const CSP = [
 	"default-src 'self'",
-	`script-src 'self' ${TURNSTILE_ORIGIN}`,
+	`script-src 'self' 'unsafe-inline' https://www.googletagmanager.com ${TURNSTILE_ORIGIN}`,
 	`frame-src ${TURNSTILE_ORIGIN}`,
 	"style-src 'self' 'unsafe-inline'",
-	"img-src 'self' data: blob:",
-	`connect-src 'self' ${TURNSTILE_ORIGIN}`,
+	"img-src 'self' data: blob: https://www.googletagmanager.com https://*.google-analytics.com",
+	`connect-src 'self' https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com ${TURNSTILE_ORIGIN}`,
 	"font-src 'self'",
 	"object-src 'none'",
 	"base-uri 'none'",
