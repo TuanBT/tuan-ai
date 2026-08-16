@@ -121,6 +121,7 @@ export function adminRoutes() {
 				status: row.status,
 				publishedTiktok: row.published_tiktok,
 				publishedYoutube: row.published_youtube,
+				rejectReason: row.reject_reason,
 				adminNote: row.admin_note,
 				lang: row.lang,
 				bytes: row.bytes,
@@ -142,12 +143,13 @@ export function adminRoutes() {
 		if (!isCode(code)) return c.json({ error: "invalid_code" }, 400);
 
 		const body = (await c.req.json()) as Record<string, unknown>;
-		const sets: string[] = [];
-		const values: unknown[] = [];
+		// Bảng cột → giá trị, không phải hai mảng chạy song song: một lượt PATCH có
+		// thể chạm tới cùng một cột hai lần (xem chỗ bỏ qua ở cuối), mà `SET a = ?,
+		// a = ?` thì tuỳ cơ sở dữ liệu muốn hiểu sao cũng được.
+		const sets = new Map<string, unknown>();
 
 		if (typeof body.status === "string" && STATUSES.has(body.status)) {
-			sets.push("status = ?");
-			values.push(body.status);
+			sets.set("status", body.status);
 		}
 		// Hai kênh, hai cột, cùng một luật: bỏ trống được, mà đã điền thì phải là
 		// https. Duyệt theo bảng để thêm kênh thứ ba sau này chỉ là thêm một dòng.
@@ -160,20 +162,31 @@ export function adminRoutes() {
 			if (url && !/^https:\/\//.test(url)) {
 				return c.json({ error: "bad_url" }, 400);
 			}
-			sets.push(`${column} = ?`);
-			values.push(url || null);
+			sets.set(column, url || null);
 		}
 		if ("adminNote" in body) {
-			sets.push("admin_note = ?");
-			values.push(clampText(body.adminNote, 1000) || null);
+			sets.set("admin_note", clampText(body.adminNote, 1000) || null);
 		}
-		if (!sets.length) return c.json({ error: "nothing_to_update" }, 400);
+		// Lý do bỏ qua: người gửi đọc được, nên giữ ngắn.
+		if ("rejectReason" in body) {
+			sets.set("reject_reason", clampText(body.rejectReason, 500) || null);
+		}
 
-		values.push(code);
+		// Bỏ qua nghĩa là không có clip nào để xem. Xoá sau cùng để luật này thắng
+		// mọi thứ đi kèm trong cùng một lượt: một bài từng lên sóng rồi bị gỡ mà
+		// vẫn còn link thì trang tra cứu vẫn mời người gửi bấm vào chỗ trống.
+		if (body.status === "rejected") {
+			sets.set("published_tiktok", null);
+			sets.set("published_youtube", null);
+		}
+
+		if (!sets.size) return c.json({ error: "nothing_to_update" }, 400);
+
+		const columns = [...sets.keys()];
 		await c.env.DB.prepare(
-			`UPDATE submissions SET ${sets.join(", ")} WHERE code = ?`,
+			`UPDATE submissions SET ${columns.map((name) => `${name} = ?`).join(", ")} WHERE code = ?`,
 		)
-			.bind(...values)
+			.bind(...columns.map((name) => sets.get(name)), code)
 			.run();
 
 		return c.json({ ok: true });
@@ -427,8 +440,8 @@ export function adminRoutes() {
 	app.get("/api/admin/export.csv", async (c) => {
 		const rows = await c.env.DB.prepare(
 			`SELECT code, nickname, email, description, styles, status,
-			        published_tiktok, published_youtube, admin_note, lang, bytes,
-			        created_at
+			        published_tiktok, published_youtube, admin_note, reject_reason,
+			        lang, bytes, created_at
 			 FROM submissions ORDER BY created_at DESC`,
 		).all<Record<string, unknown>>();
 
@@ -442,6 +455,7 @@ export function adminRoutes() {
 			"link_tiktok",
 			"link_youtube",
 			"ghi_chu",
+			"ly_do_bo_qua",
 			"ngon_ngu",
 			"dung_luong",
 			"ngay_gui",
@@ -458,6 +472,7 @@ export function adminRoutes() {
 				row.published_tiktok ?? "",
 				row.published_youtube ?? "",
 				row.admin_note ?? "",
+				row.reject_reason ?? "",
 				row.lang,
 				row.bytes,
 				new Date(Number(row.created_at)).toISOString(),

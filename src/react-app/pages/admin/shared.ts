@@ -1,4 +1,5 @@
 import type { api } from "../../lib/api";
+import { formatDate } from "../../lib/datetime";
 
 export type Me = Awaited<ReturnType<typeof api.me>>;
 
@@ -37,8 +38,8 @@ export const STATUS_TONE: Record<string, string> = {
 };
 
 /**
- * "3 giờ trước" đọc nhanh hơn "16/08/2026, 14:32:07" khi đang lướt cả hộp thư
- * để xem bài nào mới tới. Quá một tháng thì ngày tháng lại rõ hơn.
+ * "3 giờ trước" đọc nhanh hơn "16 Tháng 8, 2026" khi đang lướt cả hộp thư để
+ * xem bài nào mới tới. Quá một tháng thì ngày tháng lại rõ hơn.
  */
 export function relativeTime(at: number): string {
 	const minutes = Math.floor((Date.now() - at) / 60_000);
@@ -51,5 +52,5 @@ export function relativeTime(at: number): string {
 	const days = Math.floor(hours / 24);
 	if (days < 30) return `${days} ngày trước`;
 
-	return new Date(at).toLocaleDateString("vi-VN");
+	return formatDate(at);
 }

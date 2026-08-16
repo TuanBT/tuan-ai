@@ -171,7 +171,7 @@ export function publicRoutes() {
 		// Đăng ở đâu cũng là đã lên sóng; ô trong thư viện dẫn sang TikTok trước,
 		// vì kênh chính nằm ở đó, thiếu thì mới sang YouTube.
 		const rows = await c.env.DB.prepare(
-			`SELECT code, nickname, published_tiktok, published_youtube, images_purged
+			`SELECT code, nickname, created_at, published_tiktok, published_youtube, images_purged
 			 FROM submissions
 			 WHERE status = 'done'
 			   AND (IFNULL(published_tiktok, '') <> '' OR IFNULL(published_youtube, '') <> '')
@@ -179,6 +179,7 @@ export function publicRoutes() {
 		).all<{
 			code: string;
 			nickname: string;
+			created_at: number;
 			published_tiktok: string | null;
 			published_youtube: string | null;
 			images_purged: number;
@@ -190,6 +191,10 @@ export function publicRoutes() {
 			// dưới, chấp nhận được, vì nội dung đó đã công khai trên kênh rồi.)
 			items: rows.results.map((row) => ({
 				nickname: row.nickname,
+				// Ngày người gửi đặt hàng, không phải ngày clip lên kênh: bảng chỉ ghi
+				// lúc bài được tạo. Ô trong thư viện vì thế nói "gửi ngày", để không
+				// hứa một mốc mà dữ liệu không có.
+				createdAt: row.created_at,
 				publishedTiktok: row.published_tiktok || null,
 				publishedYoutube: row.published_youtube || null,
 				thumb: row.images_purged ? null : `/i/${row.code}/0`,
@@ -210,7 +215,7 @@ export function publicRoutes() {
 
 		const row = await c.env.DB.prepare(
 			`SELECT code, nickname, description, styles, images, status,
-			        published_tiktok, published_youtube,
+			        published_tiktok, published_youtube, reject_reason,
 			        created_at, expires_at, images_purged
 			 FROM submissions WHERE code = ?`,
 		)
@@ -224,6 +229,7 @@ export function publicRoutes() {
 				status: string;
 				published_tiktok: string | null;
 				published_youtube: string | null;
+				reject_reason: string | null;
 				created_at: number;
 				expires_at: number;
 				images_purged: number;
@@ -243,6 +249,9 @@ export function publicRoutes() {
 			status: row.status,
 			publishedTiktok: row.published_tiktok,
 			publishedYoutube: row.published_youtube,
+			// Chỉ trả lý do khi bài đang bị bỏ qua. Chủ trang có thể gõ lý do rồi đổi
+			// ý chọn lại bài; câu đó không nên đi theo bài sang trạng thái mới.
+			rejectReason: row.status === "rejected" ? row.reject_reason : null,
 			createdAt: row.created_at,
 			expiresAt: row.expires_at,
 			imageUrls: row.images_purged

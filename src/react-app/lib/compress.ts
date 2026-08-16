@@ -10,13 +10,27 @@ const MAX_EDGE = 1600;
 const TARGET_BYTES = 300_000;
 const HARD_LIMIT_BYTES = 1_400_000;
 
+/**
+ * Lỗi có mã, để chỗ gọi biết nên báo gì.
+ *
+ * Trước đây mọi trục trặc ở đây đều ra một câu duy nhất: "Có tấm ảnh quá nặng."
+ * Ảnh nặng thật thì đúng, còn tấm ảnh trình duyệt không giải mã nổi cũng bị báo
+ * y hệt — người dùng đi nén ảnh cho nhỏ lại rồi gặp lại đúng câu đó.
+ */
+export class ImageError extends Error {
+	constructor(public code: "image_size" | "image_read") {
+		super(code);
+	}
+}
+
 async function toBlob(
 	canvas: HTMLCanvasElement,
 	quality: number,
 ): Promise<Blob> {
 	return new Promise((resolve, reject) => {
 		canvas.toBlob(
-			(blob) => (blob ? resolve(blob) : reject(new Error("toBlob failed"))),
+			(blob) =>
+				blob ? resolve(blob) : reject(new ImageError("image_read")),
 			"image/jpeg",
 			quality,
 		);
@@ -25,9 +39,17 @@ async function toBlob(
 
 export async function compressImage(file: File): Promise<File> {
 	// `from-image` để ảnh chụp dọc không bị xoay ngang khi vẽ lên canvas.
-	const bitmap = await createImageBitmap(file, {
-		imageOrientation: "from-image",
-	});
+	//
+	// Ảnh iPhone là HEIC; iOS tự đổi sang JPEG khi đưa file cho form web, và dù
+	// không đổi thì Safari vẫn giải mã được ở đây rồi xuất lại JPEG bên dưới. Cái
+	// ném ra ở đây là tệp hỏng, hoặc định dạng máy này không đọc nổi — chuyện
+	// khác hẳn với ảnh quá nặng, nên mã lỗi cũng phải khác.
+	let bitmap: ImageBitmap;
+	try {
+		bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+	} catch {
+		throw new ImageError("image_read");
+	}
 
 	const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
 	const width = Math.round(bitmap.width * scale);
@@ -56,7 +78,7 @@ export async function compressImage(file: File): Promise<File> {
 	}
 
 	if (blob.size > HARD_LIMIT_BYTES) {
-		throw new Error("image_too_large");
+		throw new ImageError("image_size");
 	}
 
 	const name = file.name.replace(/\.[^.]+$/, "") || "anh";

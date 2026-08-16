@@ -21,6 +21,7 @@ export interface SubmissionRow {
 	published_tiktok: string | null;
 	published_youtube: string | null;
 	admin_note: string | null;
+	reject_reason: string | null;
 	lang: string;
 	bytes: number;
 	created_at: number;
@@ -119,6 +120,13 @@ export function readableText(
 				: "không có (ảnh gốc đã hết hạn lưu)",
 		],
 		["Ghi chú của bạn", row.admin_note || dash],
+		// Chỉ có nghĩa khi bài bị bỏ qua, nên đừng bày ra ở những bài khác — ở đó
+		// nó chỉ là câu bạn từng gõ rồi đổi ý.
+		...(row.status === "rejected"
+			? ([["Lý do đã báo người gửi", row.reject_reason || dash]] as Array<
+					[string, string]
+				>)
+			: []),
 		["Link TikTok", row.published_tiktok || dash],
 		["Link YouTube", row.published_youtube || dash],
 	];

@@ -22,6 +22,11 @@ interface Dictionary {
 	navSubmit: string;
 	navMine: string;
 	navAdmin: string;
+	/* Nhãn ngắn cho chân trang. Tên đầy đủ của hai trang pháp lý dài gần gấp đôi,
+	   đứng cạnh nhau trong một hàng chữ nhỏ thì thành một khối chữ đặc. */
+	navTerms: string;
+	navPrivacy: string;
+	footerChannels: string;
 	backHome: string;
 	copyCode: string;
 	copied: string;
@@ -104,6 +109,8 @@ interface Dictionary {
 	statusSelectedBody: string;
 	statusDoneBody: string;
 	statusRejectedBody: string;
+	/** Nhãn của lý do chủ trang viết riêng cho bài bị bỏ qua. */
+	rejectReasonLabel: string;
 	watchNow: string;
 	imagesGone: string;
 	viewerTitle: string;
@@ -123,6 +130,9 @@ export const copy: Record<Lang, Dictionary> = {
 		navSubmit: "Gửi ý tưởng",
 		navMine: "Bài của tôi",
 		navAdmin: "Quản trị",
+		navTerms: "Điều khoản",
+		navPrivacy: "Quyền riêng tư",
+		footerChannels: "Xem kênh trên",
 		backHome: "Trang chủ",
 		copyCode: "Chép mã",
 		copied: "Đã chép!",
@@ -134,7 +144,10 @@ export const copy: Record<Lang, Dictionary> = {
 		stepIdeaHint: "Chọn một kiểu, hoặc gõ vài chữ. Một trong hai là đủ.",
 		stepYou: "Bạn là ai?",
 		pickImages: "Chạm để chọn ảnh",
-		pickHint: (max: number) => `1–${max} tấm · JPG, PNG`,
+		/* Chỉ nói số lượng. Kể tên định dạng thì người dùng iPhone thấy "JPG, PNG"
+		   lại tưởng ảnh HEIC của mình không gửi được, mà trang thì tự đổi mọi tấm
+		   sang JPG trước khi gửi (xem `lib/compress.ts`). */
+		pickHint: (max: number) => `1–${max} tấm`,
 		compressing: "Đang xử lý ảnh…",
 		advisoryTitle: "Ảnh thế nào thì hợp?",
 		advisoryRule: "Đừng gửi ảnh nhạy cảm hay ảnh trẻ em.",
@@ -217,6 +230,7 @@ export const copy: Record<Lang, Dictionary> = {
 		statusDoneBody: "Tác phẩm của bạn đã lên kênh rồi!",
 		statusRejectedBody:
 			"Lần này mình chưa dùng được bài của bạn, nhưng đừng ngại gửi bài khác nhé.",
+		rejectReasonLabel: "Lý do",
 		watchNow: "Xem tác phẩm",
 		imagesGone:
 			"Ảnh gốc đã hết hạn và được xoá tự động. Phần nội dung dưới đây thì vẫn còn.",
@@ -237,6 +251,8 @@ export const copy: Record<Lang, Dictionary> = {
 				"Trang đang được thiết lập nên tạm chưa nhận bài. Bạn quay lại sau nhé.",
 			paused: "Mình đang tạm ngưng nhận bài. Quay lại sau nhé!",
 			image_size: "Có tấm ảnh quá nặng. Bạn chọn ảnh khác nhé.",
+			image_read:
+				"Có tấm ảnh mình không mở được. Bạn chọn tấm khác giúp mình nhé.",
 			image_type: "Chỉ nhận ảnh JPG, PNG hoặc WebP.",
 			image_count: "Bạn cần chọn ít nhất một tấm ảnh.",
 			missing_fields: "Bạn điền giúp mình tên và phần mô tả nhé.",
@@ -249,6 +265,9 @@ export const copy: Record<Lang, Dictionary> = {
 		navSubmit: "Send an idea",
 		navMine: "My submissions",
 		navAdmin: "Admin",
+		navTerms: "Terms",
+		navPrivacy: "Privacy",
+		footerChannels: "Watch on",
 		backHome: "Home",
 		copyCode: "Copy code",
 		copied: "Copied!",
@@ -260,7 +279,7 @@ export const copy: Record<Lang, Dictionary> = {
 		stepIdeaHint: "Pick a style or type a few words. Either one is enough.",
 		stepYou: "Who's sending?",
 		pickImages: "Tap to choose photos",
-		pickHint: (max: number) => `1–${max} images · JPG, PNG`,
+		pickHint: (max: number) => `1–${max} photos`,
 		compressing: "Processing images…",
 		advisoryTitle: "Which photos work best?",
 		advisoryRule: "Never send sensitive images or images of children.",
@@ -344,6 +363,7 @@ export const copy: Record<Lang, Dictionary> = {
 		statusDoneBody: "Your piece is live on the channel!",
 		statusRejectedBody:
 			"I couldn't use this one, but please do send another idea.",
+		rejectReasonLabel: "Reason",
 		watchNow: "Watch it",
 		imagesGone:
 			"The original photos have expired and been deleted. The text below is still here.",
@@ -364,6 +384,7 @@ export const copy: Record<Lang, Dictionary> = {
 				"The site is still being set up, so submissions are on hold. Please check back later.",
 			paused: "Submissions are paused right now. Please check back later!",
 			image_size: "One of the images is too large. Please pick another.",
+			image_read: "One of the images couldn't be opened. Please pick another.",
 			image_type: "Only JPG, PNG or WebP images are accepted.",
 			image_count: "Please choose at least one image.",
 			missing_fields: "Please fill in your name and the description.",

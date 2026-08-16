@@ -839,16 +839,35 @@ select {
 	object-fit: cover;
 	display: block;
 }
-.gallery-name {
+/* Tên và ngày gửi nằm chung một dải mờ dưới đáy ô, chứ không phải hai lớp phủ
+   chồng lên nhau: chỉ cần một lần chuyển màu là chữ đọc được trên mọi tấm ảnh. */
+.gallery-cap {
 	position: absolute;
 	left: 0;
 	right: 0;
 	bottom: 0;
-	padding: 14px 7px 5px;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	padding: 16px 7px 5px;
+	background: linear-gradient(transparent, rgba(20, 18, 24, 0.82));
+}
+.gallery-name {
 	font-size: 11px;
 	font-weight: 600;
+	line-height: 1.25;
 	color: #fff;
-	background: linear-gradient(transparent, rgba(20, 18, 24, 0.78));
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+/* Ngày nên nhạt hơn tên: người xem tìm tên trước, ngày chỉ để liếc qua. Chữ
+   thường chứ không phải chữ máy, vì tháng giờ viết thành chữ. */
+.gallery-date {
+	font-size: 10px;
+	font-weight: 500;
+	line-height: 1.3;
+	color: rgb(255 255 255 / 0.74);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -956,48 +975,120 @@ select {
 
 /* ---------- chân trang ---------- */
 
+/*
+ * Trước đây chân trang là ba dải rời nhau, mỗi dải căn một kiểu: hàng nút kênh
+ * dạt trái, dòng bản quyền dàn đều hai bên, số hiệu bản dựng canh giữa. Ba trục
+ * lề trong một khối cao chưa tới trăm pixel nên nhìn ra ba mảnh chắp lại chứ
+ * không phải một chân trang.
+ *
+ * Còn hai tầng chung một trục trái: tầng trên mời sang kênh, tầng dưới là các
+ * dòng chữ nhỏ. Từ 640px mỗi tầng mới dàn ra hai bên, vì lúc đó hàng đủ rộng
+ * để hai cụm không dính vào nhau.
+ */
 .footer {
 	margin-top: auto;
 	border-top: 1px solid var(--line);
-	padding-top: 18px;
+	padding-top: 20px;
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 16px;
 	font-size: 12px;
 	color: var(--faint);
 }
-/* Dòng cuối cùng của trang: bản quyền một bên, lối vào khu quản trị bên kia.
-   Hai mục điều hướng cũ đã bỏ, vì thanh điều hướng đầu trang có sẵn cả hai. */
+
+.footer-top {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+/* Cùng kiểu chữ với `.eyebrow` đầu trang nhưng màu nhạt: đây là lời mời, không
+   phải tiêu đề của một phần mới. */
+.footer-label {
+	margin: 0;
+	font-family: var(--mono);
+	font-size: 10.5px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--faint);
+}
+
 .footer-base {
 	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-	font-size: 11.5px;
+	flex-direction: column;
+	gap: 10px;
 }
+/* Vạch ngăn chỉ mọc khi có tầng trên; không thì nó nằm ngay dưới viền của chính
+   chân trang, thành hai đường kẻ dính nhau. */
+.footer-top + .footer-base {
+	border-top: 1px solid var(--line);
+	padding-top: 14px;
+}
+
 .footer-links {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px 18px;
+	align-items: center;
+	gap: 8px 16px;
 }
-.footer a {
+.footer-links a {
 	color: var(--muted);
 	text-decoration: none;
 	font-weight: 600;
+	font-size: 12.5px;
 }
-.footer-base a {
-	color: var(--faint);
-	font-weight: 500;
-}
-.footer a:hover {
+.footer-links a:hover {
 	color: var(--accent);
 }
-.footer-version {
-	text-align: center;
-	font-size: 10px;
+/* Trang đang mở thì đậm lên chứ không đổi sang màu nhấn, để khỏi giành mắt với
+   những liên kết còn bấm được. */
+.footer-links a.active {
+	color: var(--ink);
+}
+/* Lối vào khu quản trị chỉ chủ trang dùng: có mặt, nhưng lùi một bậc. */
+.footer-links a.quiet {
+	font-weight: 500;
 	color: var(--faint);
-	opacity: 0.6;
+}
+
+.footer-meta {
+	margin: 0;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px 10px;
+	font-size: 11.5px;
+}
+/* Số hiệu bản dựng: một viên thuốc nhỏ, cùng ngôn ngữ hình với các viên khác
+   trên trang. Trước đây nó là dòng mồ côi canh giữa dưới cùng, mờ 60%, trông
+   như thứ bỏ quên chứ không phải thứ cố ý để đó. */
+.footer-build {
+	font-family: var(--mono);
+	font-size: 10px;
+	line-height: 1.7;
 	letter-spacing: 0.02em;
+	padding: 0 8px;
+	border: 1px solid var(--line);
+	border-radius: 99px;
+	background: var(--field);
+	color: var(--faint);
+	white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+	.footer-top {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+	/* Đảo chiều: trong HTML các liên kết viết trước để trên điện thoại chúng đứng
+	   trên dòng bản quyền — thứ bấm được thì nên gặp trước. Màn rộng thì trả về
+	   nếp quen: bản quyền bên trái, liên kết bên phải. */
+	.footer-base {
+		flex-direction: row-reverse;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+	}
 }
 
 /* ---------- trang pháp lý (privacy, terms) ---------- */
@@ -1458,6 +1549,12 @@ select {
 .link-field .input {
 	font-size: 13px;
 	padding: 8px 11px;
+}
+/* Ô lý do bỏ qua đứng đúng chỗ hai ô dán link, nên mang cùng kích thước; chỉ
+   khác là kéo cao thêm được khi câu trả lời dài hơn hai dòng. */
+.reason-box {
+	line-height: 1.45;
+	resize: vertical;
 }
 
 /* Cuối danh sách hộp thư: nút lấy đợt sau và một dòng nói đang hiện bao nhiêu. */

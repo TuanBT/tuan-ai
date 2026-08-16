@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, INBOX_PAGE, type AdminStyle, type AdminSubmission } from "../../lib/api";
 import { formatBytes } from "../../lib/compress";
+import { formatDateTime } from "../../lib/datetime";
 import { useImageViewer } from "../../lib/image-viewer";
 import { styleNames } from "../../lib/styles";
 import { BUNDLE_LIMIT, relativeTime, STATUS_LABEL, STATUS_TONE } from "./shared";
@@ -102,6 +103,14 @@ export function Inbox() {
 		await api.adminPatch(item.code, { status });
 		shiftCount(item.status, status);
 
+		// Bỏ qua thì máy chủ xoá luôn hai link đã dán (xem PATCH bên
+		// `routes/admin.ts`); gương ngay ở đây, nếu không thẻ vẫn hiện link cho tới
+		// lần tải lại sau.
+		const patch: Partial<AdminSubmission> =
+			status === "rejected"
+				? { status, publishedTiktok: null, publishedYoutube: null }
+				: { status };
+
 		// Đang lọc theo một trạng thái mà bài vừa đổi sang trạng thái khác thì nó
 		// không còn thuộc danh sách này nữa: cho khuất đi, đúng như trước đây.
 		if (filter && filter !== status) {
@@ -109,8 +118,18 @@ export function Inbox() {
 				current.filter((entry) => entry.code !== item.code),
 			);
 		} else {
-			patchLocal(item.code, { status });
+			patchLocal(item.code, patch);
 		}
+	}
+
+	/** Lý do bỏ qua. Bỏ trống được: lúc đó người gửi chỉ thấy câu chung. */
+	async function saveReason(item: AdminSubmission, value: string) {
+		const next = value.trim();
+		if (next === (item.rejectReason ?? "")) return;
+		await api.adminPatch(item.code, { rejectReason: next });
+		patchLocal(item.code, { rejectReason: next || null });
+		setSavedUrl(item.code);
+		setTimeout(() => setSavedUrl(null), 1800);
 	}
 
 	async function saveUrl(
@@ -260,7 +279,7 @@ export function Inbox() {
 
 						<div className="card-meta">
 							<span>{item.code}</span>
-							<span title={new Date(item.createdAt).toLocaleString("vi-VN")}>
+							<span title={formatDateTime(item.createdAt)}>
 								{relativeTime(item.createdAt)}
 							</span>
 							<span>{formatBytes(item.bytes)}</span>
@@ -294,36 +313,59 @@ export function Inbox() {
 							))}
 						</div>
 
-						{/* Một bài thường lên cả hai kênh. Trước đây chỉ có một ô chung,
-						    nên dán link thứ hai là đè mất link thứ nhất. */}
-						<div className="field">
-							{LINK_FIELDS.map(([field, label]) => (
-								<label className="link-field" key={field}>
-									<span>{label}</span>
-									<input
-										className="input"
-										type="url"
-										placeholder="https://…"
-										defaultValue={item[field] ?? ""}
-										onBlur={(e) => saveUrl(item, field, e.target.value)}
+						{/* Bài bỏ qua thì không có clip nào để dẫn tới, nên chỗ này đổi hẳn
+						    nội dung: thay hai ô dán link là câu nói lại với người gửi. */}
+						{item.status === "rejected" ? (
+							<div className="field">
+								<label className="link-field">
+									<span>Lý do bỏ qua — người gửi sẽ đọc câu này</span>
+									<textarea
+										className="input reason-box"
+										rows={2}
+										maxLength={500}
+										placeholder="Bỏ trống cũng được: người gửi sẽ thấy câu chung."
+										defaultValue={item.rejectReason ?? ""}
+										onBlur={(e) => saveReason(item, e.target.value)}
 									/>
 								</label>
-							))}
-							{savedUrl === item.code && (
-								<span className="hint" style={{ color: "var(--ok)" }}>
-									Đã lưu link.
-								</span>
-							)}
-							{/* Khu "Đã lên sóng" ngoài trang chủ lọc theo link, nên bài đánh
-							    dấu xong mà quên dán link sẽ không bao giờ hiện ra. */}
-							{item.status === "done" &&
-								!item.publishedTiktok &&
-								!item.publishedYoutube && (
-									<span className="hint" style={{ color: "var(--warn)" }}>
-										Chưa có link nào nên bài này không hiện ở khu “Đã lên sóng”.
+								{savedUrl === item.code && (
+									<span className="hint" style={{ color: "var(--ok)" }}>
+										Đã lưu lý do.
 									</span>
 								)}
-						</div>
+							</div>
+						) : (
+							/* Một bài thường lên cả hai kênh. Trước đây chỉ có một ô chung,
+							   nên dán link thứ hai là đè mất link thứ nhất. */
+							<div className="field">
+								{LINK_FIELDS.map(([field, label]) => (
+									<label className="link-field" key={field}>
+										<span>{label}</span>
+										<input
+											className="input"
+											type="url"
+											placeholder="https://…"
+											defaultValue={item[field] ?? ""}
+											onBlur={(e) => saveUrl(item, field, e.target.value)}
+										/>
+									</label>
+								))}
+								{savedUrl === item.code && (
+									<span className="hint" style={{ color: "var(--ok)" }}>
+										Đã lưu link.
+									</span>
+								)}
+								{/* Khu "Đã lên sóng" ngoài trang chủ lọc theo link, nên bài đánh
+								    dấu xong mà quên dán link sẽ không bao giờ hiện ra. */}
+								{item.status === "done" &&
+									!item.publishedTiktok &&
+									!item.publishedYoutube && (
+										<span className="hint" style={{ color: "var(--warn)" }}>
+											Chưa có link nào nên bài này không hiện ở khu “Đã lên sóng”.
+										</span>
+									)}
+							</div>
+						)}
 
 						<div className="card-actions">
 							<button

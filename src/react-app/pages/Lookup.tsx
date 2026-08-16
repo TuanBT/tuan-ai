@@ -6,6 +6,7 @@ import { Layout } from "../components/Layout";
 import { ApiError, api, type Submission } from "../lib/api";
 import { CODE_LENGTH, CODE_PREFIX, codeDigits, digitsOnly, fullCode } from "../lib/code";
 import { forgetContact, hasContact } from "../lib/contact";
+import { formatDate, formatDateTime, isoStamp } from "../lib/datetime";
 import { useImageViewer } from "../lib/image-viewer";
 import { useLang } from "../lib/lang-context";
 import { forget, mine, remember, type MineEntry } from "../lib/mine";
@@ -85,8 +86,6 @@ function LookupView({ code }: { code: string | undefined }) {
 		done: { title: t.statusDone, body: t.statusDoneBody },
 		rejected: { title: t.statusRejected, body: t.statusRejectedBody },
 	};
-
-	const locale = lang === "vi" ? "vi-VN" : "en-GB";
 
 	return (
 		<Layout>
@@ -169,6 +168,16 @@ function LookupView({ code }: { code: string | undefined }) {
 					<p style={{ margin: 0, color: "var(--muted)", fontSize: 14 }}>
 						{statusText[result.status]?.body}
 					</p>
+
+					{/* Câu chung ở trên hợp với mọi bài, nên nó không trả lời được "vì
+					    sao bài của tôi". Khi chủ trang có viết lý do thì để nguyên văn ở
+					    đây; không viết thì trang giữ nguyên như trước. */}
+					{result.status === "rejected" && result.rejectReason && (
+						<div className="notice bad">
+							<strong>{t.rejectReasonLabel}</strong>
+							<span>{result.rejectReason}</span>
+						</div>
+					)}
 
 					{/* Bài lên cả hai kênh thì hiện cả hai nút: người xem quen TikTok hay
 					    quen YouTube là chuyện của họ, đừng chọn hộ. */}
@@ -264,7 +273,11 @@ function LookupView({ code }: { code: string | undefined }) {
 
 					<dl>
 						<dt>{lang === "vi" ? "Ngày gửi" : "Sent on"}</dt>
-						<dd>{new Date(result.createdAt).toLocaleDateString(locale)}</dd>
+						<dd>
+							<time dateTime={isoStamp(result.createdAt)}>
+								{formatDateTime(result.createdAt, lang)}
+							</time>
+						</dd>
 					</dl>
 				</div>
 			)}
@@ -308,8 +321,7 @@ function LookupView({ code }: { code: string | undefined }) {
 									<Link className="mine-link" to={`/r/${entry.code}`}>
 										<strong>{entry.code}</strong>
 										<small>
-											{entry.nickname} ·{" "}
-											{new Date(entry.at).toLocaleDateString(locale)}
+											{entry.nickname} · {formatDate(entry.at, lang)}
 										</small>
 									</Link>
 									<button

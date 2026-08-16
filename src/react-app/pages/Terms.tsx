@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useLang } from "../lib/lang-context";
+import { SiteFooter } from "../components/Footer";
 import { Wordmark, LangToggle, ThemeToggle } from "../components/Layout";
 import { ArrowLeftIcon } from "../components/icons";
 
@@ -31,14 +32,7 @@ export function Terms() {
 				</div>
 			</article>
 
-			<footer className="footer">
-				<div className="footer-base">
-					<span>© {new Date().getFullYear()} Tuân AI</span>
-					<div className="footer-links">
-						<Link to="/privacy">{t.privacyTitle}</Link>
-					</div>
-				</div>
-			</footer>
+			<SiteFooter legal />
 		</div>
 	);
 }

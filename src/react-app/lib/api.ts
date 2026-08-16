@@ -37,6 +37,11 @@ export interface Submission {
 	   họ, nên giữ riêng từng link chứ không gộp thành "link đã đăng". */
 	publishedTiktok: string | null;
 	publishedYoutube: string | null;
+	/**
+	 * Lý do chủ trang bỏ qua bài này, viết cho người gửi đọc. Chỉ có giá trị khi
+	 * `status` là `rejected`, và bỏ trống được — lúc đó trang hiện câu chung.
+	 */
+	rejectReason: string | null;
 	createdAt: number;
 	expiresAt: number;
 	imageUrls: string[];
@@ -44,6 +49,8 @@ export interface Submission {
 
 export interface GalleryItem {
 	nickname: string;
+	/** Lúc người gửi đặt bài. Bảng không ghi lúc clip lên kênh, xem `/api/gallery`. */
+	createdAt: number;
 	/** Link clip trên TikTok, nếu đã đăng. */
 	publishedTiktok: string | null;
 	/** Link clip trên YouTube, nếu đã đăng. */

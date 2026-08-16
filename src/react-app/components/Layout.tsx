@@ -4,7 +4,7 @@ import { useLang } from "../lib/lang-context";
 import { mine, subscribeMine } from "../lib/mine";
 import { useSiteConfig } from "../lib/site-config";
 import { useTheme } from "../lib/theme";
-import { ChannelLinksRow } from "./Channels";
+import { SiteFooter } from "./Footer";
 import { MoonIcon, SunIcon } from "./icons";
 
 /** Số bài đã lưu trên máy này, tự cập nhật khi danh sách đổi. */
@@ -59,22 +59,10 @@ export function Layout({
 
 			{children}
 
-			{/* Chân trang trước đây chép lại đúng hai mục của thanh điều hướng ngay
-			    đầu trang, trên một trang chỉ cao vài màn hình. Giữ lại thứ không có
-			    ở chỗ nào khác: đường sang kênh, và lối vào khu quản trị cho chủ
-			    trang — nhỏ, đứng riêng một bên. */}
-			<footer className="footer">
-				<ChannelLinksRow channels={config?.channels} />
-				<div className="footer-base">
-					<span>© {new Date().getFullYear()} {title}</span>
-					<div className="footer-links">
-						<Link to="/admin">{t.navAdmin}</Link>
-					</div>
-				</div>
-				<div className="footer-version">
-					v.{__BUILD_HASH__} · {new Date(__BUILD_TIME__).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}
-				</div>
-			</footer>
+			{/* Chân trang không chép lại hai mục của thanh điều hướng ngay đầu trang,
+			    vì trang chỉ cao vài màn hình. Nội dung và bố cục nằm trong
+			    `components/Footer.tsx`, dùng chung với các trang không qua Layout. */}
+			<SiteFooter />
 		</div>
 	);
 }

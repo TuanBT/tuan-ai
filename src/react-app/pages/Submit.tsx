@@ -5,8 +5,9 @@ import { CopyCode } from "../components/CopyCode";
 import { CheckIcon, CloseIcon, TikTokMark, YouTubeMark } from "../components/icons";
 import { Turnstile } from "../components/Turnstile";
 import { ApiError, api, type GalleryItem } from "../lib/api";
-import { compressImage, formatBytes } from "../lib/compress";
+import { compressImage, formatBytes, ImageError } from "../lib/compress";
 import { readContact, saveContact } from "../lib/contact";
+import { formatDate, isoStamp } from "../lib/datetime";
 import { useLang } from "../lib/lang-context";
 import { remember } from "../lib/mine";
 import { useSiteConfig } from "../lib/site-config";
@@ -75,8 +76,9 @@ export function Submit() {
 					file: compressed,
 					preview: URL.createObjectURL(compressed),
 				});
-			} catch {
-				setError("image_size");
+			} catch (err) {
+				// Ảnh nặng quá và ảnh không đọc được là hai chuyện, hai cách chữa.
+				setError(err instanceof ImageError ? err.code : "image_read");
 			}
 		}
 
@@ -254,10 +256,16 @@ export function Submit() {
 								{compressing ? t.compressing : t.pickImages}
 							</span>
 							<span className="drop-sub">{t.pickHint(maxImages)}</span>
+							{/* Nhận cả HEIC: ảnh iPhone lưu ở dạng đó, và khi người dùng vào
+							    lấy ảnh qua mục "Duyệt" (ứng dụng Tệp) thì iOS lọc theo đúng
+							    danh sách này — thiếu HEIC là ảnh của họ mờ đi, bấm không
+							    được. Lấy từ thư viện ảnh thì iOS tự đổi sang JPEG, mà kể cả
+							    không đổi thì `compressImage` cũng xuất lại JPEG trước khi
+							    gửi, nên máy chủ vẫn chỉ nhận ba định dạng cũ. */}
 							<input
 								ref={fileInput}
 								type="file"
-								accept="image/jpeg,image/png,image/webp"
+								accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
 								multiple
 								onChange={(e) => addFiles(e.target.files)}
 							/>
@@ -432,7 +440,18 @@ export function Submit() {
 								className="gallery-item"
 							>
 								{item.thumb && <img src={item.thumb} alt="" loading="lazy" />}
-								<span className="gallery-name">{item.nickname}</span>
+								{/* Tên kèm ngày gửi: một cái tên có thể xuất hiện ở nhiều ô, và
+								    ngày cho thấy thư viện vẫn đang chạy chứ không phải mấy tấm
+								    cũ để đó. */}
+								<span className="gallery-cap">
+									<span className="gallery-name">{item.nickname}</span>
+									<time
+										className="gallery-date"
+										dateTime={isoStamp(item.createdAt)}
+									>
+										{formatDate(item.createdAt, lang)}
+									</time>
+								</span>
 								<span className="gallery-links">
 									{item.publishedTiktok && (
 										<a
