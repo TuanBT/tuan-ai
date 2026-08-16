@@ -1,4 +1,5 @@
-import { Hono } from "hono";
+import { Hono, type MiddlewareHandler } from "hono";
+import { requireAdmin } from "./auth";
 import { blobs, imageKey } from "../lib/storage";
 import {
 	bumpUsage,
@@ -72,6 +73,34 @@ async function noteLookupMiss(
 export function publicRoutes() {
 	const app = new Hono<{ Bindings: Env }>();
 
+	/**
+	 * Hàng rào bảo trì cho những đường công khai có đụng tới dữ liệu bài gửi.
+	 *
+	 * Giấu form ở phía giao diện thôi là chưa đủ: lúc đang sửa dữ liệu, ai gọi
+	 * thẳng API vẫn gửi được bài mới vào giữa chừng. Chặn ở đây thì mới thật sự
+	 * là dừng.
+	 *
+	 * `/api/config` cố ý không nằm sau hàng rào — chính nó là thứ nói cho trang
+	 * biết đang bảo trì để dựng màn hình thông báo. `/i/*` cũng không: đó chỉ là
+	 * mấy byte ảnh, mà thêm một lượt đọc D1 vào từng tấm ảnh thì lúc bình thường
+	 * cả trang phải trả giá cho một cái công tắc gần như luôn tắt.
+	 */
+	const maintenanceGate: MiddlewareHandler<{ Bindings: Env }> = async (
+		c,
+		next,
+	) => {
+		const settings = await readSettings(c.env.DB);
+		if (!settings.maintenance_mode) return next();
+		// Chủ trang vẫn đi lại bình thường: đóng cửa để sửa mà chính mình cũng
+		// không vào xem được thì chỉ còn cách mở lại rồi mới biết đã sửa xong chưa.
+		if (await requireAdmin(c)) return next();
+		return c.json({ error: "maintenance" }, 503);
+	};
+
+	app.use("/api/gallery", maintenanceGate);
+	app.use("/api/s/*", maintenanceGate);
+	app.use("/api/submit", maintenanceGate);
+
 	app.get("/api/config", async (c) => {
 		// Ba câu này trước đây chạy nối tiếp nhau ở mỗi lượt tải trang.
 		const [settingsRows, usageRow, styleRows] = await c.env.DB.batch([
@@ -94,6 +123,10 @@ export function publicRoutes() {
 			isLocalRequest(c.req.url),
 		);
 
+		// Chỉ kiểm tra phiên quản trị khi đang bảo trì: lúc trang mở bình thường
+		// thì mọi lượt tải đều khỏi tốn một lần xác thực chữ ký cookie.
+		const bypass = settings.maintenance_mode && (await requireAdmin(c));
+
 		return c.json({
 			siteTitle: settings.site_title,
 			tagline: { vi: settings.tagline_vi, en: settings.tagline_en },
@@ -105,17 +138,31 @@ export function publicRoutes() {
 			maxImages: settings.max_images,
 			retentionDays: settings.retention_days,
 			turnstileSiteKey: c.env.TURNSTILE_SITE_KEY ?? null,
-			open: captchaReady && settings.submissions_open && left >= 1,
-			// Thiếu captcha xếp trước mọi lý do khác: đó là lỗi cấu hình của chủ
-			// trang, và người dùng nên thấy lời xin lỗi tử tế thay vì điền xong cả
-			// form rồi mới ăn lỗi lúc bấm gửi.
-			closedReason: !captchaReady
-				? "setup"
-				: !settings.submissions_open
-					? "paused"
-					: left < 1
-						? "quota"
-						: null,
+			maintenance: settings.maintenance_mode,
+			// Chủ trang đang xem trong lúc bảo trì: trang vẫn chạy đủ, chỉ thêm một
+			// dải nhắc để không quên rằng người khác đang thấy hàng rào.
+			maintenanceBypass: bypass,
+			maintenanceNote: settings.maintenance_note,
+			// Chủ trang đi qua được hàng rào thì form cũng phải mở với họ: xem được
+			// mà không thử gửi được một bài thì chưa gọi là kiểm tra xong.
+			open:
+				(!settings.maintenance_mode || bypass) &&
+				captchaReady &&
+				settings.submissions_open &&
+				left >= 1,
+			// Bảo trì xếp trước cả thiếu captcha: đang sửa chữa thì mọi lý do khác
+			// đều chưa tới lượt. Rồi mới tới thiếu captcha — đó là lỗi cấu hình của
+			// chủ trang, và người dùng nên thấy lời xin lỗi tử tế thay vì điền xong
+			// cả form rồi mới ăn lỗi lúc bấm gửi.
+			closedReason: settings.maintenance_mode && !bypass
+				? "maintenance"
+				: !captchaReady
+					? "setup"
+					: !settings.submissions_open
+						? "paused"
+						: left < 1
+							? "quota"
+							: null,
 			resetInSeconds: secondsUntilUtcMidnight(),
 		});
 	});

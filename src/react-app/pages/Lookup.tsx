@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { TikTokMark, YouTubeMark } from "../components/Channels";
+import { CloseIcon, TikTokMark, YouTubeMark } from "../components/icons";
 import { CopyCode } from "../components/CopyCode";
 import { Layout } from "../components/Layout";
 import { ApiError, api, type Submission } from "../lib/api";
@@ -322,7 +322,7 @@ function LookupView({ code }: { code: string | undefined }) {
 											setSaved(mine());
 										}}
 									>
-										×
+										<CloseIcon size={14} />
 									</button>
 								</div>
 							))}

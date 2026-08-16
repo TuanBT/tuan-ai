@@ -908,15 +908,12 @@ select {
 	right: 12px;
 	width: 40px;
 	height: 40px;
-	font-size: 24px;
 }
 .lightbox-nav {
 	top: 50%;
 	transform: translateY(-50%);
 	width: 42px;
 	height: 42px;
-	font-size: 28px;
-	padding-bottom: 4px;
 }
 .lightbox-nav.prev {
 	left: 10px;
@@ -1710,4 +1707,36 @@ a.chip {
 }
 .linkish:hover {
 	color: var(--accent);
+}
+
+/* ---------- biểu tượng ---------- */
+
+/*
+ * Hình lấy từ Lucide và Simple Icons, xem `components/icons.tsx`.
+ *
+ * SVG vốn là phần tử inline: nó ngồi trên đường chữ và kéo theo một khoảng
+ * trắng dưới chân, đủ để mọi nút tròn trông như lệch xuống vài pixel. Trước đây
+ * mỗi nút tự chữa bằng một dòng đẩy lệch riêng; `block` bỏ hẳn nguyên nhân.
+ */
+button svg,
+a svg {
+	display: block;
+	flex: none;
+}
+
+/* Nút và liên kết có hình đi kèm chữ: hai thứ đứng ngang hàng nhau. */
+.linkish,
+.ghost-btn,
+.footer-links a {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+/* Huy hiệu chỉ có mỗi dấu tích, không có chữ: bỏ khoảng đệm ngang của viên
+   thuốc chữ, nếu không một dấu tích lại nằm giữa một viên thuốc dài ngoằng. */
+.icon-badge {
+	display: inline-grid;
+	place-items: center;
+	padding: 7px;
 }

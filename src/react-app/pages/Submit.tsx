@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Countdown } from "../components/Countdown";
 import { CopyCode } from "../components/CopyCode";
+import { CheckIcon, CloseIcon } from "../components/icons";
 import { Turnstile } from "../components/Turnstile";
 import { ApiError, api, type GalleryItem } from "../lib/api";
 import { compressImage, formatBytes } from "../lib/compress";
@@ -154,7 +155,9 @@ export function Submit() {
 		return (
 			<Layout title={config.siteTitle}>
 				<div className="panel">
-					<span className="badge ok">✓</span>
+					<span className="badge ok icon-badge">
+						<CheckIcon size={13} />
+					</span>
 					<h2>{t.successTitle}</h2>
 					<span className="hint">{t.yourCode}</span>
 					<CopyCode code={done} />
@@ -184,6 +187,14 @@ export function Submit() {
 	// cấu hình chống bot, lỗi của chủ trang, nên nói cho tử tế thay vì để người
 	// dùng điền xong cả form rồi mới ăn lỗi.
 	const closed = {
+		// Gần như không ai thấy nhánh này: bảo trì thì hàng rào đã thay cả trang từ
+		// trước. Giữ lại để nếu sau này có đường nào lọt qua thì màn hình vẫn nói
+		// đúng chuyện đang xảy ra, thay vì đổ cho "tạm ngưng".
+		maintenance: {
+			badge: t.maintenanceBadge,
+			title: t.maintenanceTitle,
+			body: t.maintenanceBody,
+		},
 		paused: {
 			badge: lang === "vi" ? "Tạm ngưng" : "Paused",
 			title: t.closedPaused,
@@ -280,7 +291,7 @@ export function Submit() {
 											onClick={() => removeAt(index)}
 											aria-label={lang === "vi" ? "Bỏ ảnh này" : "Remove photo"}
 										>
-											×
+											<CloseIcon size={14} />
 										</button>
 									</div>
 								))}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Wordmark } from "../components/Layout";
+import { ArrowLeftIcon } from "../components/icons";
 import { api } from "../lib/api";
 import { DataPanel } from "./admin/DataPanel";
 import { Inbox } from "./admin/Inbox";
@@ -57,7 +58,7 @@ export function Admin() {
 				</Link>
 				<div className="admin-actions">
 					<Link className="ghost-btn" to="/">
-						← Trang chủ
+						<ArrowLeftIcon size={15} /> Trang chủ
 					</Link>
 					{me.devBypassAvailable && (
 						<button
@@ -110,7 +111,9 @@ export function Admin() {
 
 			<footer className="footer">
 				<div className="footer-links">
-					<Link to="/">← Trang chủ</Link>
+					<Link to="/">
+						<ArrowLeftIcon size={14} /> Trang chủ
+					</Link>
 					<Link to="/r">Tra cứu bài</Link>
 				</div>
 			</footer>

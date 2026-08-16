@@ -68,6 +68,15 @@ interface Dictionary {
 	closedPausedBody: string;
 	closedSetup: string;
 	closedSetupBody: string;
+	/* Bảo trì đóng cả trang, nên nó có màn hình riêng chứ không chỉ là một lý do
+	   đóng form. `maintenanceAdmin` là dải nhắc chỉ chủ trang mới thấy. */
+	maintenanceBadge: string;
+	maintenanceTitle: string;
+	maintenanceBody: string;
+	maintenanceAdmin: string;
+	notFoundBadge: string;
+	notFoundTitle: string;
+	notFoundBody: string;
 	backIn: string;
 	lookupTitle: string;
 	lookupLead: string;
@@ -164,6 +173,16 @@ export const copy: Record<Lang, Dictionary> = {
 		closedSetup: "Trang đang được thiết lập",
 		closedSetupBody:
 			"Phần chống bot chưa cấu hình xong nên mình tạm chưa nhận bài, để hộp thư không bị máy tự động gửi rác. Bạn quay lại sau một chút nhé.",
+		maintenanceBadge: "Đang bảo trì",
+		maintenanceTitle: "Trang đang bảo trì",
+		maintenanceBody:
+			"Mình đang sửa vài thứ bên trong nên tạm đóng cả trang một lát. Bài đã gửi và mã của bạn vẫn còn nguyên, quay lại sau nhé.",
+		maintenanceAdmin:
+			"Trang đang bảo trì. Bạn xem được vì đang đăng nhập quản trị, người khác chỉ thấy thông báo bảo trì.",
+		notFoundBadge: "404",
+		notFoundTitle: "Không có trang này",
+		notFoundBody:
+			"Đường dẫn bạn vừa mở không dẫn tới đâu cả. Có thể link bị gõ thiếu, hoặc chép còn một nửa. Nếu bạn đang tìm bài đã gửi, sang phần tra cứu rồi nhập mã tám chữ số nhé.",
 		backIn: "Mở lại sau",
 		lookupTitle: "Bài của bạn tới đâu rồi?",
 		lookupLead:
@@ -281,6 +300,16 @@ export const copy: Record<Lang, Dictionary> = {
 		closedSetup: "Setting things up",
 		closedSetupBody:
 			"Bot protection isn't configured yet, so submissions are on hold to keep the inbox free of automated junk. Please check back shortly.",
+		maintenanceBadge: "Under maintenance",
+		maintenanceTitle: "The site is under maintenance",
+		maintenanceBody:
+			"I'm fixing a few things behind the scenes, so the whole site is closed for a little while. Everything you've sent, and your code, are safe. Please check back later.",
+		maintenanceAdmin:
+			"The site is under maintenance. You can see it because you're signed in as admin; everyone else gets the maintenance notice.",
+		notFoundBadge: "404",
+		notFoundTitle: "There's nothing here",
+		notFoundBody:
+			"The link you opened doesn't lead anywhere. It may have a typo, or been copied only halfway. If you're looking for something you sent, head to the lookup page and enter your eight-digit code.",
 		backIn: "Opens again in",
 		lookupTitle: "How's your idea doing?",
 		lookupLead:

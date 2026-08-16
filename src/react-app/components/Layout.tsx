@@ -5,6 +5,7 @@ import { mine, subscribeMine } from "../lib/mine";
 import { useSiteConfig } from "../lib/site-config";
 import { useTheme } from "../lib/theme";
 import { ChannelLinksRow } from "./Channels";
+import { MoonIcon, SunIcon } from "./icons";
 
 /** Số bài đã lưu trên máy này, tự cập nhật khi danh sách đổi. */
 function useMineCount(): number {
@@ -54,6 +55,8 @@ export function Layout({
 				</NavLink>
 			</nav>
 
+			<MaintenanceBanner />
+
 			{children}
 
 			{/* Chân trang trước đây chép lại đúng hai mục của thanh điều hướng ngay
@@ -78,6 +81,21 @@ export function Layout({
 	);
 }
 
+/**
+ * Dải nhắc chỉ chủ trang thấy khi đang bảo trì.
+ *
+ * Đứng ở đây chứ không ở cạnh hàng rào trong `Maintenance.tsx`: người đi qua
+ * được hàng rào thì thấy trang y như thường, dễ quên mất là khách vào lúc này
+ * chỉ gặp thông báo bảo trì. Định nghĩa ngay trong Layout để hai tệp khỏi phải
+ * gọi vòng qua nhau.
+ */
+function MaintenanceBanner() {
+	const { t } = useLang();
+	const { config } = useSiteConfig();
+	if (!config?.maintenanceBypass) return null;
+	return <div className="notice warn">{t.maintenanceAdmin}</div>;
+}
+
 /** Chữ đầu đen, phần còn lại màu nhấn. Dùng chung cho cả khu quản trị. */
 export function Wordmark({ title = "Tuân AI" }: { title?: string }) {
 	const [first, ...rest] = title.split(" ");
@@ -96,7 +114,7 @@ export function Wordmark({ title = "Tuân AI" }: { title?: string }) {
  * đường nào. Một nút, hai trạng thái — biểu tượng cho thấy thứ sẽ nhận được khi
  * bấm, chứ không phải thứ đang xem.
  */
-function ThemeToggle() {
+export function ThemeToggle() {
 	const { lang } = useLang();
 	const { theme, toggle } = useTheme();
 	const toDark = theme === "light";
@@ -116,7 +134,7 @@ function ThemeToggle() {
 			title={label}
 			aria-label={label}
 		>
-			<span aria-hidden="true">{toDark ? "☾" : "☀"}</span>
+			{toDark ? <MoonIcon size={16} /> : <SunIcon size={16} />}
 		</button>
 	);
 }

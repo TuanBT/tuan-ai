@@ -17,8 +17,13 @@ export interface SiteConfig {
 	maxImages: number;
 	retentionDays: number;
 	turnstileSiteKey: string | null;
+	/** Cả trang đang đóng để sửa chữa, không riêng gì chỗ nhận bài. */
+	maintenance: boolean;
+	/** Người đang xem là quản trị, nên đi qua được hàng rào bảo trì. */
+	maintenanceBypass: boolean;
+	maintenanceNote: string;
 	open: boolean;
-	closedReason: "paused" | "quota" | "setup" | null;
+	closedReason: "maintenance" | "paused" | "quota" | "setup" | null;
 	resetInSeconds: number;
 }
 
@@ -222,6 +227,8 @@ export interface AdminSettings {
 	daily_write_budget: number;
 	max_per_ip_day: number;
 	submissions_open: boolean;
+	maintenance_mode: boolean;
+	maintenance_note: string;
 	site_title: string;
 	tagline_vi: string;
 	tagline_en: string;

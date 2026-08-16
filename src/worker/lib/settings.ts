@@ -5,6 +5,16 @@ export interface Settings {
 	daily_write_budget: number;
 	max_per_ip_day: number;
 	submissions_open: boolean;
+	/**
+	 * Đóng cả trang để sửa chữa, khác hẳn với `submissions_open`.
+	 *
+	 * Tắt nhận bài là trang vẫn chạy, chỉ không nhận bài mới — người cầm mã vẫn
+	 * tra được. Bảo trì là dừng hẳn: trang chủ, tra cứu, thư viện đều đóng, vì
+	 * lúc đang sửa dữ liệu thì thứ trang trả về chưa chắc còn đúng.
+	 */
+	maintenance_mode: boolean;
+	/** Lời nhắn kèm theo, ví dụ "quay lại lúc 15h". Để trống thì dùng câu mặc định. */
+	maintenance_note: string;
 	site_title: string;
 	tagline_vi: string;
 	tagline_en: string;
@@ -21,6 +31,10 @@ const FALLBACK: Settings = {
 	daily_write_budget: 850,
 	max_per_ip_day: 3,
 	submissions_open: true,
+	// Mặc định phải là tắt: hàng rào bảo trì mà tự dựng lên vì thiếu một dòng
+	// trong bảng settings thì cả trang đóng mà không ai bấm gì.
+	maintenance_mode: false,
+	maintenance_note: "",
 	site_title: "Tuân AI",
 	tagline_vi: "Gửi ảnh, nhận clip AI vui vẻ",
 	tagline_en: "Send photos, get fun AI clips",
@@ -82,6 +96,10 @@ export function parseSettings(
 		daily_write_budget: num("daily_write_budget", FALLBACK.daily_write_budget),
 		max_per_ip_day: num("max_per_ip_day", FALLBACK.max_per_ip_day),
 		submissions_open: (raw.get("submissions_open") ?? "1") === "1",
+		// Chỉ đúng chữ "1" mới là đang bảo trì. Giá trị lạ trong bảng — chuỗi rỗng,
+		// "true", dòng bị xoá — đều hiểu là trang đang mở.
+		maintenance_mode: raw.get("maintenance_mode") === "1",
+		maintenance_note: (raw.get("maintenance_note") ?? "").trim(),
 		site_title: raw.get("site_title") || FALLBACK.site_title,
 		tagline_vi: raw.get("tagline_vi") || FALLBACK.tagline_vi,
 		tagline_en: raw.get("tagline_en") || FALLBACK.tagline_en,

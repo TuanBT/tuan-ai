@@ -15,6 +15,11 @@ const SETTING_LABELS: Array<[keyof AdminSettings, string, string]> = [
 		"Trần thật của KV là 1.000. Để 850 cho an toàn.",
 	],
 	["max_per_ip_day", "Số bài tối đa mỗi người/ngày", "Tính theo địa chỉ mạng."],
+	[
+		"maintenance_note",
+		"Lời nhắn khi bảo trì",
+		"Hiện dưới thông báo bảo trì, ví dụ \"quay lại lúc 15h\". Để trống cũng được. Khách nào cũng thấy đúng câu này, nên viết câu dùng được cho cả hai thứ tiếng.",
+	],
 	["site_title", "Tên hiển thị", ""],
 	["tagline_vi", "Câu giới thiệu (Việt)", ""],
 	["tagline_en", "Câu giới thiệu (Anh)", ""],
@@ -67,6 +72,36 @@ export function SettingsPanel() {
 					onClick={() => save({ submissions_open: !settings.submissions_open })}
 				>
 					{settings.submissions_open ? "Đang mở" : "Đang đóng"}
+				</button>
+			</div>
+
+			{/* Công tắc nặng nhất của cả trang nên đứng riêng, ngay dưới "Nhận bài",
+			    và nói rõ nó khác gì với tắt nhận bài. */}
+			<div className="row">
+				<div className="row-label">
+					<strong>Bảo trì</strong>
+					<small>
+						Bật thì cả trang chủ và trang tra cứu đóng lại, chỉ còn thông báo
+						bảo trì; API gửi bài và tra cứu cũng trả 503. Điều khoản, quyền
+						riêng tư và khu quản trị vẫn vào được, và bạn — khi đang đăng nhập
+						quản trị — vẫn xem được trang như bình thường.
+					</small>
+				</div>
+				<button
+					type="button"
+					className="chip"
+					aria-pressed={settings.maintenance_mode}
+					onClick={() => {
+						if (
+							!settings.maintenance_mode &&
+							!confirm("Bật bảo trì? Khách vào trang sẽ chỉ thấy thông báo bảo trì.")
+						) {
+							return;
+						}
+						save({ maintenance_mode: !settings.maintenance_mode });
+					}}
+				>
+					{settings.maintenance_mode ? "Đang bảo trì" : "Đang chạy"}
 				</button>
 			</div>
 

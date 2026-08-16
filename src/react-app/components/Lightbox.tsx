@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useLang } from "../lib/lang-context";
+import { ChevronLeftIcon, ChevronRightIcon, CloseIcon } from "./icons";
 
 /**
  * Khung xem một tấm ảnh, phủ kín màn hình.
@@ -87,7 +88,7 @@ export function Lightbox({
 				onClick={onClose}
 				aria-label={t.viewerClose}
 			>
-				×
+				<CloseIcon size={20} />
 			</button>
 
 			<img className="lightbox-img" src={images[index]} alt="" />
@@ -100,7 +101,7 @@ export function Lightbox({
 						onClick={() => step(-1)}
 						aria-label={t.viewerPrev}
 					>
-						‹
+						<ChevronLeftIcon size={24} />
 					</button>
 					<button
 						type="button"
@@ -108,7 +109,7 @@ export function Lightbox({
 						onClick={() => step(1)}
 						aria-label={t.viewerNext}
 					>
-						›
+						<ChevronRightIcon size={24} />
 					</button>
 					<span className="lightbox-count">
 						{index + 1} / {images.length}

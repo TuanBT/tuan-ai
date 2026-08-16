@@ -234,14 +234,36 @@ Cloudflare.
 - **Thống kê**: mức dùng hạn mức, dung lượng, và **số lượt bị chặn**
 - **Kiểu**: thêm bớt các lựa chọn người dùng thấy khi gửi bài
 - **Cài đặt**: số ngày giữ ảnh, số ngày giữ dữ liệu mô tả, số ảnh mỗi bài,
-  ngân sách ghi, số bài mỗi người mỗi ngày, bật tắt nhận bài, tên, câu giới
-  thiệu, và **link kênh TikTok / YouTube** (để trống thì trang giấu nút đi; chỉ
-  nhận `http://` hoặc `https://`)
+  ngân sách ghi, số bài mỗi người mỗi ngày, bật tắt nhận bài, **công tắc bảo
+  trì** (xem bên dưới), tên, câu giới thiệu, và **link kênh TikTok / YouTube**
+  (để trống thì trang giấu nút đi; chỉ nhận `http://` hoặc `https://`)
 - **Dữ liệu**: số dòng từng bảng, dọn ảnh quá hạn ngay, tải toàn bộ bài gửi ra
   CSV, ô chạy câu truy vấn, và vùng nguy hiểm để xoá thống kê hoặc dọn sạch dữ
   liệu thử
 
 Mỗi tab có địa chỉ riêng (`/admin#data`), tải lại trang không bị nhảy về đầu.
+
+### Dừng trang để bảo trì
+
+**Cài đặt → Bảo trì** đóng cả trang lại, khác với **Nhận bài** chỉ đóng mỗi form:
+
+| | Nhận bài: Đang đóng | Bảo trì: Đang bảo trì |
+|---|---|---|
+| Trang chủ | hiện thông báo tạm ngưng | hiện thông báo bảo trì |
+| Tra cứu bài bằng mã | vẫn chạy | đóng |
+| `/api/submit`, `/api/s/…`, `/api/gallery` | vẫn chạy | trả `503` |
+| Điều khoản, quyền riêng tư, `/admin` | vẫn chạy | vẫn chạy |
+
+Dùng **Nhận bài** khi chỉ cần ngừng nhận thêm bài; dùng **Bảo trì** khi đang sửa
+dữ liệu, vì lúc đó thứ trang trả về chưa chắc còn đúng.
+
+Ô **Lời nhắn khi bảo trì** hiện ngay dưới thông báo, ví dụ "quay lại lúc 15h".
+Khách nào cũng thấy đúng câu đó nên viết câu dùng được cho cả tiếng Việt lẫn
+tiếng Anh, hoặc để trống.
+
+Đang đăng nhập quản trị thì bạn vẫn xem và thử được cả trang như thường, kèm một
+dải nhắc trên đầu — đóng cửa để sửa mà chính mình cũng không vào được thì chỉ còn
+cách mở lại rồi mới biết đã sửa xong chưa.
 
 ### Gói làm việc
 
@@ -342,15 +364,19 @@ src/worker/
 src/react-app/
   pages/Submit.tsx      trang gửi bài
   pages/Lookup.tsx      tra cứu theo mã + danh sách "Bài của bạn"
+  pages/NotFound.tsx    404 mềm cho đường dẫn không có thật
   pages/Admin.tsx       khung khu quản trị
   pages/admin/          từng tab một file
   components/Layout.tsx khung chung: điều hướng, chuyển ngôn ngữ, chân trang
   components/Channels.tsx nút sang kênh TikTok / YouTube
+  components/Maintenance.tsx hàng rào bảo trì phía giao diện
   components/Lightbox.tsx khung xem ảnh toàn màn hình
+  components/icons.tsx  toàn bộ biểu tượng, chép sẵn (xem bên dưới)
   lib/image-viewer.tsx  móc nối mở khung xem ảnh từ bất kỳ trang nào
   lib/site-config.ts    cấu hình trang, tải một lần dùng chung
   lib/compress.ts       nén ảnh trong trình duyệt trước khi gửi
   lib/mine.ts           danh sách mã bài lưu trong máy người dùng
+  lib/contact.ts        tên và email của người gửi, nhớ trong máy họ
   lib/styles.ts         đổi mã kiểu thành tên đọc được, theo ngôn ngữ
   lib/local.ts          localStorage không bao giờ ném lỗi
   lib/i18n.ts           toàn bộ chữ tiếng Việt và tiếng Anh
@@ -358,6 +384,22 @@ src/react-app/
 public/_headers         header bảo mật cho phần tĩnh (không đi qua Worker)
 test/                   test cho phần logic dễ hỏng âm thầm
 ```
+
+### Biểu tượng: chép vào `components/icons.tsx`, đừng vẽ tay
+
+Cả trang chỉ dùng bảy hình, nên không cài `lucide-react`: thêm một gói phụ thuộc
+là thêm một thứ phải nâng cấp và phải tải về, trong khi chép đường vẽ vào thẳng
+dự án thì thứ gửi tới trình duyệt đúng bằng số hình đang dùng.
+
+Cần thêm hình mới thì lấy từ đúng hai nguồn miễn phí này, chép phần bên trong thẻ
+`svg` vào `components/icons.tsx`:
+
+- [Lucide](https://lucide.dev) (giấy phép ISC) cho biểu tượng giao diện
+- [Simple Icons](https://simpleicons.org) (CC0) cho dấu hiệu thương hiệu
+
+Đừng dùng ký tự chữ thay cho biểu tượng (`☾`, `×`, `‹`): mỗi hệ điều hành vẽ một
+kiểu — máy này ra hình phẳng, máy kia ra emoji vàng chóe — và chúng không bao giờ
+nằm đúng giữa nút, nên chỗ nào cũng phải thêm một dòng CSS đẩy lệch để chữa.
 
 Header bảo mật nằm ở **hai** nơi vì file tĩnh được phục vụ thẳng từ biên
 Cloudflare, không đi qua Worker. Sửa `src/worker/lib/headers.ts` thì sửa luôn

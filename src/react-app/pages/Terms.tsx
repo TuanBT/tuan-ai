@@ -1,32 +1,7 @@
 import { Link } from "react-router-dom";
 import { useLang } from "../lib/lang-context";
-import { Wordmark, LangToggle } from "../components/Layout";
-import { useTheme } from "../lib/theme";
-
-function ThemeToggle() {
-	const { lang } = useLang();
-	const { theme, toggle } = useTheme();
-	const toDark = theme === "light";
-	const label = toDark
-		? lang === "vi"
-			? "Chuyển sang nền tối"
-			: "Switch to dark mode"
-		: lang === "vi"
-			? "Chuyển sang nền sáng"
-			: "Switch to light mode";
-
-	return (
-		<button
-			type="button"
-			className="theme-toggle"
-			onClick={toggle}
-			title={label}
-			aria-label={label}
-		>
-			<span aria-hidden="true">{toDark ? "☾" : "☀"}</span>
-		</button>
-	);
-}
+import { Wordmark, LangToggle, ThemeToggle } from "../components/Layout";
+import { ArrowLeftIcon } from "../components/icons";
 
 export function Terms() {
 	const { lang, t } = useLang();
@@ -51,7 +26,7 @@ export function Terms() {
 
 				<div className="legal-back">
 					<Link to="/" className="btn-back">
-						← {t.backHome}
+						<ArrowLeftIcon size={16} /> {t.backHome}
 					</Link>
 				</div>
 			</article>
