@@ -11,5 +11,22 @@
 	"assets": {
 		"directory": "./dist/client",
 		"not_found_handling": "single-page-application"
+	},
+	"kv_namespaces": [
+		{
+			"binding": "IMAGES",
+			"id": "b3f377e4ad59423f8cad63b7f0088df1"
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "tuan-ai-db",
+			"database_id": "027e3c5d-1b14-456f-a363-2cb35a67b432",
+			"migrations_dir": "migrations"
+		}
+	],
+	"triggers": {
+		"crons": ["0 18 * * *"]
 	}
 }

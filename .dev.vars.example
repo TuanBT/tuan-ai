@@ -1,0 +1,19 @@
+# Chỉ dùng khi chạy local (npm run dev). File này đã được .gitignore bỏ qua.
+# Bí mật trên production nạp bằng: npx wrangler secret put <TÊN>
+
+SESSION_SECRET="thay-bang-chuoi-ngau-nhien-64-ky-tu"
+ADMIN_EMAILS="bttvn.4t@gmail.com"
+
+# Bật cửa sau vào /admin khi chạy local, để không phải dựng OAuth mới test được.
+# Không bao giờ đặt biến này bằng wrangler secret put.
+DEV_ADMIN_BYPASS="1"
+
+# Để trống lúc phát triển; điền khi đã tạo ứng dụng OAuth.
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+GITHUB_CLIENT_ID=""
+GITHUB_CLIENT_SECRET=""
+
+# Để trống thì bỏ qua bước kiểm tra captcha khi chạy local.
+TURNSTILE_SITE_KEY=""
+TURNSTILE_SECRET=""

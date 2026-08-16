@@ -1,6 +1,18 @@
 import { Hono } from "hono";
+import { adminRoutes } from "./routes/admin";
+import { authRoutes } from "./routes/auth";
+import { publicRoutes } from "./routes/public";
+import { purgeExpired } from "./lib/purge";
+
 const app = new Hono<{ Bindings: Env }>();
 
-app.get("/api/", (c) => c.json({ name: "Cloudflare" }));
+app.route("/", authRoutes());
+app.route("/", publicRoutes());
+app.route("/", adminRoutes());
 
-export default app;
+export default {
+	fetch: app.fetch,
+	async scheduled(_event, env, ctx) {
+		ctx.waitUntil(purgeExpired(env));
+	},
+} satisfies ExportedHandler<Env>;
