@@ -6,6 +6,7 @@ import {
 	devRelaxed,
 	hasEnoughToSubmit,
 	hashIp,
+	ipIdentity,
 	isCode,
 	isLocalRequest,
 	newCode,
@@ -75,6 +76,60 @@ describe("băm IP", () => {
 		const hashed = await hashIp("203.0.113.9", "muoi");
 		expect(hashed).not.toContain("203");
 		expect(hashed).toMatch(/^[0-9a-f]{32}$/);
+	});
+
+	/**
+	 * Cả dải `/64` của một thuê bao IPv6 phải ra cùng một danh tính, nếu không
+	 * mọi trần đếm theo IP đều đi vòng qua được bằng cách đổi sang địa chỉ khác
+	 * trong dải của chính mình — khoảng 18 tỷ tỷ lựa chọn.
+	 */
+	it("cả dải /64 của một thuê bao IPv6 chung một danh tính", async () => {
+		const a = await hashIp("2001:db8:abcd:1234::1", "muoi");
+		const b = await hashIp("2001:db8:abcd:1234:ffff:ffff:ffff:ffff", "muoi");
+		expect(a).toBe(b);
+	});
+
+	it("hai thuê bao IPv6 khác nhau vẫn tách bạch", async () => {
+		const a = await hashIp("2001:db8:abcd:1234::1", "muoi");
+		const b = await hashIp("2001:db8:abcd:9999::1", "muoi");
+		expect(a).not.toBe(b);
+	});
+
+	it("IPv4 không đổi gì", () => {
+		expect(ipIdentity("203.0.113.9")).toBe("203.0.113.9");
+	});
+});
+
+describe("gom địa chỉ IPv6 về /64", () => {
+	it("lấy đúng bốn nhóm đầu", () => {
+		expect(ipIdentity("2001:db8:abcd:1234:5678:9abc:def0:1234")).toBe(
+			"2001:db8:abcd:1234",
+		);
+	});
+
+	/**
+	 * `::` viết tắt cho một dãy nhóm 0, phải bung ra trước khi cắt. Không bung
+	 * thì `2001:db8::1` cắt nhầm thành `2001:db8:1` — trùng với một dải khác.
+	 */
+	it("bung dấu :: ra trước khi cắt", () => {
+		expect(ipIdentity("2001:db8::1")).toBe("2001:db8:0:0");
+		expect(ipIdentity("2001:db8:0:0::1")).toBe("2001:db8:0:0");
+		expect(ipIdentity("2001:db8:0:0:0:0:0:1")).toBe("2001:db8:0:0");
+	});
+
+	it("mọi cách viết cùng một dải đều ra một chuỗi", () => {
+		const cachViet = [
+			"2001:0db8:0000:0001::5",
+			"2001:db8:0:1::5",
+			"2001:DB8:0:1:0:0:0:5",
+		];
+		const gom = new Set(cachViet.map(ipIdentity));
+		expect(gom.size).toBe(1);
+	});
+
+	it("chịu được địa chỉ rút gọn ở đầu và cuối", () => {
+		expect(ipIdentity("::1")).toBe("0:0:0:0");
+		expect(ipIdentity("fe80::")).toBe("fe80:0:0:0");
 	});
 });
 

@@ -77,8 +77,21 @@ export function StatsPanel() {
 					<span className="stat-value">{stats.today.blocked}</span>
 					<span className="stat-sub">
 						{stats.today.blocked > 0
-							? "Có người gửi không được"
+							? "Hết hạn mức ghi trong ngày"
 							: "Chưa mất bài nào"}
+					</span>
+				</div>
+
+				{/* Tách khỏi ô trên vì hai con số đòi hai việc khác nhau: ô trên cao
+				    là tới lúc tính chuyện đổi kho ảnh, ô này cao là trần theo IP
+				    đang siết nhầm người thật — sửa được ngay trong Cài đặt. */}
+				<div className="stat">
+					<span className="stat-label">Bị chặn vì trần theo IP</span>
+					<span className="stat-value">{stats.today.blocked_ip}</span>
+					<span className="stat-sub">
+						{stats.today.blocked_ip > 0
+							? "Nên nới “Số bài mỗi IP” trong Cài đặt"
+							: "Trần đang đủ rộng"}
 					</span>
 				</div>
 

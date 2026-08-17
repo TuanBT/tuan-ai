@@ -89,10 +89,25 @@ describe("bộ đếm chặn dò mã", () => {
 		expect(rows.get("abc123|2026-08-17")).toEqual({ misses: 1, hits: 2 });
 	});
 
-	it("trần lượt trúng phải rộng hơn hẳn trần lượt trượt", () => {
-		// Người thật tra trúng bài của mình mỗi ngày vài lần là chuyện thường; hai
-		// con số mà xích lại gần nhau là hàng rào bắt đầu chặn nhầm người dùng.
-		expect(MAX_LOOKUP_HITS).toBeGreaterThan(MAX_LOOKUP_MISSES * 5);
+	/**
+	 * Một IP ở đây thường là cả một nhà mạng di động chứ không phải một người
+	 * (CGNAT). Ngưỡng nào cũng phải chừa chỗ cho hàng chục người dùng chung.
+	 */
+	it("trần lượt trượt đủ rộng cho một dải CGNAT", () => {
+		expect(MAX_LOOKUP_MISSES).toBeGreaterThanOrEqual(100);
+	});
+
+	/**
+	 * Kích thước không gian mã mới là thứ giữ cửa, không phải con số này. Với
+	 * 100 triệu tổ hợp và 10.000 bài trong kho, đây là số ngày một người dò phải
+	 * bám trên cùng một địa chỉ để mong trúng *một* bài.
+	 */
+	it("nới trần rồi việc dò mã vẫn vô vọng", () => {
+		const soBaiGiaDinh = 10_000;
+		const khongGianMa = 100_000_000;
+		const soLuotCanDeTrung = khongGianMa / soBaiGiaDinh;
+
+		expect(soLuotCanDeTrung / MAX_LOOKUP_MISSES).toBeGreaterThan(30);
 	});
 
 	it("mỗi người mỗi ngày đếm riêng", async () => {
@@ -130,7 +145,7 @@ describe("bộ đếm chặn dò mã", () => {
  * Lỗ hổng đã xảy ra thật: routes/og.ts được thêm vào sau, truy vấn đúng bảng
  * `submissions` theo mã, nhưng không mang theo bộ đếm — vì lúc đó hai hàm đếm
  * nằm khuất trong routes/public.ts. Thành cửa thứ ba dẫn vào cùng dữ liệu, mở
- * toang, và trần 30 lượt/ngày bên hai cửa kia thành vô nghĩa.
+ * toang, và trần lượt trượt bên hai cửa kia thành vô nghĩa.
  *
  * Test này bắt mọi route công khai tra bài theo mã đều phải gọi bộ đếm, để cửa
  * thứ tư không lặp lại đúng chuyện đó.

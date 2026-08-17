@@ -16,23 +16,33 @@ import { clientIp, hashIp, utcDay } from "./util";
 /**
  * Số lần tra trượt tối đa mỗi người mỗi ngày.
  *
- * Siết chặt được, vì người thật gần như không bao giờ gõ sai mã tới ngần này:
- * họ dán mã từ tin nhắn hoặc bấm từ danh sách trong máy.
+ * Từng để ở 30. Con số đó an toàn về mặt chống dò, nhưng nó đếm theo IP, mà một
+ * IP ở đây thường là cả một nhà mạng di động chứ không phải một người (CGNAT).
+ * Vài chục người gõ nhầm mã là cả dải bị khoá tới nửa đêm UTC.
+ *
+ * Nới lên vẫn an toàn, vì cái giữ cửa là kích thước không gian mã chứ không
+ * phải con số này: 100 triệu tổ hợp, giả sử trong kho có 10.000 bài thì xác
+ * suất trúng mỗi lượt đoán là 1/10.000. Ở mức 150 lượt/ngày, người dò cần
+ * khoảng 67 ngày liên tục trên cùng một địa chỉ để mong trúng *một* bài — trong
+ * khi người dùng thật có thêm gấp năm lần chỗ thở.
  */
-export const MAX_LOOKUP_MISSES = 30;
+export const MAX_LOOKUP_MISSES = 150;
 
 /**
- * Trần cho cả lượt tra trúng.
+ * Trần cho lượt tra trúng, **chỉ áp cho `/r` chứ không áp cho `/api/s`**.
  *
- * Rộng hơn hẳn trần lượt trượt vì tra trúng là việc bình thường: người gửi mở
- * lại bài của mình mỗi ngày vài lần là chuyện thường tình, và mỗi lượt như vậy
- * chỉ tốn một đơn vị ở đây.
+ * Đây là chỗ dễ làm hỏng trải nghiệm nhất nên phải nói rõ. Trần lượt trúng sinh
+ * ra để chặn thu hoạch hàng loạt, nhưng đặt nó lên `/api/s` thì nó thành trần
+ * *dùng chung* trên đúng con đường người thật đi: người gửi mở lại bài của mình
+ * phải chia suất với mọi thuê bao khác cùng nhà mạng, và lỗi họ nhận được là
+ * "tra cứu quá nhiều" trong khi mới tra đúng một lần.
  *
- * Nó không nhắm vào người dùng mà nhắm vào việc thu hoạch hàng loạt: kẻ đã dò
- * ra danh sách mã thật ở đâu đó vẫn phải đi qua cửa này để lấy nội dung, và
- * ngần này lượt một ngày thì không gom nổi kho ảnh. Đây là lớp phòng thủ theo
- * chiều sâu — nó có tác dụng ngay cả khi một cửa nào đó lại quên mang theo
- * khoá, đúng kiểu lỗi đã xảy ra một lần với route OG.
+ * `/r` thì khác hẳn: nó chỉ chạy khi User-Agent là bot crawler (xem
+ * BOT_UA_PATTERN trong routes/og.ts), tức Facebook, Zalo, Telegram lấy preview
+ * link. Không có người thật nào đi qua đó, nên trần ở đây có phơi nhiễm bằng 0.
+ *
+ * Chống dò không yếu đi: cửa khám phá nào cũng vẫn vướng trần lượt trượt, mà
+ * muốn thu hoạch thì trước hết phải khám phá được đã.
  */
 export const MAX_LOOKUP_HITS = 300;
 
@@ -110,11 +120,13 @@ export async function noteLookupMiss(
 /**
  * Mở được một bài có thật.
  *
- * Chỉ gọi ở những cửa *khám phá* — nơi người ta đưa vào một mã và biết được nó
- * có tồn tại hay không (`/api/s` và `/r`). Đường lấy ảnh `/i` cố ý không gọi:
- * ảnh chỉ tải được sau khi đã biết mã, nên đếm ở đó là đếm lại đúng lượt vừa
- * đếm, mà lại thêm một lượt ghi D1 vào mỗi tấm ảnh hiện ra trên màn hình. Ai dò
- * thẳng ở `/i` thì vẫn vướng trần lượt trượt như thường.
+ * **Chỉ gọi từ `/r`** — đường của bot crawler, nơi không có người thật nào đi
+ * qua. Xem `MAX_LOOKUP_HITS` để biết vì sao `/api/s` cố ý không đếm lượt trúng.
+ *
+ * Đường lấy ảnh `/i` cũng không đếm, vì lý do khác: ảnh chỉ tải được sau khi đã
+ * biết mã, nên đếm ở đó là đếm lại đúng lượt vừa đếm, mà lại thêm một lượt ghi
+ * D1 vào mỗi tấm ảnh hiện ra trên màn hình. Ai dò thẳng ở `/i` thì vẫn vướng
+ * trần lượt trượt như thường.
  */
 export async function noteLookupHit(
 	db: D1Database,

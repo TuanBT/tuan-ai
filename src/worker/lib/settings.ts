@@ -29,7 +29,22 @@ const FALLBACK: Settings = {
 	// hai để đổi góc. Mở tới ba chỉ làm bước chọn ảnh dài ra và gói tải nặng thêm.
 	max_images: 2,
 	daily_write_budget: 850,
-	max_per_ip_day: 3,
+	/**
+	 * Số bài mỗi IP mỗi ngày.
+	 *
+	 * Từng để ở 3, và con số đó ngầm giả định mỗi IP là một người. Giả định ấy
+	 * sai với phần lớn người dùng ở đây: khách vào từ TikTok gần như toàn bằng
+	 * điện thoại, mà thuê bao 4G đi ra ngoài qua CGNAT — hàng trăm người chung
+	 * một địa chỉ. Ở mức 3, người thứ tư sau cùng một nhà mạng điền xong form,
+	 * chọn ảnh, giải captcha rồi mới nhận về lỗi, dù chẳng làm gì sai. Ngày đông
+	 * khách nhất thành ngày mất khách nhất.
+	 *
+	 * Nới ra được là vì trần này chưa bao giờ là thứ bảo vệ hạn mức hạ tầng —
+	 * `daily_write_budget` mới là, và nó chặn ở tầng cả trang nên không phụ
+	 * thuộc vào chuyện đếm IP có đúng hay không. Đây chỉ là lớp chống một người
+	 * gửi hàng loạt, mà việc đó Turnstile đã lọc ở tuyến đầu rồi.
+	 */
+	max_per_ip_day: 20,
 	submissions_open: true,
 	// Mặc định phải là tắt: hàng rào bảo trì mà tự dựng lên vì thiếu một dòng
 	// trong bảng settings thì cả trang đóng mà không ai bấm gì.
@@ -68,7 +83,10 @@ const BOUNDS: Record<string, [number, number]> = {
 	data_retention_days: [7, 3650],
 	max_images: [1, 5],
 	daily_write_budget: [10, 1000],
-	max_per_ip_day: [1, 50],
+	// Trần trên nới rộng để nâng được từ trang Cài đặt mà không phải deploy lại:
+	// lúc phát hiện đang chặn nhầm người dùng thì thứ cần nhất là sửa được ngay.
+	// Vẫn giữ một trần, vì đây là ô nhập tay và gõ thừa số 0 là chuyện có thật.
+	max_per_ip_day: [1, 200],
 };
 
 /** Đọc cấu hình từ kết quả truy vấn có sẵn. Dùng khi đã gộp nhiều query. */

@@ -5,6 +5,14 @@ export interface DailyUsage {
 	submissions: number;
 	kv_writes: number;
 	blocked: number;
+	/**
+	 * Bị chặn vì chạm trần số bài mỗi IP, đếm riêng với `blocked`.
+	 *
+	 * Hai con số đòi hai hành động khác nhau: `blocked` cao là hạn mức ghi của cả
+	 * trang đã cạn, tới lúc tính chuyện đổi kho ảnh; cột này cao là trần theo IP
+	 * đang siết nhầm người dùng thật, tới lúc nới nó trong phần Cài đặt.
+	 */
+	blocked_ip: number;
 	bytes: number;
 }
 
@@ -13,6 +21,7 @@ const EMPTY = (day: string): DailyUsage => ({
 	submissions: 0,
 	kv_writes: 0,
 	blocked: 0,
+	blocked_ip: 0,
 	bytes: 0,
 });
 
@@ -37,12 +46,13 @@ export async function bumpUsage(
 ): Promise<void> {
 	await db
 		.prepare(
-			`INSERT INTO daily_usage (day, submissions, kv_writes, blocked, bytes)
-			 VALUES (?1, ?2, ?3, ?4, ?5)
+			`INSERT INTO daily_usage (day, submissions, kv_writes, blocked, blocked_ip, bytes)
+			 VALUES (?1, ?2, ?3, ?4, ?5, ?6)
 			 ON CONFLICT(day) DO UPDATE SET
 			   submissions = submissions + excluded.submissions,
 			   kv_writes   = kv_writes   + excluded.kv_writes,
 			   blocked     = blocked     + excluded.blocked,
+			   blocked_ip  = blocked_ip  + excluded.blocked_ip,
 			   bytes       = bytes       + excluded.bytes`,
 		)
 		.bind(
@@ -50,6 +60,7 @@ export async function bumpUsage(
 			delta.submissions ?? 0,
 			delta.kv_writes ?? 0,
 			delta.blocked ?? 0,
+			delta.blocked_ip ?? 0,
 			delta.bytes ?? 0,
 		)
 		.run();

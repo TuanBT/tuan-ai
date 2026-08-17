@@ -41,9 +41,41 @@ export async function sha256Hex(input: string): Promise<string> {
 		.join("");
 }
 
+/**
+ * Gom một địa chỉ về đúng đơn vị đáng đếm.
+ *
+ * Băm nguyên chuỗi IP nghe thì chặt chẽ, nhưng với IPv6 nó hỏng theo cả hai
+ * hướng cùng lúc. Mỗi thuê bao IPv6 được cấp cả một dải `/64` — khoảng 18 tỷ tỷ
+ * địa chỉ — nên người muốn dò chỉ cần đổi sang địa chỉ khác trong dải của chính
+ * mình là có danh tính mới tinh, và mọi trần đếm theo IP thành vô nghĩa. Trong
+ * khi đó người dùng IPv4 sau CGNAT lại chịu điều ngược lại: hàng trăm thuê bao
+ * chung một địa chỉ, chung luôn một suất.
+ *
+ * Cắt về `/64` sửa đúng cả hai: một thuê bao IPv6 vốn là một `/64`, nên người
+ * dùng thật không thấy gì khác, còn kẻ dò thì hết chỗ nhảy. IPv4 giữ nguyên.
+ */
+export function ipIdentity(ip: string): string {
+	if (!ip.includes(":")) return ip;
+
+	// `::` viết tắt cho một dãy nhóm 0 nên phải bung ra trước khi cắt, nếu không
+	// `2001:db8::1` và `2001:db8:0:0::1` lại ra hai danh tính khác nhau.
+	const [head, tail = ""] = ip.split("::");
+	const left = head ? head.split(":") : [];
+	const right = tail ? tail.split(":") : [];
+	const groups = ip.includes("::")
+		? [...left, ...Array(Math.max(0, 8 - left.length - right.length)).fill("0"), ...right]
+		: ip.split(":");
+
+	// `/64` là bốn nhóm đầu. Bỏ số 0 thừa để mọi cách viết cùng ra một chuỗi.
+	return groups
+		.slice(0, 4)
+		.map((group) => (group.replace(/^0+/, "") || "0").toLowerCase())
+		.join(":");
+}
+
 /** Không bao giờ lưu IP thô, chỉ lưu bản băm có muối để đếm và chặn lạm dụng. */
 export async function hashIp(ip: string, salt: string): Promise<string> {
-	return (await sha256Hex(`${ip}:${salt}`)).slice(0, 32);
+	return (await sha256Hex(`${ipIdentity(ip)}:${salt}`)).slice(0, 32);
 }
 
 export function clientIp(req: Request): string {

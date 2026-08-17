@@ -251,6 +251,7 @@ export interface Stats {
 		submissions: number;
 		kv_writes: number;
 		blocked: number;
+		blocked_ip: number;
 		bytes: number;
 	};
 	remainingWrites: number;
@@ -264,6 +265,7 @@ export interface Stats {
 		submissions: number;
 		kv_writes: number;
 		blocked: number;
+		blocked_ip: number;
 		bytes: number;
 	}>;
 	shouldUpgrade: boolean;

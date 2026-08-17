@@ -1,12 +1,7 @@
 import { Hono, type MiddlewareHandler } from "hono";
 import { requireAdmin } from "./auth";
 import { blobs, imageKey } from "../lib/storage";
-import {
-	lookupGuard,
-	noteLookupHit,
-	noteLookupMiss,
-	overLookupLimit,
-} from "../lib/lookup";
+import { lookupGuard, noteLookupMiss, overLookupLimit } from "../lib/lookup";
 import {
 	bumpUsage,
 	parseUsage,
@@ -209,8 +204,9 @@ export function publicRoutes() {
 			return c.json({ error: "not_found" }, 404);
 		}
 
-		await noteLookupHit(c.env.DB, guard);
-
+		// Tra trúng thì không tính vào đâu cả: đây là đường người thật đi, và trần
+		// dùng chung trên một địa chỉ CGNAT sẽ khoá người gửi khỏi chính bài của
+		// họ. Xem MAX_LOOKUP_HITS trong lib/lookup.ts.
 		const images = JSON.parse(row.images) as ImageMeta[];
 		return c.json({
 			code: row.code,
@@ -377,6 +373,9 @@ export function publicRoutes() {
 				.first<{ n: number }>();
 
 			if ((fromThisIp?.n ?? 0) >= settings.max_per_ip_day) {
+				// Ghi lại, nếu không thì cú chặn dễ đụng người thật nhất lại là cú
+				// chặn duy nhất không để lại dấu vết nào trên trang Thống kê.
+				await bumpUsage(c.env.DB, { blocked_ip: 1 });
 				return c.json(
 					{ error: "ip_limit", resetInSeconds: secondsUntilUtcMidnight() },
 					429,

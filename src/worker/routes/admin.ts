@@ -270,6 +270,7 @@ export function adminRoutes() {
 			submissions: number;
 			kv_writes: number;
 			blocked: number;
+			blocked_ip: number;
 			bytes: number;
 		}>();
 
