@@ -1,8 +1,8 @@
 /**
  * Bộ đóng gói ZIP viết tay, không nén.
  *
- * Không dùng thư viện ngoài vì cả gói chỉ gồm ảnh JPEG/PNG/WebP — vốn đã nén rồi
- * — với vài tệp văn bản nhỏ, nên nén thêm gần như không giảm được byte nào mà
+ * Không dùng thư viện ngoài vì cả gói chỉ gồm ảnh JPEG/PNG/WebP (vốn đã nén rồi)
+ * với vài tệp văn bản nhỏ, nên nén thêm gần như không giảm được byte nào mà
  * lại kéo theo phụ thuộc và thời gian CPU trong Worker.
  *
  * Quan trọng hơn: hàm ở đây trả về một luồng và nhận vào một `AsyncIterable`, nên

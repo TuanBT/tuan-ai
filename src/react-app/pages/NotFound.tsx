@@ -7,7 +7,7 @@ import { useLang } from "../lib/lang-context";
  * Đường dẫn không có thật.
  *
  * Trước đây mọi đường lạ đều bị đá thẳng về trang chủ. Nhìn thì gọn, nhưng người
- * bấm vào một link gõ sai chỉ thấy mình đang ở trang chủ mà không hiểu vì sao —
+ * bấm vào một link gõ sai chỉ thấy mình đang ở trang chủ mà không hiểu vì sao,
  * tưởng link đúng, tưởng bài của mình biến mất. Nói thẳng ra là không có trang
  * đó, rồi chỉ hai đường đi tiếp, thì đỡ hoang mang hơn nhiều.
  *

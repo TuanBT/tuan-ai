@@ -48,23 +48,23 @@ function PrivacyVi() {
 				</p>
 				<ul>
 					<li>
-						<strong>Tên hiển thị</strong> — tên bạn muốn xuất hiện khi tác
+						<strong>Tên hiển thị</strong>: tên bạn muốn xuất hiện khi tác
 						phẩm lên sóng.
 					</li>
 					<li>
-						<strong>Email</strong> (không bắt buộc) — nếu bạn cung cấp, chỉ
+						<strong>Email</strong> (không bắt buộc): nếu bạn cung cấp, chỉ
 						dùng để liên hệ về bài gửi của bạn.
 					</li>
 					<li>
-						<strong>Ảnh gốc</strong> — lưu trữ tạm thời, tự động xoá sau số
+						<strong>Ảnh gốc</strong>: lưu trữ tạm thời, tự động xoá sau số
 						ngày được quy định trên trang.
 					</li>
 					<li>
-						<strong>Nội dung mô tả và phong cách</strong> — ý tưởng bạn muốn
+						<strong>Nội dung mô tả và phong cách</strong>: ý tưởng bạn muốn
 						thực hiện.
 					</li>
 					<li>
-						<strong>Mã băm địa chỉ IP</strong> — dùng để giới hạn số lần gửi
+						<strong>Mã băm địa chỉ IP</strong>: dùng để giới hạn số lần gửi
 						bài trong ngày, không lưu IP gốc.
 					</li>
 				</ul>
@@ -140,23 +140,23 @@ function PrivacyEn() {
 				<p>When you submit an idea through our form, we store:</p>
 				<ul>
 					<li>
-						<strong>Display name</strong> — the name you want shown when your
+						<strong>Display name</strong>: the name you want shown when your
 						piece goes live.
 					</li>
 					<li>
-						<strong>Email</strong> (optional) — used only to contact you about
+						<strong>Email</strong> (optional): used only to contact you about
 						your submission.
 					</li>
 					<li>
-						<strong>Original photos</strong> — stored temporarily and
+						<strong>Original photos</strong>: stored temporarily and
 						automatically deleted after the retention period shown on the site.
 					</li>
 					<li>
-						<strong>Description and style preferences</strong> — your creative
+						<strong>Description and style preferences</strong>: your creative
 						idea.
 					</li>
 					<li>
-						<strong>Hashed IP address</strong> — used to enforce daily
+						<strong>Hashed IP address</strong>: used to enforce daily
 						submission limits; we do not store your raw IP.
 					</li>
 				</ul>

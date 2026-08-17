@@ -13,7 +13,7 @@ import {
 /**
  * D1 giả, chỉ hiểu đúng ba câu lệnh trong lib/lookup.ts.
  *
- * Đủ để kiểm tra phần logic đếm mà không phải dựng Miniflare cho cả bộ test —
+ * Đủ để kiểm tra phần logic đếm mà không phải dựng Miniflare cho cả bộ test;
  * xem lý do trong vitest.config.ts.
  */
 function fakeDb() {
@@ -65,7 +65,7 @@ describe("bộ đếm chặn dò mã", () => {
 
 	/**
 	 * Vế mới. Trước đây chỉ lượt trượt bị đếm, nên ai dò được mã thật ở một cửa
-	 * không có bộ đếm thì mọi lượt sau đều là lượt trúng và không tính vào đâu —
+	 * không có bộ đếm thì mọi lượt sau đều là lượt trúng và không tính vào đâu,
 	 * bộ đếm đứng nguyên ở 0 trong lúc kho ảnh bị múc dần.
 	 */
 	it("chặn cả khi toàn tra trúng, không sinh lượt trượt nào", async () => {
@@ -143,7 +143,7 @@ describe("bộ đếm chặn dò mã", () => {
  * Test canh cho lần sau.
  *
  * Lỗ hổng đã xảy ra thật: routes/og.ts được thêm vào sau, truy vấn đúng bảng
- * `submissions` theo mã, nhưng không mang theo bộ đếm — vì lúc đó hai hàm đếm
+ * `submissions` theo mã, nhưng không mang theo bộ đếm, vì lúc đó hai hàm đếm
  * nằm khuất trong routes/public.ts. Thành cửa thứ ba dẫn vào cùng dữ liệu, mở
  * toang, và trần lượt trượt bên hai cửa kia thành vô nghĩa.
  *
@@ -174,7 +174,7 @@ describe("mọi cửa dẫn vào bài gửi đều có khoá", () => {
 
 		expect(
 			source.includes("overLookupLimit"),
-			`${file} tra bài theo mã nhưng không gọi overLookupLimit — đây là cửa dò mã không khoá`,
+			`${file} tra bài theo mã nhưng không gọi overLookupLimit: đây là cửa dò mã không khoá`,
 		).toBe(true);
 	});
 });

@@ -1,5 +1,5 @@
 /*
- * Service Worker — Tuân AI
+ * Service Worker - Tuân AI
  *
  * Chiến lược: network-first cho mọi thứ, có cache fallback khi offline.
  * Trang là SPA nên chỉ cần cache shell (HTML + JS + CSS) là đủ để hiện giao

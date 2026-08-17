@@ -81,7 +81,7 @@ describe("băm IP", () => {
 	/**
 	 * Cả dải `/64` của một thuê bao IPv6 phải ra cùng một danh tính, nếu không
 	 * mọi trần đếm theo IP đều đi vòng qua được bằng cách đổi sang địa chỉ khác
-	 * trong dải của chính mình — khoảng 18 tỷ tỷ lựa chọn.
+	 * trong dải của chính mình, khoảng 18 tỷ tỷ lựa chọn.
 	 */
 	it("cả dải /64 của một thuê bao IPv6 chung một danh tính", async () => {
 		const a = await hashIp("2001:db8:abcd:1234::1", "muoi");
@@ -109,7 +109,7 @@ describe("gom địa chỉ IPv6 về /64", () => {
 
 	/**
 	 * `::` viết tắt cho một dãy nhóm 0, phải bung ra trước khi cắt. Không bung
-	 * thì `2001:db8::1` cắt nhầm thành `2001:db8:1` — trùng với một dải khác.
+	 * thì `2001:db8::1` cắt nhầm thành `2001:db8:1`, trùng với một dải khác.
 	 */
 	it("bung dấu :: ra trước khi cắt", () => {
 		expect(ipIdentity("2001:db8::1")).toBe("2001:db8:0:0");

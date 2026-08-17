@@ -4,7 +4,7 @@
 -- điểm đó: tra đúng mã của mình bao nhiêu lần cũng được. Lỗ hổng nằm ở chỗ lý
 -- lẽ ấy chỉ đúng khi *mọi* cửa dẫn vào bài đều có bộ đếm. Thiếu một cửa thôi là
 -- người dò dùng cửa đó để lọc ra mã thật, rồi quay lại hai cửa có khoá và chỉ
--- gõ toàn mã đúng — không sinh ra lượt trượt nào, bộ đếm đứng nguyên ở 0 trong
+-- gõ toàn mã đúng, không sinh ra lượt trượt nào, bộ đếm đứng nguyên ở 0 trong
 -- lúc kho ảnh bị múc dần.
 --
 -- Trần cho lượt trúng vá đúng chỗ đó. Nó phải rộng hơn hẳn trần lượt trượt, vì

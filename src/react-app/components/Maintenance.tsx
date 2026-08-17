@@ -8,7 +8,7 @@ import { Layout } from "./Layout";
  *
  * Chỉ bọc trang gửi bài và trang tra cứu. Điều khoản và quyền riêng tư là chữ
  * tĩnh, không hỏi máy chủ câu nào, mà lại là thứ người ta có quyền đọc bất cứ
- * lúc nào — đóng luôn cả hai trang đó là đóng thừa. `/admin` cũng phải mở, nếu
+ * lúc nào; đóng luôn cả hai trang đó là đóng thừa. `/admin` cũng phải mở, nếu
  * không thì bật bảo trì lên rồi không còn đường nào tắt đi.
  *
  * Đây là lớp lịch sự, không phải lớp bảo vệ: thứ thật sự dừng trang là hàng rào

@@ -11,7 +11,7 @@ export default function App() {
 	return (
 		<Routes>
 			{/* Gửi bài và tra cứu đóng khi bảo trì; điều khoản, quyền riêng tư và khu
-			    quản trị thì không — xem lý do trong MaintenanceGate. */}
+			    quản trị thì không, xem lý do trong MaintenanceGate. */}
 			<Route
 				element={
 					<MaintenanceGate>

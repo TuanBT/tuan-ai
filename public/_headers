@@ -3,7 +3,7 @@
 # Những file này được phục vụ thẳng từ biên Cloudflare, KHÔNG đi qua Worker,
 # nên middleware trong src/worker/lib/headers.ts không với tới được.
 #
-# Hai nơi phải giống hệt nhau — test/headers.test.ts so từng directive và sẽ
+# Hai nơi phải giống hệt nhau, test/headers.test.ts so từng directive và sẽ
 # báo đỏ nếu bạn sửa một bên mà quên bên kia.
 
 /*

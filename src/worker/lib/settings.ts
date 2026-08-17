@@ -8,7 +8,7 @@ export interface Settings {
 	/**
 	 * Đóng cả trang để sửa chữa, khác hẳn với `submissions_open`.
 	 *
-	 * Tắt nhận bài là trang vẫn chạy, chỉ không nhận bài mới — người cầm mã vẫn
+	 * Tắt nhận bài là trang vẫn chạy, chỉ không nhận bài mới; người cầm mã vẫn
 	 * tra được. Bảo trì là dừng hẳn: trang chủ, tra cứu, thư viện đều đóng, vì
 	 * lúc đang sửa dữ liệu thì thứ trang trả về chưa chắc còn đúng.
 	 */
@@ -34,12 +34,12 @@ const FALLBACK: Settings = {
 	 *
 	 * Từng để ở 3, và con số đó ngầm giả định mỗi IP là một người. Giả định ấy
 	 * sai với phần lớn người dùng ở đây: khách vào từ TikTok gần như toàn bằng
-	 * điện thoại, mà thuê bao 4G đi ra ngoài qua CGNAT — hàng trăm người chung
+	 * điện thoại, mà thuê bao 4G đi ra ngoài qua CGNAT, hàng trăm người chung
 	 * một địa chỉ. Ở mức 3, người thứ tư sau cùng một nhà mạng điền xong form,
 	 * chọn ảnh, giải captcha rồi mới nhận về lỗi, dù chẳng làm gì sai. Ngày đông
 	 * khách nhất thành ngày mất khách nhất.
 	 *
-	 * Nới ra được là vì trần này chưa bao giờ là thứ bảo vệ hạn mức hạ tầng —
+	 * Nới ra được là vì trần này chưa bao giờ là thứ bảo vệ hạn mức hạ tầng:
 	 * `daily_write_budget` mới là, và nó chặn ở tầng cả trang nên không phụ
 	 * thuộc vào chuyện đếm IP có đúng hay không. Đây chỉ là lớp chống một người
 	 * gửi hàng loạt, mà việc đó Turnstile đã lọc ở tuyến đầu rồi.
@@ -114,8 +114,8 @@ export function parseSettings(
 		daily_write_budget: num("daily_write_budget", FALLBACK.daily_write_budget),
 		max_per_ip_day: num("max_per_ip_day", FALLBACK.max_per_ip_day),
 		submissions_open: (raw.get("submissions_open") ?? "1") === "1",
-		// Chỉ đúng chữ "1" mới là đang bảo trì. Giá trị lạ trong bảng — chuỗi rỗng,
-		// "true", dòng bị xoá — đều hiểu là trang đang mở.
+		// Chỉ đúng chữ "1" mới là đang bảo trì. Giá trị lạ trong bảng (chuỗi rỗng,
+		// "true", dòng bị xoá) đều hiểu là trang đang mở.
 		maintenance_mode: raw.get("maintenance_mode") === "1",
 		maintenance_note: (raw.get("maintenance_note") ?? "").trim(),
 		site_title: raw.get("site_title") || FALLBACK.site_title,

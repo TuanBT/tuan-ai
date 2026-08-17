@@ -89,7 +89,7 @@ describe("readableText", () => {
 			LABELS,
 			files,
 		);
-		expect(half).toMatch(/Link YouTube\s+: —/);
+		expect(half).toMatch(/Link YouTube\s+: -/);
 	});
 
 	it("nói rõ khi trong gói không có ảnh nào", () => {

@@ -12,7 +12,7 @@ import { normalizeCode, isCode } from "../lib/util";
  *
  * Khi ai đó dán link `tuanai.com/r/TA-12345678` lên Zalo, Facebook, Telegram…,
  * con bot của nền tảng đó sẽ gọi URL để đọc thẻ `og:image`, `og:title`.
- * SPA trả về `<div id="root"></div>` trống — bot không chạy JS nên không thấy gì.
+ * SPA trả về `<div id="root"></div>` trống, bot không chạy JS nên không thấy gì.
  *
  * Route này chặn trước: nếu User-Agent khớp bot thì trả HTML tĩnh có đủ OG,
  * nếu không thì bỏ qua, để Cloudflare Assets trả `index.html` bình thường.
@@ -57,7 +57,7 @@ export function ogRoutes() {
 		 *
 		 * Quá ngưỡng thì rơi xuống SPA chứ không trả 429: bot thật không bao giờ
 		 * chạm tới ngưỡng này, còn với người dò thì một trang không có OG là câu
-		 * trả lời không nói lên điều gì — đúng thứ ta muốn.
+		 * trả lời không nói lên điều gì, đúng thứ ta muốn.
 		 */
 		const guard = await lookupGuard(c.req.raw, c.env.SESSION_SECRET);
 		if (await overLookupLimit(c.env.DB, guard)) return next();

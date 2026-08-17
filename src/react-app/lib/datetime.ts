@@ -10,7 +10,7 @@ import type { Lang } from "./i18n";
  *
  * Một dạng duy nhất, và tháng luôn viết thành chữ: `16 Tháng 8, 2026`, bản tiếng
  * Anh là `16 Aug 2026`. Toàn số thì "04/08" với "08/04" nhìn y hệt nhau, người
- * quen kiểu Mỹ đọc ra một ngày, người Việt đọc ra ngày khác — mà đây là chỗ nói
+ * quen kiểu Mỹ đọc ra một ngày, người Việt đọc ra ngày khác, mà đây là chỗ nói
  * cho người gửi biết bài của họ đi từ hôm nào.
  *
  * Múi giờ ghim ở Việt Nam, không lấy theo máy người xem: "gửi ngày 16 Tháng 8"

@@ -65,7 +65,7 @@ export function SiteFooter() {
  * Số hiệu bản dựng, mặc định chỉ hiện mã.
  *
  * Mốc thời gian dựng chỉ dùng đến khi chủ trang muốn biết bản vừa đẩy lên đã
- * tới nơi chưa — vài lần một tháng là cùng. Trước đây nó nằm sẵn cạnh mã, kéo
+ * tới nơi chưa, vài lần một tháng là cùng. Trước đây nó nằm sẵn cạnh mã, kéo
  * viên thuốc dài ra suốt ngày vì một câu hỏi hiếm khi được hỏi. Giờ mã đứng
  * một mình, bấm vào mới mở phần còn lại; bấm lần nữa thì thu về.
  *

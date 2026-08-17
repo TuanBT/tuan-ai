@@ -23,7 +23,7 @@ interface Picked {
  * Mã của cái kiểu mang nghĩa "tôi không tả, anh tự quyết".
  *
  * Trong kho nó là một hàng `styles` như mọi hàng khác, chủ trang sửa tên hay tắt
- * đi được trong /admin — nên tên nút vẫn lấy từ kho, chỉ riêng chỗ đứng của nó
+ * đi được trong /admin, nên tên nút vẫn lấy từ kho, chỉ riêng chỗ đứng của nó
  * trong biểu mẫu là do đây định. Chủ trang xoá hàng này thì lối thoát biến mất
  * và bước 2 quay về đúng những gì còn lại, không vỡ chỗ nào.
  */
@@ -116,7 +116,7 @@ export function Submit() {
 	 * Bật tắt lời phó mặc.
 	 *
 	 * Bật thì nó đứng một mình: phó mặc mà vẫn kèm kiểu là hai câu ngược nhau
-	 * trong cùng một bài. Tắt thì trả về tay trắng — nút chỉ hiện khi người gửi
+	 * trong cùng một bài. Tắt thì trả về tay trắng; nút chỉ hiện khi người gửi
 	 * chưa chọn gì, nên không có kiểu nào để mà trả lại.
 	 */
 	function toggleDelegate() {
@@ -288,7 +288,7 @@ export function Submit() {
 							<span className="drop-sub">{t.pickHint(maxImages)}</span>
 							{/* Nhận cả HEIC: ảnh iPhone lưu ở dạng đó, và khi người dùng vào
 							    lấy ảnh qua mục "Duyệt" (ứng dụng Tệp) thì iOS lọc theo đúng
-							    danh sách này — thiếu HEIC là ảnh của họ mờ đi, bấm không
+							    danh sách này, thiếu HEIC là ảnh của họ mờ đi, bấm không
 							    được. Lấy từ thư viện ảnh thì iOS tự đổi sang JPEG, mà kể cả
 							    không đổi thì `compressImage` cũng xuất lại JPEG trước khi
 							    gửi, nên máy chủ vẫn chỉ nhận ba định dạng cũ. */}
@@ -426,7 +426,7 @@ export function Submit() {
 						{/* Lối thoát cuối bước, tách hẳn khỏi hàng kiểu.
 						    "Để Tuân tự quyết" trước đây là một con chip đứng lẫn giữa "Miễn
 						    sao thật vui" với "Nhẹ nhàng, dễ thương", nhưng nó không cùng
-						    loại với chúng: hai cái kia tả clip, còn nó là lời phó mặc — ấn
+						    loại với chúng: hai cái kia tả clip, còn nó là lời phó mặc, ấn
 						    xong thì cả ô chữ lẫn hàng kiểu đều thành vô nghĩa.
 
 						    Nên nó xuống đây, sau một vạch ngăn, và chỉ hiện khi người gửi

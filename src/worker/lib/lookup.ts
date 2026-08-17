@@ -6,7 +6,7 @@
  * thứ hai nằm ở file này.
  *
  * Trước đây hai hàm này nằm ngay trong routes/public.ts, nên route OG thêm vào
- * sau ở routes/og.ts không với tới được — và thành cửa thứ ba mở toang dẫn vào
+ * sau ở routes/og.ts không với tới được, và thành cửa thứ ba mở toang dẫn vào
  * cùng bảng dữ liệu. Đặt ở lib/ để cửa tiếp theo, dù ai viết, cũng chỉ cách một
  * dòng import.
  */
@@ -23,7 +23,7 @@ import { clientIp, hashIp, utcDay } from "./util";
  * Nới lên vẫn an toàn, vì cái giữ cửa là kích thước không gian mã chứ không
  * phải con số này: 100 triệu tổ hợp, giả sử trong kho có 10.000 bài thì xác
  * suất trúng mỗi lượt đoán là 1/10.000. Ở mức 150 lượt/ngày, người dò cần
- * khoảng 67 ngày liên tục trên cùng một địa chỉ để mong trúng *một* bài — trong
+ * khoảng 67 ngày liên tục trên cùng một địa chỉ để mong trúng *một* bài, trong
  * khi người dùng thật có thêm gấp năm lần chỗ thở.
  */
 export const MAX_LOOKUP_MISSES = 150;
@@ -120,7 +120,7 @@ export async function noteLookupMiss(
 /**
  * Mở được một bài có thật.
  *
- * **Chỉ gọi từ `/r`** — đường của bot crawler, nơi không có người thật nào đi
+ * **Chỉ gọi từ `/r`**, đường của bot crawler, nơi không có người thật nào đi
  * qua. Xem `MAX_LOOKUP_HITS` để biết vì sao `/api/s` cố ý không đếm lượt trúng.
  *
  * Đường lấy ảnh `/i` cũng không đếm, vì lý do khác: ảnh chỉ tải được sau khi đã

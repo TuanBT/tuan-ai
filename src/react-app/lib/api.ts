@@ -39,7 +39,7 @@ export interface Submission {
 	publishedYoutube: string | null;
 	/**
 	 * Lý do chủ trang bỏ qua bài này, viết cho người gửi đọc. Chỉ có giá trị khi
-	 * `status` là `rejected`, và bỏ trống được — lúc đó trang hiện câu chung.
+	 * `status` là `rejected`, và bỏ trống được; lúc đó trang hiện câu chung.
 	 */
 	rejectReason: string | null;
 	createdAt: number;

@@ -558,7 +558,7 @@ select {
 	opacity: 0.4;
 }
 
-/* Nhãn "tuỳ ý" dính lấy hàng chip của nó, cách xa ô chữ bên trên hơn — nếu không
+/* Nhãn "tuỳ ý" dính lấy hàng chip của nó, cách xa ô chữ bên trên hơn; nếu không
    thì nó lơ lửng đúng giữa hai thứ và không rõ đang nói về cái nào. */
 .styles {
 	display: flex;
@@ -566,7 +566,7 @@ select {
 	gap: 7px;
 	margin-top: 2px;
 }
-/* Chip tự mờ đi khi bị khoá, nhưng nhãn của chúng thì không — để nguyên thì
+/* Chip tự mờ đi khi bị khoá, nhưng nhãn của chúng thì không; để nguyên thì
    dòng chữ đứng sáng trên một hàng đã tắt, trông như vẫn còn việc phải làm. */
 .styles.aside .hint {
 	opacity: 0.4;
@@ -1140,7 +1140,7 @@ select {
 		justify-content: space-between;
 	}
 	/* Đảo chiều: trong HTML các liên kết viết trước để trên điện thoại chúng đứng
-	   trên dòng bản quyền — thứ bấm được thì nên gặp trước. Màn rộng thì trả về
+	   trên dòng bản quyền, thứ bấm được thì nên gặp trước. Màn rộng thì trả về
 	   nếp quen: bản quyền bên trái, liên kết bên phải. */
 	.footer-base {
 		flex-direction: row-reverse;

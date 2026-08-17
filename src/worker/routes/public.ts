@@ -45,7 +45,7 @@ export function publicRoutes() {
 	 * thẳng API vẫn gửi được bài mới vào giữa chừng. Chặn ở đây thì mới thật sự
 	 * là dừng.
 	 *
-	 * `/api/config` cố ý không nằm sau hàng rào — chính nó là thứ nói cho trang
+	 * `/api/config` cố ý không nằm sau hàng rào: chính nó là thứ nói cho trang
 	 * biết đang bảo trì để dựng màn hình thông báo. `/i/*` cũng không: đó chỉ là
 	 * mấy byte ảnh, mà thêm một lượt đọc D1 vào từng tấm ảnh thì lúc bình thường
 	 * cả trang phải trả giá cho một cái công tắc gần như luôn tắt.
@@ -116,7 +116,7 @@ export function publicRoutes() {
 				settings.submissions_open &&
 				left >= 1,
 			// Bảo trì xếp trước cả thiếu captcha: đang sửa chữa thì mọi lý do khác
-			// đều chưa tới lượt. Rồi mới tới thiếu captcha — đó là lỗi cấu hình của
+			// đều chưa tới lượt. Rồi mới tới thiếu captcha, đó là lỗi cấu hình của
 			// chủ trang, và người dùng nên thấy lời xin lỗi tử tế thay vì điền xong
 			// cả form rồi mới ăn lỗi lúc bấm gửi.
 			closedReason: settings.maintenance_mode && !bypass

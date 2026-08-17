@@ -45,8 +45,8 @@ export async function sha256Hex(input: string): Promise<string> {
  * Gom một địa chỉ về đúng đơn vị đáng đếm.
  *
  * Băm nguyên chuỗi IP nghe thì chặt chẽ, nhưng với IPv6 nó hỏng theo cả hai
- * hướng cùng lúc. Mỗi thuê bao IPv6 được cấp cả một dải `/64` — khoảng 18 tỷ tỷ
- * địa chỉ — nên người muốn dò chỉ cần đổi sang địa chỉ khác trong dải của chính
+ * hướng cùng lúc. Mỗi thuê bao IPv6 được cấp cả một dải `/64` (khoảng 18 tỷ tỷ
+ * địa chỉ), nên người muốn dò chỉ cần đổi sang địa chỉ khác trong dải của chính
  * mình là có danh tính mới tinh, và mọi trần đếm theo IP thành vô nghĩa. Trong
  * khi đó người dùng IPv4 sau CGNAT lại chịu điều ngược lại: hàng trăm thuê bao
  * chung một địa chỉ, chung luôn một suất.

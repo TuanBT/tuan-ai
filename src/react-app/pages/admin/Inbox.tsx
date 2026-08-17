@@ -318,7 +318,7 @@ export function Inbox() {
 						{item.status === "rejected" ? (
 							<div className="field">
 								<label className="link-field">
-									<span>Lý do bỏ qua — người gửi sẽ đọc câu này</span>
+									<span>Lý do bỏ qua (người gửi sẽ đọc câu này)</span>
 									<textarea
 										className="input reason-box"
 										rows={2}

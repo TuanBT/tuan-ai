@@ -105,7 +105,7 @@ export function readableText(
 	files: ImageFile[],
 ): string {
 	const styles = styleList(row, labels);
-	const dash = "—";
+	const dash = "-";
 	const fields: Array<[string, string]> = [
 		["Người gửi", row.nickname],
 		["Email", row.email || dash],
@@ -120,7 +120,7 @@ export function readableText(
 				: "không có (ảnh gốc đã hết hạn lưu)",
 		],
 		["Ghi chú của bạn", row.admin_note || dash],
-		// Chỉ có nghĩa khi bài bị bỏ qua, nên đừng bày ra ở những bài khác — ở đó
+		// Chỉ có nghĩa khi bài bị bỏ qua, nên đừng bày ra ở những bài khác. Ở đó
 		// nó chỉ là câu bạn từng gõ rồi đổi ý.
 		...(row.status === "rejected"
 			? ([["Lý do đã báo người gửi", row.reject_reason || dash]] as Array<

@@ -26,8 +26,8 @@ export function savedTheme(): Theme | null {
 /**
  * Ghi lựa chọn lên thẻ `<html>`.
  *
- * Trang **luôn** mang thuộc tính `data-theme`, kể cả khi người dùng chưa chọn gì
- * — lúc đó giá trị lấy theo máy. Nhờ vậy bảng màu tối trong CSS chỉ cần viết một
+ * Trang **luôn** mang thuộc tính `data-theme`, kể cả khi người dùng chưa chọn gì;
+ * lúc đó giá trị lấy theo máy. Nhờ vậy bảng màu tối trong CSS chỉ cần viết một
  * lần cho `[data-theme="dark"]`, thay vì viết hai lần: một cho `@media
  * (prefers-color-scheme: dark)` và một cho lựa chọn tay. Hai bản chép tay như
  * thế chắc chắn sẽ lệch nhau ở lần sửa màu tiếp theo.
@@ -53,7 +53,7 @@ export function useTheme() {
 	const [choice, setChoice] = useState<Theme | null>(savedTheme);
 	const [system, setSystem] = useState<Theme>(systemTheme);
 
-	// Người dùng đổi cài đặt máy giữa chừng thì trang đổi theo — nhưng chỉ khi
+	// Người dùng đổi cài đặt máy giữa chừng thì trang đổi theo, nhưng chỉ khi
 	// họ chưa tự chọn, vì lựa chọn tay phải là tiếng nói cuối cùng.
 	useEffect(() => {
 		const query = media();

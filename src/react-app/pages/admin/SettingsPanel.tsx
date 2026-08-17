@@ -83,8 +83,8 @@ export function SettingsPanel() {
 					<small>
 						Bật thì cả trang chủ và trang tra cứu đóng lại, chỉ còn thông báo
 						bảo trì; API gửi bài và tra cứu cũng trả 503. Điều khoản, quyền
-						riêng tư và khu quản trị vẫn vào được, và bạn — khi đang đăng nhập
-						quản trị — vẫn xem được trang như bình thường.
+						riêng tư và khu quản trị vẫn vào được, và bạn (khi đang đăng nhập
+						quản trị) vẫn xem được trang như bình thường.
 					</small>
 				</div>
 				<button

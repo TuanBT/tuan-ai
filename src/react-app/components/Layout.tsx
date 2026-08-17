@@ -97,7 +97,7 @@ export function Wordmark({ title = "Tuân AI" }: { title?: string }) {
  *
  * Bảng màu tối vốn đã có, nhưng trước đây chỉ chạy theo cài đặt của máy: ai muốn
  * đọc nền sáng giữa đêm, hay nền tối trên một máy để chế độ sáng, đều không có
- * đường nào. Một nút, hai trạng thái — biểu tượng cho thấy thứ sẽ nhận được khi
+ * đường nào. Một nút, hai trạng thái, biểu tượng cho thấy thứ sẽ nhận được khi
  * bấm, chứ không phải thứ đang xem.
  */
 export function ThemeToggle() {

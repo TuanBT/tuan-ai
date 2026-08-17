@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
  * Bộ biểu tượng của trang.
  *
  * Trước đây mỗi chỗ tự lo lấy một cách: `☾` và `☀` là ký tự chữ nên mỗi hệ điều
- * hành vẽ một kiểu — máy này ra hình phẳng, máy kia ra emoji vàng chóe, máy nữa
+ * hành vẽ một kiểu, máy này ra hình phẳng, máy kia ra emoji vàng chóe, máy nữa
  * ra ô vuông rỗng; `×` và `‹` là dấu toán học và dấu nháy kép tiếng Pháp bị đem
  * đi làm nút, nên chẳng bao giờ nằm đúng giữa nút (mới có mấy dòng CSS đẩy lệch
  * vài pixel cho cân); còn hai dấu hiệu kênh thì vẽ tay theo trí nhớ, nhìn gần
@@ -15,8 +15,8 @@ import type { ReactNode } from "react";
  * phải tải về. Cách này thì thứ gửi tới trình duyệt đúng bằng số hình đang dùng.
  *
  * Nguồn, chép nguyên đường vẽ chứ không tự nắn lại:
- * - Lucide (giấy phép ISC) cho biểu tượng giao diện — lucide.dev
- * - Simple Icons (CC0) cho hai dấu hiệu kênh — simpleicons.org
+ * - Lucide (giấy phép ISC) cho biểu tượng giao diện: lucide.dev
+ * - Simple Icons (CC0) cho hai dấu hiệu kênh: simpleicons.org
  *
  * Cần thêm hình mới: mở đúng hai trang trên, chép phần bên trong thẻ `svg` vào
  * đây, đừng vẽ tay.

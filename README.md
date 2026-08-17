@@ -262,7 +262,7 @@ Khách nào cũng thấy đúng câu đó nên viết câu dùng được cho c�
 tiếng Anh, hoặc để trống.
 
 Đang đăng nhập quản trị thì bạn vẫn xem và thử được cả trang như thường, kèm một
-dải nhắc trên đầu — đóng cửa để sửa mà chính mình cũng không vào được thì chỉ còn
+dải nhắc trên đầu, vì đóng cửa để sửa mà chính mình cũng không vào được thì chỉ còn
 cách mở lại rồi mới biết đã sửa xong chưa.
 
 ### Gói làm việc
@@ -285,8 +285,8 @@ Gói cả đợt thì mỗi bài một thư mục mang tên mã bài, kèm `danh
 làm mục lục. Bài đã hết hạn ảnh vẫn tải được, chỉ là trong gói không có ảnh và
 `noi-dung.txt` nói rõ điều đó.
 
-Zip dựng theo luồng, không nén — ảnh JPEG/PNG/WebP đã nén sẵn nên nén thêm chỉ
-tốn CPU — và mỗi lúc chỉ giữ một tấm ảnh trong bộ nhớ, để gói cả đợt không chạm
+Zip dựng theo luồng, không nén: ảnh JPEG/PNG/WebP đã nén sẵn nên nén thêm chỉ
+tốn CPU. Mỗi lúc chỉ giữ một tấm ảnh trong bộ nhớ, để gói cả đợt không chạm
 trần 128 MB của Worker.
 
 ### Ô truy vấn chỉ cho phép đọc
@@ -333,8 +333,8 @@ xoá khi hết hạn mà không tốn hạn mức xoá.
 **Email: mặc định 90 ngày.** Sau ngần này ngày kể từ lúc gửi, email và dấu vết
 địa chỉ mạng của bài bị xoá khỏi D1, mọi bài như nhau.
 
-Phần còn lại của dòng — tên hiển thị, mô tả, kiểu đã chọn, trạng thái, link đã
-đăng — thì ở lại. Một dòng như vậy chỉ nặng vài trăm byte, trong khi xoá nó biến
+Phần còn lại của dòng (tên hiển thị, mô tả, kiểu đã chọn, trạng thái, link đã
+đăng) thì ở lại. Một dòng như vậy chỉ nặng vài trăm byte, trong khi xoá nó biến
 việc tra mã thành ngõ cụt đúng với người không được chọn: cầm mã trong tay, gõ
 vào, nhận về "không tìm thấy". Giữ lại thì một năm sau người gửi vẫn tra được
 bài mình và link clip nếu có; ảnh gốc thì không, vì ảnh đã đi theo mốc bên trên.
@@ -398,7 +398,7 @@ Cần thêm hình mới thì lấy từ đúng hai nguồn miễn phí này, ch�
 - [Simple Icons](https://simpleicons.org) (CC0) cho dấu hiệu thương hiệu
 
 Đừng dùng ký tự chữ thay cho biểu tượng (`☾`, `×`, `‹`): mỗi hệ điều hành vẽ một
-kiểu — máy này ra hình phẳng, máy kia ra emoji vàng chóe — và chúng không bao giờ
+kiểu, máy này ra hình phẳng, máy kia ra emoji vàng chóe, và chúng không bao giờ
 nằm đúng giữa nút, nên chỗ nào cũng phải thêm một dòng CSS đẩy lệch để chữa.
 
 Header bảo mật nằm ở **hai** nơi vì file tĩnh được phục vụ thẳng từ biên

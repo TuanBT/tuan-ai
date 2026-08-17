@@ -2,7 +2,7 @@
 --
 -- Khác với `submissions_open`: tắt nhận bài là trang vẫn chạy, người cầm mã vẫn
 -- tra được bài của mình. Bảo trì là dừng hẳn trang chủ lẫn trang tra cứu, dùng
--- cho lúc đang sửa dữ liệu — thứ trang trả về khi đó chưa chắc còn đúng.
+-- cho lúc đang sửa dữ liệu, thứ trang trả về khi đó chưa chắc còn đúng.
 --
 -- Hai dòng này chỉ để chúng hiện sẵn trong /admin → Cài đặt. Thiếu thì mã nguồn
 -- cũng hiểu là đang chạy bình thường, không phải là đang bảo trì.

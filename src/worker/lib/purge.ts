@@ -71,8 +71,8 @@ export async function purgeExpired(env: Env): Promise<PurgeReport> {
 	 * Trước đây bài không lên sóng bị xoá sạch cả dòng sau hạn này. Điều đó biến
 	 * việc tra mã thành ngõ cụt đúng với những người không được chọn: cầm mã trong
 	 * tay, gõ vào, nhận về "không tìm thấy". Dòng dữ liệu mô tả chỉ nặng vài trăm
-	 * byte nên giữ lại không tốn gì đáng kể, còn thứ thật sự nhạy cảm — email và
-	 * dấu vết địa chỉ mạng — thì xoá hẳn ở đây, cho mọi bài chứ không riêng bài
+	 * byte nên giữ lại không tốn gì đáng kể, còn thứ thật sự nhạy cảm (email và
+	 * dấu vết địa chỉ mạng) thì xoá hẳn ở đây, cho mọi bài chứ không riêng bài
 	 * nào. Người gửi một năm sau vẫn tra được mô tả, trạng thái và link đã đăng;
 	 * ảnh gốc thì không, vì ảnh đã đi theo hạn ở trên.
 	 *

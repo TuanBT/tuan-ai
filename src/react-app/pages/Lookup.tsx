@@ -49,7 +49,7 @@ function LookupView({ code }: { code: string | undefined }) {
 	const [busy, setBusy] = useState(Boolean(code));
 	const [saved, setSaved] = useState<MineEntry[]>(() => mine());
 	// Tên và email điền sẵn cho form cũng nằm trong máy này, nên nút "Xoá khỏi
-	// máy này" phải dọn cả chúng — và phải hiện ra ngay cả khi chưa lưu mã nào,
+	// máy này" phải dọn cả chúng, và phải hiện ra ngay cả khi chưa lưu mã nào,
 	// nếu không thì có thứ đã lưu mà không có chỗ nào xoá.
 	const [storedContact, setStoredContact] = useState(hasContact);
 	const { view, viewer } = useImageViewer();
@@ -116,7 +116,7 @@ function LookupView({ code }: { code: string | undefined }) {
 						value={input}
 						// Không đặt `maxLength`: trình duyệt cắt chuỗi dán *trước* khi
 						// `digitsOnly` kịp chạy, nên dán "TA-04829173" (11 ký tự) chỉ còn
-						// "TA-12345" rồi rơi xuống năm chữ số — mã cụt, tra không ra. Cứ
+						// "TA-12345" rồi rơi xuống năm chữ số, mã cụt, tra không ra. Cứ
 						// nhận cả chuỗi rồi lọc: "TA-04829173" hay "TA 048 291 73" đều ra
 						// đúng tám chữ số, và `digitsOnly` vẫn chặn gõ quá tay.
 						onChange={(e) => setInput(digitsOnly(e.target.value))}

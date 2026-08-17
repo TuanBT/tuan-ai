@@ -7,7 +7,7 @@
 --
 -- Vì sao nới: xem chú thích ở `max_per_ip_day` trong lib/settings.ts. Tóm lại là
 -- 3 ngầm giả định mỗi IP là một người, mà khách vào từ TikTok gần như toàn dùng
--- 4G — hàng trăm thuê bao chung một địa chỉ qua CGNAT.
+-- 4G, hàng trăm thuê bao chung một địa chỉ qua CGNAT.
 --
 -- Ràng buộc `value = '3'` là có chủ ý: chỉ sửa những bản còn nguyên giá trị gieo
 -- ban đầu. Ai đã tự chỉnh con số này trong trang Cài đặt thì lựa chọn của họ

@@ -150,7 +150,7 @@ export const copy: Record<Lang, Dictionary> = {
 		stepPhotos: "Chọn ảnh",
 		stepIdea: "Muốn clip thế nào?",
 		stepIdeaHint: "Gõ vài chữ về điều bạn muốn thấy.",
-		stylesLabel: "Thêm kiểu — tuỳ ý",
+		stylesLabel: "Thêm kiểu (tuỳ ý)",
 		delegateLead: "Không biết tả sao?",
 		stepYou: "Bạn là ai?",
 		pickImages: "Chạm để chọn ảnh",
@@ -162,7 +162,7 @@ export const copy: Record<Lang, Dictionary> = {
 		advisoryTitle: "Ảnh thế nào thì hợp?",
 		advisoryRule: "Đừng gửi ảnh nhạy cảm hay ảnh trẻ em.",
 		advisoryMore:
-			"Hợp nhất là tranh vẽ, đồ vật, món ăn, đồ chơi — càng vô tri càng dễ thành clip vui. Nếu ảnh có mặt người, hãy chắc chắn đó là ảnh bạn được phép dùng.",
+			"Hợp nhất là tranh vẽ, đồ vật, món ăn, đồ chơi, càng vô tri càng dễ thành clip vui. Nếu ảnh có mặt người, hãy chắc chắn đó là ảnh bạn được phép dùng.",
 		descPlaceholder: "Ví dụ: cho ấm trà tự rót nước rồi cúi chào khán giả…",
 		ideasTitle: "Chưa nghĩ ra gì?",
 		ideas: [
@@ -287,7 +287,7 @@ export const copy: Record<Lang, Dictionary> = {
 		stepPhotos: "Pick photos",
 		stepIdea: "What should it do?",
 		stepIdeaHint: "Type a few words about what you'd like to see.",
-		stylesLabel: "Add a style — optional",
+		stylesLabel: "Add a style (optional)",
 		delegateLead: "Not sure how to describe it?",
 		stepYou: "Who's sending?",
 		pickImages: "Tap to choose photos",
@@ -296,7 +296,7 @@ export const copy: Record<Lang, Dictionary> = {
 		advisoryTitle: "Which photos work best?",
 		advisoryRule: "Never send sensitive images or images of children.",
 		advisoryMore:
-			"Paintings, objects, food and toys work best — the more lifeless, the funnier the clip. If a photo shows a person, make sure it's yours to share.",
+			"Paintings, objects, food and toys work best. The more lifeless, the funnier the clip. If a photo shows a person, make sure it's yours to share.",
 		descPlaceholder:
 			"For example: the teapot pours itself a cup, then takes a bow…",
 		ideasTitle: "Stuck?",

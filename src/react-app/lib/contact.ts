@@ -12,7 +12,7 @@ import { readLocal, removeLocal, writeLocal } from "./local";
  *
  * Nằm trọn trong trình duyệt, không gửi đi đâu, và xoá được: nút "Xoá khỏi máy
  * này" ở trang Bài của tôi dọn luôn chỗ này. Cùng lý do với danh sách mã bài
- * trong `mine.ts`, đây là tiện ích chứ không phải nơi cất giữ — mất là chuyện
+ * trong `mine.ts`, đây là tiện ích chứ không phải nơi cất giữ; mất là chuyện
  * bình thường, form vẫn phải dùng được khi ô trống.
  */
 const NICKNAME_KEY = "tuanai_nickname";

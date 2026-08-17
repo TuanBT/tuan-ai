@@ -15,7 +15,7 @@ const HARD_LIMIT_BYTES = 1_400_000;
  *
  * Trước đây mọi trục trặc ở đây đều ra một câu duy nhất: "Có tấm ảnh quá nặng."
  * Ảnh nặng thật thì đúng, còn tấm ảnh trình duyệt không giải mã nổi cũng bị báo
- * y hệt — người dùng đi nén ảnh cho nhỏ lại rồi gặp lại đúng câu đó.
+ * y hệt, người dùng đi nén ảnh cho nhỏ lại rồi gặp lại đúng câu đó.
  */
 export class ImageError extends Error {
 	constructor(public code: "image_size" | "image_read") {
@@ -42,7 +42,7 @@ export async function compressImage(file: File): Promise<File> {
 	//
 	// Ảnh iPhone là HEIC; iOS tự đổi sang JPEG khi đưa file cho form web, và dù
 	// không đổi thì Safari vẫn giải mã được ở đây rồi xuất lại JPEG bên dưới. Cái
-	// ném ra ở đây là tệp hỏng, hoặc định dạng máy này không đọc nổi — chuyện
+	// ném ra ở đây là tệp hỏng, hoặc định dạng máy này không đọc nổi; chuyện
 	// khác hẳn với ảnh quá nặng, nên mã lỗi cũng phải khác.
 	let bitmap: ImageBitmap;
 	try {
