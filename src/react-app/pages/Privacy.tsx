@@ -32,7 +32,7 @@ export function Privacy() {
 				</div>
 			</article>
 
-			<SiteFooter legal />
+			<SiteFooter />
 		</div>
 	);
 }

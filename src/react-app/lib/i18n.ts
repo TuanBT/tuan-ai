@@ -38,6 +38,14 @@ interface Dictionary {
 	stepPhotos: string;
 	stepIdea: string;
 	stepIdeaHint: string;
+	/* Kiểu là thứ nói thêm, không phải nhánh thứ hai của một câu hỏi "chọn cái
+	   nào". Nhãn nói thẳng ra là tuỳ ý, để hàng chip bên dưới khỏi trông như một
+	   việc còn dở. */
+	stylesLabel: string;
+	/* Lời dẫn cho lối thoát cuối bước: người không tả nổi thì hỏi thẳng họ câu
+	   đó, rồi đưa nút. Tên nút lấy từ chính cái kiểu trong /admin, không viết
+	   cứng ở đây. */
+	delegateLead: string;
 	stepYou: string;
 	pickImages: string;
 	pickHint: (max: number) => string;
@@ -141,7 +149,9 @@ export const copy: Record<Lang, Dictionary> = {
 			"Gửi ảnh kèm ý tưởng, nhận clip AI vui vẻ đăng trên kênh TikTok và YouTube.",
 		stepPhotos: "Chọn ảnh",
 		stepIdea: "Muốn clip thế nào?",
-		stepIdeaHint: "Chọn một kiểu, hoặc gõ vài chữ. Một trong hai là đủ.",
+		stepIdeaHint: "Gõ vài chữ về điều bạn muốn thấy.",
+		stylesLabel: "Thêm kiểu — tuỳ ý",
+		delegateLead: "Không biết tả sao?",
 		stepYou: "Bạn là ai?",
 		pickImages: "Chạm để chọn ảnh",
 		/* Chỉ nói số lượng. Kể tên định dạng thì người dùng iPhone thấy "JPG, PNG"
@@ -276,7 +286,9 @@ export const copy: Record<Lang, Dictionary> = {
 			"Send photos with ideas, get fun AI clips published on our TikTok and YouTube channels.",
 		stepPhotos: "Pick photos",
 		stepIdea: "What should it do?",
-		stepIdeaHint: "Pick a style or type a few words. Either one is enough.",
+		stepIdeaHint: "Type a few words about what you'd like to see.",
+		stylesLabel: "Add a style — optional",
+		delegateLead: "Not sure how to describe it?",
 		stepYou: "Who's sending?",
 		pickImages: "Tap to choose photos",
 		pickHint: (max: number) => `1–${max} photos`,

@@ -95,18 +95,6 @@ export function formatDateTime(at: Stamp, lang: Lang = "vi"): string {
 	return `${formatDate(at, lang)} · ${p.hour}:${p.minute}`;
 }
 
-/**
- * Bỏ năm, dùng ở chỗ hẹp và chỉ cần biết mới hay cũ: `16 Tháng 8, 14:32`.
- *
- * Dấu phẩy chứ không phải dấu chấm giữa như bản đầy đủ: chỗ dùng nó — viên
- * thuốc số hiệu bản dựng — đã có sẵn một dấu chấm giữa tách số hiệu với mốc
- * thời gian, hai dấu giống nhau trong một dòng thì không còn tách được gì.
- */
-export function formatDayTime(at: Stamp, lang: Lang = "vi"): string {
-	const p = pieces(at, lang);
-	return `${p.day} ${p.month}, ${p.hour}:${p.minute}`;
-}
-
 /** Giá trị cho thuộc tính `dateTime` của thẻ `<time>`. */
 export function isoStamp(at: Stamp): string {
 	return new Date(at).toISOString();

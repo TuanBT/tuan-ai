@@ -19,6 +19,16 @@ interface Picked {
 	preview: string;
 }
 
+/**
+ * Mã của cái kiểu mang nghĩa "tôi không tả, anh tự quyết".
+ *
+ * Trong kho nó là một hàng `styles` như mọi hàng khác, chủ trang sửa tên hay tắt
+ * đi được trong /admin — nên tên nút vẫn lấy từ kho, chỉ riêng chỗ đứng của nó
+ * trong biểu mẫu là do đây định. Chủ trang xoá hàng này thì lối thoát biến mất
+ * và bước 2 quay về đúng những gì còn lại, không vỡ chỗ nào.
+ */
+const DELEGATE_STYLE = "surprise";
+
 export function Submit() {
 	const { lang, t } = useLang();
 	const { config, failed, reload } = useSiteConfig();
@@ -100,6 +110,17 @@ export function Submit() {
 				? current.filter((entry) => entry !== id)
 				: [...current, id],
 		);
+	}
+
+	/**
+	 * Bật tắt lời phó mặc.
+	 *
+	 * Bật thì nó đứng một mình: phó mặc mà vẫn kèm kiểu là hai câu ngược nhau
+	 * trong cùng một bài. Tắt thì trả về tay trắng — nút chỉ hiện khi người gửi
+	 * chưa chọn gì, nên không có kiểu nào để mà trả lại.
+	 */
+	function toggleDelegate() {
+		setStyles((current) => (current.includes(DELEGATE_STYLE) ? [] : [DELEGATE_STYLE]));
 	}
 
 	async function send(event: React.FormEvent) {
@@ -214,6 +235,15 @@ export function Submit() {
 		},
 	}[config.closedReason ?? "paused"];
 
+	// Lời phó mặc tách khỏi hàng kiểu, nên bước 2 có ba phần rời nhau chứ không
+	// còn một hàng chip trộn hai loại nghĩa.
+	const delegateStyle = config.styles.find((s) => s.id === DELEGATE_STYLE);
+	const pickableStyles = config.styles.filter((s) => s.id !== DELEGATE_STYLE);
+	const delegated = styles.includes(DELEGATE_STYLE);
+	// Chưa gõ chữ và chưa chọn kiểu nào: đúng lúc lối thoát có ích, và cũng đúng
+	// lúc bật nó lên không xoá mất thứ gì của người gửi.
+	const saidNothing = description.trim() === "" && styles.length === 0;
+
 	// Mô tả hoặc kiểu: có một trong hai là đủ. Ai chỉ có tấm ảnh thì chạm
 	// "Để Tuân tự quyết" là gửi được, không phải nặn ra cho đủ chữ.
 	const canSubmit =
@@ -321,25 +351,12 @@ export function Submit() {
 							<span className="step-num">2</span>
 							{t.stepIdea}
 						</h2>
-						{/* Một dòng lo cả hai ô bên dưới: trước đây kiểu và mô tả mỗi thứ
-						    một lời dặn riêng, nói cùng một ý theo hai cách. */}
+						{/* Chỉ nói về ô gõ chữ. Câu cũ ("chọn một kiểu, hoặc gõ vài chữ,
+						    một trong hai là đủ") bày ra một bài toán chọn nhánh ngay đầu
+						    bước, trong khi thực tế hai thứ đó không thay được cho nhau:
+						    ai gõ xong rồi thì kiểu chỉ là nói thêm, ai chọn kiểu rồi thì
+						    cũng chẳng vì thế mà hết muốn tả. */}
 						<span className="hint">{t.stepIdeaHint}</span>
-
-						{config.styles.length > 0 && (
-							<div className="chips">
-								{config.styles.map((style) => (
-									<button
-										key={style.id}
-										type="button"
-										className="chip"
-										aria-pressed={styles.includes(style.id)}
-										onClick={() => toggleStyle(style.id)}
-									>
-										{lang === "vi" ? style.label_vi : style.label_en}
-									</button>
-								))}
-							</div>
-						)}
 
 						<div className="field">
 							<textarea
@@ -351,6 +368,7 @@ export function Submit() {
 								maxLength={500}
 								placeholder={t.descPlaceholder}
 								value={description}
+								disabled={delegated}
 								onChange={(e) => setDescription(e.target.value)}
 							/>
 							{/* Bộ đếm chỉ có nghĩa khi đã gõ; hiện sẵn "0/500" ở ô trống chỉ
@@ -362,7 +380,7 @@ export function Submit() {
 							{/* Ô trống là chỗ nhiều người bỏ cuộc, nhưng ba câu gợi ý dài
 							    bày sẵn thì lại thành một bức tường chữ. Gấp lại: ai bí mới
 							    mở, và chạm vào không bao giờ đè lên chữ của người dùng. */}
-							{description.length === 0 && (
+							{description.length === 0 && !delegated && (
 								<details className="more">
 									<summary>{t.ideasTitle}</summary>
 									<div className="chips">
@@ -382,6 +400,54 @@ export function Submit() {
 								</details>
 							)}
 						</div>
+
+						{/* Kiểu đứng sau ô chữ và mang nhãn "tuỳ ý": nó là thứ nói thêm về
+						    bài đã tả, không phải nhánh song song với việc tả. */}
+						{pickableStyles.length > 0 && (
+							<div className={delegated ? "styles aside" : "styles"}>
+								<span className="hint">{t.stylesLabel}</span>
+								<div className="chips">
+									{pickableStyles.map((style) => (
+										<button
+											key={style.id}
+											type="button"
+											className="chip"
+											aria-pressed={styles.includes(style.id)}
+											disabled={delegated}
+											onClick={() => toggleStyle(style.id)}
+										>
+											{lang === "vi" ? style.label_vi : style.label_en}
+										</button>
+									))}
+								</div>
+							</div>
+						)}
+
+						{/* Lối thoát cuối bước, tách hẳn khỏi hàng kiểu.
+						    "Để Tuân tự quyết" trước đây là một con chip đứng lẫn giữa "Miễn
+						    sao thật vui" với "Nhẹ nhàng, dễ thương", nhưng nó không cùng
+						    loại với chúng: hai cái kia tả clip, còn nó là lời phó mặc — ấn
+						    xong thì cả ô chữ lẫn hàng kiểu đều thành vô nghĩa.
+
+						    Nên nó xuống đây, sau một vạch ngăn, và chỉ hiện khi người gửi
+						    chưa nói gì. Ai đã gõ hay đã chọn kiểu thì không cần lối thoát
+						    nữa, mà giấu nó đi cũng là cách chắc chắn không bao giờ có
+						    chuyện vừa tả vừa phó mặc. */}
+						{delegateStyle && (saidNothing || delegated) && (
+							<div className="delegate">
+								<span className="hint">{t.delegateLead}</span>
+								<button
+									type="button"
+									className="chip"
+									aria-pressed={delegated}
+									onClick={toggleDelegate}
+								>
+									{lang === "vi"
+										? delegateStyle.label_vi
+										: delegateStyle.label_en}
+								</button>
+							</div>
+						)}
 					</section>
 
 					<section className="step">

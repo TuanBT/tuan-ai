@@ -550,6 +550,39 @@ select {
 	color: var(--accent-ink);
 	font-weight: 700;
 }
+/* Đã phó mặc thì ô chữ và hàng kiểu vẫn ở nguyên chỗ nhưng lùi hẳn lại: người
+   gửi thấy được mình vừa gác chúng sang một bên, thay vì chúng biến mất và bước
+   2 nhảy ngắn lại dưới tay. */
+.chip:disabled {
+	cursor: default;
+	opacity: 0.4;
+}
+
+/* Nhãn "tuỳ ý" dính lấy hàng chip của nó, cách xa ô chữ bên trên hơn — nếu không
+   thì nó lơ lửng đúng giữa hai thứ và không rõ đang nói về cái nào. */
+.styles {
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+	margin-top: 2px;
+}
+/* Chip tự mờ đi khi bị khoá, nhưng nhãn của chúng thì không — để nguyên thì
+   dòng chữ đứng sáng trên một hàng đã tắt, trông như vẫn còn việc phải làm. */
+.styles.aside .hint {
+	opacity: 0.4;
+}
+
+/* Lối thoát cuối bước: một vạch ngăn cho thấy đây không còn là phần khai báo
+   nữa, rồi lời hỏi và nút nằm cùng một dòng như một câu đối đáp. */
+.delegate {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px 10px;
+	margin-top: 4px;
+	padding-top: 12px;
+	border-top: 1px dashed var(--line);
+}
 
 /* ---------- gợi ý ý tưởng ---------- */
 
@@ -590,6 +623,11 @@ select {
 .textarea {
 	min-height: 96px;
 	resize: vertical;
+}
+/* Cùng lý do với `.chip:disabled`: gác sang bên chứ không cất đi. */
+.textarea:disabled {
+	opacity: 0.5;
+	cursor: default;
 }
 
 .counter {
@@ -1060,7 +1098,10 @@ select {
 }
 /* Số hiệu bản dựng: một viên thuốc nhỏ, cùng ngôn ngữ hình với các viên khác
    trên trang. Trước đây nó là dòng mồ côi canh giữa dưới cùng, mờ 60%, trông
-   như thứ bỏ quên chứ không phải thứ cố ý để đó. */
+   như thứ bỏ quên chứ không phải thứ cố ý để đó.
+
+   Là nút bấm được nên phải gỡ nếp mặc định của trình duyệt; đổi lại giữ nguyên
+   hình viên thuốc cũ để chân trang không thêm một loại hình mới. */
 .footer-build {
 	font-family: var(--mono);
 	font-size: 10px;
@@ -1072,6 +1113,18 @@ select {
 	background: var(--field);
 	color: var(--faint);
 	white-space: nowrap;
+	cursor: pointer;
+}
+.footer-build:hover {
+	color: var(--muted);
+	border-color: var(--muted);
+}
+/* Vạch ngăn thay cho dấu chấm giữa: mã và mốc thời gian là hai thứ khác nhau,
+   và phần mở thêm nên thấy rõ là phần mở thêm. */
+.footer-build-time {
+	margin-left: 8px;
+	padding-left: 8px;
+	border-left: 1px solid var(--line);
 }
 
 @media (min-width: 640px) {

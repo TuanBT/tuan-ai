@@ -32,7 +32,7 @@ export function Terms() {
 				</div>
 			</article>
 
-			<SiteFooter legal />
+			<SiteFooter />
 		</div>
 	);
 }
