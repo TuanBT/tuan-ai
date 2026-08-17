@@ -114,8 +114,11 @@ function LookupView({ code }: { code: string | undefined }) {
 						aria-label={t.lookupPlaceholder}
 						placeholder={t.lookupPlaceholder}
 						value={input}
-						maxLength={CODE_LENGTH}
-						// Dán cả "TA-04829173" hay "TA 048 291 73" đều ra đúng tám chữ số.
+						// Không đặt `maxLength`: trình duyệt cắt chuỗi dán *trước* khi
+						// `digitsOnly` kịp chạy, nên dán "TA-04829173" (11 ký tự) chỉ còn
+						// "TA-12345" rồi rơi xuống năm chữ số — mã cụt, tra không ra. Cứ
+						// nhận cả chuỗi rồi lọc: "TA-04829173" hay "TA 048 291 73" đều ra
+						// đúng tám chữ số, và `digitsOnly` vẫn chặn gõ quá tay.
 						onChange={(e) => setInput(digitsOnly(e.target.value))}
 					/>
 				</div>
