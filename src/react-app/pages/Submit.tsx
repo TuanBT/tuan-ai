@@ -376,52 +376,52 @@ export function Submit() {
 							{description.length > 0 && (
 								<span className="counter">{description.length}/500</span>
 							)}
-
-							{/* Ô trống là chỗ nhiều người bỏ cuộc, nhưng ba câu gợi ý dài
-							    bày sẵn thì lại thành một bức tường chữ. Gấp lại: ai bí mới
-							    mở, và chạm vào không bao giờ đè lên chữ của người dùng. */}
-							{description.length === 0 && !delegated && (
+							{/* Gợi ý và kiểu nằm chung trong một khối gấp: cả hai đều là
+							    lựa chọn tuỳ ý, gom lại gọn hơn và giảm chữ trên màn hình
+							    khi người gửi chưa cần. */}
+							{((description.length === 0 && !delegated) || pickableStyles.length > 0) && (
 								<details className="more">
 									<summary>{t.ideasTitle}</summary>
-									<div className="chips">
-										{ideaPicks
-											.filter((index) => index < t.ideas.length)
-											.map((index) => (
-												<button
-													key={index}
-													type="button"
-													className="chip idea"
-													onClick={() => setDescription(t.ideas[index])}
-												>
-													{t.ideas[index]}
-												</button>
-											))}
-									</div>
+
+									{description.length === 0 && !delegated && (
+										<div className="chips">
+											{ideaPicks
+												.filter((index) => index < t.ideas.length)
+												.map((index) => (
+													<button
+														key={index}
+														type="button"
+														className="chip idea"
+														onClick={() => setDescription(t.ideas[index])}
+													>
+														{t.ideas[index]}
+													</button>
+												))}
+										</div>
+									)}
+
+									{pickableStyles.length > 0 && (
+										<div className={delegated ? "styles aside" : "styles"}>
+											<span className="hint">{t.stylesLabel}</span>
+											<div className="chips">
+												{pickableStyles.map((style) => (
+													<button
+														key={style.id}
+														type="button"
+														className="chip"
+														aria-pressed={styles.includes(style.id)}
+														disabled={delegated}
+														onClick={() => toggleStyle(style.id)}
+													>
+														{lang === "vi" ? style.label_vi : style.label_en}
+													</button>
+												))}
+											</div>
+										</div>
+									)}
 								</details>
 							)}
 						</div>
-
-						{/* Kiểu đứng sau ô chữ và mang nhãn "tuỳ ý": nó là thứ nói thêm về
-						    bài đã tả, không phải nhánh song song với việc tả. */}
-						{pickableStyles.length > 0 && (
-							<div className={delegated ? "styles aside" : "styles"}>
-								<span className="hint">{t.stylesLabel}</span>
-								<div className="chips">
-									{pickableStyles.map((style) => (
-										<button
-											key={style.id}
-											type="button"
-											className="chip"
-											aria-pressed={styles.includes(style.id)}
-											disabled={delegated}
-											onClick={() => toggleStyle(style.id)}
-										>
-											{lang === "vi" ? style.label_vi : style.label_en}
-										</button>
-									))}
-								</div>
-							</div>
-						)}
 
 						{/* Lối thoát cuối bước, tách hẳn khỏi hàng kiểu.
 						    "Để Tuân tự quyết" trước đây là một con chip đứng lẫn giữa "Miễn

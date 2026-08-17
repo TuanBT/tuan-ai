@@ -164,7 +164,7 @@ export const copy: Record<Lang, Dictionary> = {
 		advisoryMore:
 			"Hợp nhất là tranh vẽ, đồ vật, món ăn, đồ chơi, càng vô tri càng dễ thành clip vui. Nếu ảnh có mặt người, hãy chắc chắn đó là ảnh bạn được phép dùng.",
 		descPlaceholder: "Ví dụ: cho ấm trà tự rót nước rồi cúi chào khán giả…",
-		ideasTitle: "Chưa nghĩ ra gì?",
+		ideasTitle: "Gợi ý",
 		ideas: [
 			"Ly cà phê trên bàn tự nhảy cha-cha, khói bốc lên theo nhịp nhạc.",
 			"Bức tranh phong cảnh: gió thổi qua đồng lúa, con thuyền trôi dần ra khỏi khung.",
@@ -172,6 +172,9 @@ export const copy: Record<Lang, Dictionary> = {
 			"Chú gấu bông trên kệ chớp mắt, ngáp một cái rồi vẫy tay chào.",
 			"Nồi nước đang sôi, mấy cọng hành nhảy múa như ca sĩ trên sân khấu.",
 			"Chiếc xe máy dựng ở sân rùng mình tỉnh giấc rồi rồ ga phóng đi.",
+			"Làm bức tượng này sống động, thở hít rồi cử động như thật.",
+			"Biến bức vẽ này thành thật, nhân vật bước ra khỏi trang giấy.",
+			"Từ nét vẽ nguệch ngoạc biến dần thành đồ thật, chi tiết hiện lên từng chút.",
 		],
 		nickname: "Tên hiển thị khi lên sóng",
 		email: "Email (không bắt buộc)",
@@ -299,7 +302,7 @@ export const copy: Record<Lang, Dictionary> = {
 			"Paintings, objects, food and toys work best. The more lifeless, the funnier the clip. If a photo shows a person, make sure it's yours to share.",
 		descPlaceholder:
 			"For example: the teapot pours itself a cup, then takes a bow…",
-		ideasTitle: "Stuck?",
+		ideasTitle: "Suggestions",
 		ideas: [
 			"The coffee cup does a little cha-cha while the steam keeps the beat.",
 			"A landscape painting: wind moves through the field and the boat drifts out of the frame.",
@@ -307,6 +310,9 @@ export const copy: Record<Lang, Dictionary> = {
 			"The teddy bear on the shelf blinks, yawns and waves hello.",
 			"A pot comes to a boil and the spring onions dance like pop stars.",
 			"The motorbike in the yard shivers awake and roars off down the street.",
+			"Bring this statue to life — let it breathe and move like it's real.",
+			"Turn this drawing into reality, the character steps right off the page.",
+			"Watch a rough sketch gradually transform into a real object, detail by detail.",
 		],
 		nickname: "Name to show on air",
 		email: "Email (optional)",
