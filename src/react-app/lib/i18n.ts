@@ -22,6 +22,11 @@ interface Dictionary {
 	navSubmit: string;
 	navMine: string;
 	navAdmin: string;
+	/* Chính chủ trang đang đăng nhập thì lối vào khu quản trị nói ra điều đó:
+	   trước đây nó là cùng một chữ "Quản trị" dù đã đăng nhập hay chưa, nên không
+	   có cách nào biết mình còn phiên hay đã hết mà không bấm thử. */
+	navAdminSignedIn: (name: string) => string;
+	adminWaiting: (n: number) => string;
 	/* Nhãn ngắn cho chân trang. Tên đầy đủ của hai trang pháp lý dài gần gấp đôi,
 	   đứng cạnh nhau trong một hàng chữ nhỏ thì thành một khối chữ đặc. */
 	navTerms: string;
@@ -138,6 +143,8 @@ export const copy: Record<Lang, Dictionary> = {
 		navSubmit: "Gửi ý tưởng",
 		navMine: "Bài của tôi",
 		navAdmin: "Quản trị",
+		navAdminSignedIn: (name) => `Quản trị · ${name}`,
+		adminWaiting: (n) => `${n} bài đang chờ duyệt`,
 		navTerms: "Điều khoản",
 		navPrivacy: "Quyền riêng tư",
 		footerChannels: "Xem kênh trên",
@@ -278,6 +285,8 @@ export const copy: Record<Lang, Dictionary> = {
 		navSubmit: "Send an idea",
 		navMine: "My submissions",
 		navAdmin: "Admin",
+		navAdminSignedIn: (name) => `Admin · ${name}`,
+		adminWaiting: (n) => `${n} submission${n === 1 ? "" : "s"} waiting`,
 		navTerms: "Terms",
 		navPrivacy: "Privacy",
 		footerChannels: "Watch on",

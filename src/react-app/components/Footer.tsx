@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { adminSeen, shortName, useAdminSignal } from "../lib/admin-session";
 import { formatDateTime } from "../lib/datetime";
 import { useLang } from "../lib/lang-context";
 import { useSiteConfig } from "../lib/site-config";
@@ -45,9 +46,7 @@ export function SiteFooter() {
 				>
 					<NavLink to="/terms">{t.navTerms}</NavLink>
 					<NavLink to="/privacy">{t.navPrivacy}</NavLink>
-					<NavLink to="/admin" className="quiet">
-						{t.navAdmin}
-					</NavLink>
+					<AdminLink />
 				</nav>
 
 				<p className="footer-meta">
@@ -58,6 +57,47 @@ export function SiteFooter() {
 				</p>
 			</div>
 		</footer>
+	);
+}
+
+/**
+ * Lối vào khu quản trị, đổi hình theo việc chủ trang đã đăng nhập hay chưa.
+ *
+ * Trước đây nó là đúng một chữ "Quản trị" trong mọi hoàn cảnh: đăng nhập rồi
+ * vẫn y như lúc chưa, nên cách duy nhất để biết phiên còn hay hết là bấm vào
+ * xem. Và số bài đang chờ thì nằm hẳn bên trong, sau một cú bấm — nghĩa là
+ * không bao giờ tự nhắc được ai cả.
+ *
+ * Chỉ máy từng đăng nhập mới hỏi máy chủ (xem `adminSeen`), nên khách lạ không
+ * phải trả thêm lượt gọi nào.
+ */
+function AdminLink() {
+	const { t } = useLang();
+	// Đọc một lần lúc dựng: đổi giữa chừng thì cũng phải tải lại trang mới có
+	// phiên, mà đọc mỗi lượt vẽ lại thì hook bên dưới cứ bật tắt liên tục.
+	const [enabled] = useState(adminSeen);
+	const { me, pending } = useAdminSignal({ enabled });
+
+	const session = me?.session;
+	if (!session) {
+		return (
+			<NavLink to="/admin" className="quiet">
+				{t.navAdmin}
+			</NavLink>
+		);
+	}
+
+	const waiting = pending?.new ?? 0;
+	return (
+		<NavLink to="/admin" className="signed-in" title={session.email}>
+			<span className="who-dot" aria-hidden="true" />
+			{t.navAdminSignedIn(shortName(session.name))}
+			{waiting > 0 && (
+				<em className="pip" title={t.adminWaiting(waiting)}>
+					{waiting}
+				</em>
+			)}
+		</NavLink>
 	);
 }
 

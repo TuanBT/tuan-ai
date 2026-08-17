@@ -1093,6 +1093,24 @@ select {
 	font-weight: 500;
 	color: var(--faint);
 }
+/* Trừ khi chính chủ trang đang đăng nhập: lúc đó nó không còn là lối vào kín
+   nữa mà là chỗ báo "bạn đang đăng nhập, còn ngần này bài chờ". */
+.footer-links a.signed-in {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--ink);
+}
+
+/* Chấm nhỏ báo phiên đang mở. Nhỏ và bên trái tên, giống đèn báo nguồn: nói
+   một điều duy nhất, và nói mà không giành chỗ của chữ. */
+.who-dot {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--ok);
+	flex: none;
+}
 
 .footer-meta {
 	margin: 0;
@@ -1414,8 +1432,22 @@ select {
 .admin-actions {
 	display: flex;
 	flex-wrap: wrap;
+	align-items: center;
 	gap: 8px;
 	justify-content: flex-end;
+}
+
+/* Tên người đang đăng nhập. Không phải nút nên không mang viền như mấy nút bên
+   cạnh; chỉ là một dòng chữ có chấm báo, đứng ngay trước nút "Thoát" để hai thứ
+   đọc thành một câu: "đang là Tuân — thoát". */
+.admin-who {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--muted);
+	white-space: nowrap;
 }
 
 /* Nút phụ trong khu quản trị. Trước đây mỗi chỗ tự chỉnh style inline, nên cùng
@@ -1463,6 +1495,30 @@ select {
 .tabs button[aria-selected="true"] {
 	color: var(--accent);
 	border-bottom-color: var(--accent);
+}
+/* Viên đếm bài chưa duyệt bám vào tên tab. Tab là nút nên phải cho nó xếp
+   ngang, nếu không viên số rơi xuống dòng dưới và kéo cao cả hàng tab. */
+.tabs button {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+/* Dải nhắc "vừa có bài mới" trên đầu hộp thư. Màu nhấn nhạt chứ không phải màu
+   cảnh báo: đây là tin vui, không phải chuyện hỏng. */
+.inbox-alert {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px 14px;
+	padding: 11px 14px;
+	border: 1px solid var(--accent);
+	border-radius: var(--radius);
+	background: var(--chip);
+	font-size: 13.5px;
+	font-weight: 600;
+	color: var(--accent-dark);
 }
 
 .filters {
@@ -1592,6 +1648,53 @@ select {
 .card-actions .danger:hover {
 	border-color: var(--bad);
 	color: var(--bad);
+}
+.card-actions button:disabled {
+	opacity: 0.5;
+	cursor: progress;
+}
+
+/* Thẻ vừa đổi trạng thái: viền đổi màu để mắt tìm lại được nó giữa lưới thẻ sau
+   khi cuộn đi chỗ khác. */
+.card-changed {
+	border-color: var(--accent);
+}
+
+/* Dải hoàn tác trong thẻ. Nằm ngay dưới hàng nút trạng thái, đúng chỗ mắt vừa
+   rời khỏi sau cú bấm. */
+.card-moved {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 9px 11px;
+	border-radius: var(--radius-sm);
+	background: var(--field);
+	font-size: 12px;
+	line-height: 1.45;
+	color: var(--muted);
+}
+.card-moved-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 14px;
+}
+
+/* Lỗi lưu, ngay trong thẻ gây ra nó. Trước đây nó chỉ nằm trong console, nên
+   người duyệt tin là đã lưu xong trong khi máy chủ chưa nhận gì. */
+.card-error {
+	margin: 0;
+	font-size: 12.5px;
+	font-weight: 600;
+	color: var(--bad);
+}
+
+/* Hàng chân của một ô nhập: nút lưu bên trái, tình trạng bên phải. */
+.field-foot {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 12px;
+	margin-top: 5px;
 }
 
 /* Ô dán link trong thẻ bài: nhãn nhỏ ở trên, vì hai ô trống giống hệt nhau thì

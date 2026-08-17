@@ -138,6 +138,32 @@ export function adminRoutes() {
 		});
 	});
 
+	/**
+	 * Đếm bài đang chờ xử lý. Nhẹ hơn hẳn `/api/admin/submissions` vì không kèm
+	 * nội dung bài nào, nên gọi lại được vài chục giây một lần mà không tốn gì.
+	 *
+	 * Có mặt để chủ trang biết có bài mới mà không phải tự nhớ vào xem: chân
+	 * trang và trang quản trị đều đọc con số này.
+	 */
+	app.get("/api/admin/pending", async (c) => {
+		const row = await c.env.DB.prepare(
+			`SELECT
+			   SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END) AS fresh,
+			   SUM(CASE WHEN status = 'selected' THEN 1 ELSE 0 END) AS picked,
+			   MAX(CASE WHEN status = 'new' THEN created_at END) AS latest
+			 FROM submissions`,
+		).first<{ fresh: number | null; picked: number | null; latest: number | null }>();
+
+		return c.json({
+			// Bảng rỗng thì SUM trả về NULL chứ không phải 0.
+			new: row?.fresh ?? 0,
+			selected: row?.picked ?? 0,
+			// Mốc của bài mới nhất chưa duyệt: giao diện so mốc này với mốc lần
+			// trước để biết vừa có bài *mới tới*, chứ không chỉ là "vẫn còn tồn".
+			latestAt: row?.latest ?? null,
+		});
+	});
+
 	app.patch("/api/admin/submissions/:code", async (c) => {
 		const code = c.req.param("code").toUpperCase();
 		if (!isCode(code)) return c.json({ error: "invalid_code" }, 400);

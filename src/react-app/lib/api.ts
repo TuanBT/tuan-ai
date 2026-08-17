@@ -136,6 +136,11 @@ export const api = {
 			counts: Record<string, number>;
 		}>(`/api/admin/submissions?${query}`);
 	},
+	/** Chỉ mấy con số đang chờ duyệt: gọi lại được thường xuyên. */
+	adminPending: () =>
+		request<{ new: number; selected: number; latestAt: number | null }>(
+			"/api/admin/pending",
+		),
 	adminPatch: (code: string, patch: Record<string, unknown>) =>
 		request<{ ok: true }>(`/api/admin/submissions/${code}`, {
 			method: "PATCH",

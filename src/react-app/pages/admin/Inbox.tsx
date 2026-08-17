@@ -1,18 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, INBOX_PAGE, type AdminStyle, type AdminSubmission } from "../../lib/api";
-import { formatBytes } from "../../lib/compress";
-import { formatDateTime } from "../../lib/datetime";
 import { useImageViewer } from "../../lib/image-viewer";
-import { styleNames } from "../../lib/styles";
-import { BUNDLE_LIMIT, relativeTime, STATUS_LABEL, STATUS_TONE } from "./shared";
+import { BUNDLE_LIMIT, STATUS_LABEL } from "./shared";
+import { SubmissionCard, type Snapshot } from "./SubmissionCard";
 
-/** Hai ô dán link, mỗi kênh một ô. Thêm kênh thứ ba thì thêm một dòng ở đây. */
-const LINK_FIELDS = [
-	["publishedTiktok", "Link TikTok"],
-	["publishedYoutube", "Link YouTube"],
-] as const;
+interface Props {
+	/** Số bài chưa duyệt theo máy chủ, do trang quản trị hỏi lại đều đặn. */
+	waiting: number;
+	/** Số lần có bài mới tới kể từ lúc mở trang. */
+	arrived: number;
+	/** Đã tải lại danh sách nên coi như đã xem. */
+	onSeen: () => void;
+	/** Bảo trang quản trị hỏi lại số bài chờ sau khi danh sách vừa đổi. */
+	onRefreshCounts: () => void;
+}
 
-export function Inbox() {
+export function Inbox({ waiting, arrived, onSeen, onRefreshCounts }: Props) {
 	const [items, setItems] = useState<AdminSubmission[]>([]);
 	const [counts, setCounts] = useState<Record<string, number>>({});
 	const [filter, setFilter] = useState("");
@@ -21,8 +24,9 @@ export function Inbox() {
 	const [busy, setBusy] = useState(true);
 	const [more, setMore] = useState(false);
 	const [loadingMore, setLoadingMore] = useState(false);
-	const [savedUrl, setSavedUrl] = useState<string | null>(null);
 	const [styles, setStyles] = useState<AdminStyle[]>([]);
+	// Bài đã đổi trạng thái trong phiên này, kèm ảnh chụp để hoàn tác.
+	const [changed, setChanged] = useState<Record<string, Snapshot>>({});
 	const { view, viewer } = useImageViewer();
 
 	// Bảng tên kiểu đọc một lần cho cả hộp thư: bài chỉ lưu mã kiểu, mà mã thì
@@ -45,10 +49,14 @@ export function Inbox() {
 			setItems(data.items);
 			setCounts(data.counts);
 			setMore(data.items.length === INBOX_PAGE);
+			// Danh sách vừa dựng lại từ đầu nên mọi dải hoàn tác đều hết hạn: thứ
+			// chúng nói tới ("thẻ này sẽ rời danh sách khi tải lại") vừa xảy ra rồi.
+			setChanged({});
+			onSeen();
 		} finally {
 			setBusy(false);
 		}
-	}, [filter, query]);
+	}, [filter, query, onSeen]);
 
 	useEffect(() => {
 		load();
@@ -98,28 +106,68 @@ export function Inbox() {
 		});
 	}
 
+	/**
+	 * Đổi trạng thái một bài.
+	 *
+	 * Thẻ ở nguyên chỗ cũ dù bộ lọc không còn nhận nó. Trước đây nó bị lọc ra
+	 * khỏi danh sách ngay trong cùng một khung hình với cú bấm: người đang lọc
+	 * "Đã chọn" mà bấm "Bỏ qua" thì bài biến mất trước khi kịp gõ một chữ lý do —
+	 * mà lý do lại chỉ hiện ra *sau* khi bấm bỏ qua. Giờ thẻ ở lại, mang theo một
+	 * dải nói rõ nó đã đi đâu và một đường lui.
+	 */
 	async function setStatus(item: AdminSubmission, status: string) {
 		if (item.status === status) return;
 		await api.adminPatch(item.code, { status });
 		shiftCount(item.status, status);
 
+		setChanged((current) => ({
+			...current,
+			// Giữ ảnh chụp *đầu tiên*: bấm ba nhát liên tiếp thì đường lui vẫn phải
+			// dẫn về chỗ xuất phát, không phải về nhát bấm áp chót.
+			[item.code]: current[item.code] ?? {
+				status: item.status,
+				publishedTiktok: item.publishedTiktok,
+				publishedYoutube: item.publishedYoutube,
+			},
+		}));
+
 		// Bỏ qua thì máy chủ xoá luôn hai link đã dán (xem PATCH bên
 		// `routes/admin.ts`); gương ngay ở đây, nếu không thẻ vẫn hiện link cho tới
 		// lần tải lại sau.
-		const patch: Partial<AdminSubmission> =
+		patchLocal(
+			item.code,
 			status === "rejected"
 				? { status, publishedTiktok: null, publishedYoutube: null }
-				: { status };
+				: { status },
+		);
+		onRefreshCounts();
+	}
 
-		// Đang lọc theo một trạng thái mà bài vừa đổi sang trạng thái khác thì nó
-		// không còn thuộc danh sách này nữa: cho khuất đi, đúng như trước đây.
-		if (filter && filter !== status) {
-			setItems((current) =>
-				current.filter((entry) => entry.code !== item.code),
-			);
-		} else {
-			patchLocal(item.code, patch);
-		}
+	/** Trả bài về đúng trạng thái và đúng hai link trước cú bấm gần nhất. */
+	async function undo(item: AdminSubmission) {
+		const snapshot = changed[item.code];
+		if (!snapshot) return;
+
+		await api.adminPatch(item.code, {
+			status: snapshot.status,
+			// Gửi cả hai link kể cả khi trống: "Bỏ qua" đã xoá chúng ở máy chủ, nên
+			// chỉ trả lại trạng thái thôi là hoàn tác nửa vời.
+			publishedTiktok: snapshot.publishedTiktok ?? "",
+			publishedYoutube: snapshot.publishedYoutube ?? "",
+		});
+		shiftCount(item.status, snapshot.status);
+		patchLocal(item.code, snapshot);
+		setChanged((current) => {
+			const next = { ...current };
+			delete next[item.code];
+			return next;
+		});
+		onRefreshCounts();
+	}
+
+	/** Bỏ thẻ khỏi màn hình mà không đụng gì tới dữ liệu. */
+	function dismiss(item: AdminSubmission) {
+		setItems((current) => current.filter((entry) => entry.code !== item.code));
 	}
 
 	/** Lý do bỏ qua. Bỏ trống được: lúc đó người gửi chỉ thấy câu chung. */
@@ -128,8 +176,6 @@ export function Inbox() {
 		if (next === (item.rejectReason ?? "")) return;
 		await api.adminPatch(item.code, { rejectReason: next });
 		patchLocal(item.code, { rejectReason: next || null });
-		setSavedUrl(item.code);
-		setTimeout(() => setSavedUrl(null), 1800);
 	}
 
 	async function saveUrl(
@@ -140,10 +186,6 @@ export function Inbox() {
 		if (value === (item[field] ?? "")) return;
 		await api.adminPatch(item.code, { [field]: value });
 		patchLocal(item.code, { [field]: value || null });
-		// Lưu lúc rời ô là im lặng: không có dấu hiệu này thì không ai biết link
-		// đã vào hay mình vừa gõ vào chỗ trống.
-		setSavedUrl(item.code);
-		setTimeout(() => setSavedUrl(null), 1800);
 	}
 
 	async function remove(item: AdminSubmission) {
@@ -153,12 +195,32 @@ export function Inbox() {
 		await api.adminDelete(item.code);
 		setItems((current) => current.filter((entry) => entry.code !== item.code));
 		shiftCount(item.status, null);
+		onRefreshCounts();
 	}
 
 	const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
 
 	return (
 		<>
+			{/* Dải nhắc có bài mới. Người duyệt hay để tab này mở cả buổi, mà danh
+			    sách thì chỉ dựng một lần lúc mở: không có dòng này thì bài mới nằm đó
+			    tới khi có ai đó nhớ ra là phải bấm F5.
+
+			    Mốc so sánh là "có bài mới hơn lần hỏi trước" chứ không phải "số bài
+			    chờ khác số đang hiện": người duyệt vừa bấm đổi trạng thái là hai con
+			    số đó lệch nhau ngay, mà lệch kiểu đó thì chẳng có bài mới nào cả. */}
+			{arrived > 0 && !busy && (
+				<div className="inbox-alert">
+					<span>
+						Vừa có bài mới gửi tới
+						{waiting > 0 && ` — đang có ${waiting} bài chưa duyệt`}.
+					</span>
+					<button type="button" className="ghost-btn" onClick={load}>
+						Tải lại danh sách
+					</button>
+				</div>
+			)}
+
 			<div className="inbox-tools">
 				<div className="filters">
 					{[["", `Tất cả${total ? ` (${total})` : ""}`], ...Object.entries(STATUS_LABEL)].map(
@@ -239,144 +301,20 @@ export function Inbox() {
 
 			<div className="cards">
 				{items.map((item) => (
-					<article className="card" key={item.code}>
-						{item.imageUrls.length > 0 ? (
-							<div className="card-imgs">
-								{item.imageUrls.map((url, index) => (
-									// Trước đây mỗi ảnh mở ra một tab trơ trọi, xem xong phải
-									// đóng tab quay lại. Giờ phóng to ngay tại chỗ, lật qua lại
-									// được giữa các ảnh của cùng một bài.
-									<button
-										key={url}
-										type="button"
-										onClick={() => view(item.imageUrls, index)}
-										aria-label="Xem ảnh lớn"
-									>
-										<img src={url} alt="" loading="lazy" />
-									</button>
-								))}
-							</div>
-						) : (
-							<span className="hint">Ảnh đã hết hạn và bị xoá.</span>
-						)}
-
-						<div className="bundle-bar">
-							<a
-								className="chip"
-								href={api.adminBundleUrl(item.code)}
-								download
-							>
-								⬇ Tải gói
-							</a>
-						</div>
-
-						<div className="card-head">
-							<strong>{item.nickname}</strong>
-							<span className={`badge ${STATUS_TONE[item.status] ?? ""}`}>
-								{STATUS_LABEL[item.status] ?? item.status}
-							</span>
-						</div>
-
-						<div className="card-meta">
-							<span>{item.code}</span>
-							<span title={formatDateTime(item.createdAt)}>
-								{relativeTime(item.createdAt)}
-							</span>
-							<span>{formatBytes(item.bytes)}</span>
-						</div>
-
-						<p className="card-desc">{item.description}</p>
-
-						{item.styles.length > 0 && (
-							<div className="card-meta">
-								<span>
-									Kiểu: {styleNames(styles, item.styles, "vi").join(", ")}
-								</span>
-							</div>
-						)}
-						{item.email && (
-							<div className="card-meta">
-								<span>{item.email}</span>
-							</div>
-						)}
-
-						<div className="card-actions">
-							{Object.entries(STATUS_LABEL).map(([value, label]) => (
-								<button
-									key={value}
-									type="button"
-									aria-pressed={item.status === value}
-									onClick={() => setStatus(item, value)}
-								>
-									{label}
-								</button>
-							))}
-						</div>
-
-						{/* Bài bỏ qua thì không có clip nào để dẫn tới, nên chỗ này đổi hẳn
-						    nội dung: thay hai ô dán link là câu nói lại với người gửi. */}
-						{item.status === "rejected" ? (
-							<div className="field">
-								<label className="link-field">
-									<span>Lý do bỏ qua (người gửi sẽ đọc câu này)</span>
-									<textarea
-										className="input reason-box"
-										rows={2}
-										maxLength={500}
-										placeholder="Bỏ trống cũng được: người gửi sẽ thấy câu chung."
-										defaultValue={item.rejectReason ?? ""}
-										onBlur={(e) => saveReason(item, e.target.value)}
-									/>
-								</label>
-								{savedUrl === item.code && (
-									<span className="hint" style={{ color: "var(--ok)" }}>
-										Đã lưu lý do.
-									</span>
-								)}
-							</div>
-						) : (
-							/* Một bài thường lên cả hai kênh. Trước đây chỉ có một ô chung,
-							   nên dán link thứ hai là đè mất link thứ nhất. */
-							<div className="field">
-								{LINK_FIELDS.map(([field, label]) => (
-									<label className="link-field" key={field}>
-										<span>{label}</span>
-										<input
-											className="input"
-											type="url"
-											placeholder="https://…"
-											defaultValue={item[field] ?? ""}
-											onBlur={(e) => saveUrl(item, field, e.target.value)}
-										/>
-									</label>
-								))}
-								{savedUrl === item.code && (
-									<span className="hint" style={{ color: "var(--ok)" }}>
-										Đã lưu link.
-									</span>
-								)}
-								{/* Khu "Đã lên sóng" ngoài trang chủ lọc theo link, nên bài đánh
-								    dấu xong mà quên dán link sẽ không bao giờ hiện ra. */}
-								{item.status === "done" &&
-									!item.publishedTiktok &&
-									!item.publishedYoutube && (
-										<span className="hint" style={{ color: "var(--warn)" }}>
-											Chưa có link nào nên bài này không hiện ở khu “Đã lên sóng”.
-										</span>
-									)}
-							</div>
-						)}
-
-						<div className="card-actions">
-							<button
-								type="button"
-								className="danger"
-								onClick={() => remove(item)}
-							>
-								Xoá vĩnh viễn
-							</button>
-						</div>
-					</article>
+					<SubmissionCard
+						key={item.code}
+						item={item}
+						styles={styles}
+						filter={filter}
+						changed={changed[item.code] ?? null}
+						onStatus={setStatus}
+						onReason={saveReason}
+						onUrl={saveUrl}
+						onUndo={undo}
+						onDismiss={dismiss}
+						onRemove={remove}
+						onView={view}
+					/>
 				))}
 			</div>
 
