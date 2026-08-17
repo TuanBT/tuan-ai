@@ -160,7 +160,7 @@ export function clampText(value: unknown, max: number): string {
  * Bài gửi đã đủ để duyệt tay hay chưa.
  *
  * Người gửi phải nói được *điều gì đó* về mong muốn của mình, nhưng chạm một
- * cái kiểu ("Để Tuân tự quyết") cũng đã là nói rồi. Phần lớn người đến đây chỉ
+ * cái kiểu ("Để Tuân AI tự quyết") cũng đã là nói rồi. Phần lớn người đến đây chỉ
  * có mỗi tấm ảnh và chưa hình dung ra clip sẽ thế nào; bắt viết mô tả bằng mọi
  * giá là chỗ họ bỏ cuộc.
  *

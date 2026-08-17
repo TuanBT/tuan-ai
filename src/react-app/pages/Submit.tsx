@@ -245,7 +245,7 @@ export function Submit() {
 	const saidNothing = description.trim() === "" && styles.length === 0;
 
 	// Mô tả hoặc kiểu: có một trong hai là đủ. Ai chỉ có tấm ảnh thì chạm
-	// "Để Tuân tự quyết" là gửi được, không phải nặn ra cho đủ chữ.
+	// "Để Tuân AI tự quyết" là gửi được, không phải nặn ra cho đủ chữ.
 	const canSubmit =
 		picked.length > 0 &&
 		nickname.trim().length > 0 &&
@@ -351,6 +351,27 @@ export function Submit() {
 							<span className="step-num">2</span>
 							{t.stepIdea}
 						</h2>
+
+						{/* Lối phó mặc đứng đầu bước, trước cả ô gõ: người vào là thấy
+						    ngay, chọn thì xong, không chọn thì viết. Đặt trước ô chữ thay
+						    vì sau: ai chưa biết tả gì thì bấm một cái là xong, không phải
+						    cuộn qua ô trống rồi mới thấy lối thoát. */}
+						{delegateStyle && (saidNothing || delegated) && (
+							<div className="delegate">
+								<span className="hint">{t.delegateLead}</span>
+								<button
+									type="button"
+									className="chip"
+									aria-pressed={delegated}
+									onClick={toggleDelegate}
+								>
+									{lang === "vi"
+										? delegateStyle.label_vi
+										: delegateStyle.label_en}
+								</button>
+							</div>
+						)}
+
 						{/* Chỉ nói về ô gõ chữ. Câu cũ ("chọn một kiểu, hoặc gõ vài chữ,
 						    một trong hai là đủ") bày ra một bài toán chọn nhánh ngay đầu
 						    bước, trong khi thực tế hai thứ đó không thay được cho nhau:
@@ -422,32 +443,6 @@ export function Submit() {
 								</details>
 							)}
 						</div>
-
-						{/* Lối thoát cuối bước, tách hẳn khỏi hàng kiểu.
-						    "Để Tuân tự quyết" trước đây là một con chip đứng lẫn giữa "Miễn
-						    sao thật vui" với "Nhẹ nhàng, dễ thương", nhưng nó không cùng
-						    loại với chúng: hai cái kia tả clip, còn nó là lời phó mặc, ấn
-						    xong thì cả ô chữ lẫn hàng kiểu đều thành vô nghĩa.
-
-						    Nên nó xuống đây, sau một vạch ngăn, và chỉ hiện khi người gửi
-						    chưa nói gì. Ai đã gõ hay đã chọn kiểu thì không cần lối thoát
-						    nữa, mà giấu nó đi cũng là cách chắc chắn không bao giờ có
-						    chuyện vừa tả vừa phó mặc. */}
-						{delegateStyle && (saidNothing || delegated) && (
-							<div className="delegate">
-								<span className="hint">{t.delegateLead}</span>
-								<button
-									type="button"
-									className="chip"
-									aria-pressed={delegated}
-									onClick={toggleDelegate}
-								>
-									{lang === "vi"
-										? delegateStyle.label_vi
-										: delegateStyle.label_en}
-								</button>
-							</div>
-						)}
 					</section>
 
 					<section className="step">
